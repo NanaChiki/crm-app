@@ -1,0 +1,29 @@
+/* 50代ユーザー向けの見やすいスタイル */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Noto Sans JP', sans-serif;
+  background-color: #f9fafb;
+  color: #1f2937;
+}
+
+/* アクセシビリティ向上 */
+button:focus,
+input:focus,
+select:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* カスタム変数 */
+:root {
+  --primary-color: #2563eb;
+  --secondary-color: #10b981;
+  --danger-color: #ef4444;
+  --gray-color: #6b7280;
+  --background: #f9fafb;
+}

@@ -1,0 +1,45 @@
+// This is your Prisma schema file
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = "file:./dev.db"
+}
+
+// フェーズ1: 基本モデル
+model Customer {
+    customerId    Int      @id @default(autoincrement()) @map("customer_id")
+    companyName   String   @map("company_name")
+    contactPerson String?  @map("contact_person")
+    phone         String?
+    email         String?
+    address       String?
+    notes         String?
+    createdAt     DateTime @default(now()) @map("created_at")
+    updatedAt     DateTime @updatedAt @map("updated_at")
+
+    // リレーション
+    serviceRecords ServiceRecord[]
+
+    @@map("customers")
+}
+
+model ServiceRecord {
+    recordId           Int      @id @default(autoincrement()) @map("record_id")
+    customerId         Int      @map("customer_id")
+    serviceDate        DateTime @map("service_date")
+    serviceType        String?  @map("service_type")
+    serviceDescription String?  @map("service_description")
+    amount             Decimal?
+    status             String   @default("completed")
+    createdAt          DateTime @default(now()) @map("created_at")
+    updatedAt          DateTime @updatedAt @map("updated_at")
+
+    // リレーション
+    customer Customer @relation(fields: [customerId], references: [customerId], onDelete: Cascade)
+
+    @@map("service_records")
+}
