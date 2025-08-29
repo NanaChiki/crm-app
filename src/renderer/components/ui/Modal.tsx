@@ -77,6 +77,7 @@ const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
 // カスタムダイアログコンテンツ
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   padding: '24px',
+  marginTop: '16px',
   fontSize: '16px',
   lineHeight: 1.6,
 

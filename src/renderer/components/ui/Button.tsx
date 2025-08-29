@@ -52,10 +52,10 @@ const StyledButton = styled(MuiButton)<CustomButtonProps>(
 
     // アイコンとテキストの間隔
     '& .MuiButton-startIcon': {
-      marginRight: '12px',
+      marginRight: '8px',
     },
     '& .MuiButton-endIcon': {
-      marginLeft: '12px',
+      marginLeft: '8px',
     },
   })
 );
