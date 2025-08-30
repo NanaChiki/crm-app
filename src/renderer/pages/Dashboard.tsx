@@ -1,11 +1,60 @@
-import { Box, Button, Container, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Container,
+  Divider,
+  Grid,
+  Typography,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { PageHeader } from '../components/layout/PageHeader';
+import { Button as ButtonUI } from '../components/ui/Button';
+import { Card as CardUI } from '../components/ui/Card';
 
 function Dashboard() {
   const navigate = useNavigate();
+  const handleAddCustomer = () => {
+    alert(
+      '顧客追加機能はまだ実装されていません: 顧客ボタンが追加されました（仮）'
+    );
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/** PageHeader コンポーネントの使用例 */}
+      <PageHeader
+        title="Dashboard"
+        subtitle="ダッシュボードの概要"
+        actions={
+          <ButtonUI variant="outlined" onClick={handleAddCustomer}>
+            新規顧客追加
+          </ButtonUI>
+        }
+      />
+
+      {/** Card コンポーネントの使用例 */}
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <CardUI
+            title="最近の顧客"
+            clickable
+            onCardClick={() => navigate('/customers')}>
+            <Typography>ここに最近追加された顧客が表示されます</Typography>
+          </CardUI>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <CardUI
+            title="今週のサービス"
+            clickable
+            onCardClick={() => navigate('/services')}>
+            <Typography>ここに今週のサービス履歴が表示されます</Typography>
+          </CardUI>
+        </Grid>
+      </Grid>
+
+      <Divider sx={{ my: 5 }} />
+
       <Typography variant="h1" gutterBottom>
         🏢 建築事業者向けCRMツール
       </Typography>
@@ -38,6 +87,10 @@ function Dashboard() {
         <Typography variant="body2" sx={{ mb: 2 }}>
           • 🎨 <strong>50代向けUIコンポーネント</strong> - Button, Input, Card,
           Modal
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 2 }}>
+          • 🎨 <strong>レイアウトコンポーネント</strong> - Header, MainLayout,
+          PageHeader,
         </Typography>
         <Typography variant="body2" sx={{ mb: 2 }}>
           • ⚡ <strong>Electron + Vite + HMR</strong> - 完全統合開発環境
