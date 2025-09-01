@@ -78,7 +78,7 @@ export interface CreateCustomerInput {
 
   /** 担当者名（任意）
    * 【任意にする理由】後から追加可能、最初は会社名だけでOK */
-  contractPerson?: string;
+  contactPerson?: string;
 
   /** 電話番号（任意）
    * 【任意にする理由】段階的な情報入力をサポート */
@@ -141,7 +141,7 @@ export interface CustomerSearchParams {
 
   /** 担当者名での検索（部分一致）
    * 【任意にする理由】担当者が分からない場合もある */
-  contractPerson?: string;
+  contactPerson?: string;
 
   /** 電話番号での検索（部分一致）
    * 【任意にする理由】電話番号からの逆引き検索用 */

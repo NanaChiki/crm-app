@@ -215,7 +215,7 @@ export function Header() {
               // Remove on production
               opacity: 0.8,
               fontSize: { xs: '12px', md: '14px' },
-              backgroundColor: 'red',
+              // backgroundColor: 'red',
             }}>
             <span className="nav-text">UIデモ</span>
           </NavButton>
