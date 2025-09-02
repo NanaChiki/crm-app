@@ -3,6 +3,7 @@ import {
   Home as HomeIcon,
   People as PeopleIcon,
 } from '@mui/icons-material';
+import type { ButtonProps, TypographyProps } from '@mui/material';
 import {
   AppBar,
   Box,
@@ -37,70 +38,72 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
 }));
 
 // Navigation Button (Bigger for those in their 50s)
-const NavButton = styled(Button)<{ isActive?: boolean }>(
-  ({ theme, isActive }) => ({
-    // Basic styles
-    minHeight: '48px',
-    minWidth: '120px',
-    fontSize: '16px',
-    fontWeight: 600,
-    textTransform: 'none',
-    borderRadius: theme.spacing(1),
-    padding: theme.spacing(1.5, 3),
-    margin: theme.spacing(0, 0.5),
+// const NavButton = styled(Button)<{ isActive?: boolean }>(
+// ButtonPropsと組み合わせるために、shouldForwardPropを使用
+const NavButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== 'isActive',
+})<ButtonProps & { isActive?: boolean }>(({ theme, isActive }) => ({
+  // Basic styles
+  minHeight: '48px',
+  minWidth: '120px',
+  fontSize: '16px',
+  fontWeight: 600,
+  textTransform: 'none',
+  borderRadius: theme.spacing(1),
+  padding: theme.spacing(1.5, 3),
+  margin: theme.spacing(0, 0.5),
 
-    // Icon and letter spacing
+  // Icon and letter spacing
+  '& .MuiButton-startIcon': {
+    marginRight: theme.spacing(1),
+    fontSize: '20px',
+  },
+
+  // Active state
+  ...(isActive && {
+    backgroundColor: theme.palette.primary.dark,
+    color: theme.palette.primary.contrastText,
+    '&:hover': {
+      backgroundColor: theme.palette.primary.main,
+    },
+  }),
+
+  // Focused state (accessibility)
+  '&:focus': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: '2px',
+  },
+
+  // Mobile styles
+  [theme.breakpoints.down('md')]: {
+    minWidth: '100px',
+    fontSize: '14px',
+    padding: theme.spacing(1, 2),
+    minHeight: '44px',
+
     '& .MuiButton-startIcon': {
-      marginRight: theme.spacing(1),
-      fontSize: '20px',
+      fontSize: '18px',
+      marginRight: theme.spacing(0.5),
+    },
+  },
+
+  // Hide texts on small screens
+  [theme.breakpoints.down('sm')]: {
+    minWidth: '44px',
+    padding: theme.spacing(1),
+
+    '& .MuiButton-startIcon': {
+      marginRight: 0,
     },
 
-    // Active state
-    ...(isActive && {
-      backgroundColor: theme.palette.primary.dark,
-      color: theme.palette.primary.contrastText,
-      '&:hover': {
-        backgroundColor: theme.palette.primary.main,
-      },
-    }),
-
-    // Focused state (accessibility)
-    '&:focus': {
-      outline: `2px solid ${theme.palette.primary.main}`,
-      outlineOffset: '2px',
+    '& .nav-text': {
+      display: 'none',
     },
-
-    // Mobile styles
-    [theme.breakpoints.down('md')]: {
-      minWidth: '100px',
-      fontSize: '14px',
-      padding: theme.spacing(1, 2),
-      minHeight: '44px',
-
-      '& .MuiButton-startIcon': {
-        fontSize: '18px',
-        marginRight: theme.spacing(0.5),
-      },
-    },
-
-    // Hide texts on small screens
-    [theme.breakpoints.down('sm')]: {
-      minWidth: '44px',
-      padding: theme.spacing(1),
-
-      '& .MuiButton-startIcon': {
-        marginRight: 0,
-      },
-
-      '& .nav-text': {
-        display: 'none',
-      },
-    },
-  })
-);
+  },
+}));
 
 // App Title
-const AppTitle = styled(Typography)(({ theme }) => ({
+const AppTitle = styled(Typography)<TypographyProps>(({ theme }) => ({
   fontSize: '24px',
   fontWeight: 700,
   letterSpacing: '0.5px',
@@ -122,7 +125,7 @@ const navigationItems = [
     path: '/',
     label: 'ダッシュボード',
     icon: <HomeIcon />,
-    ariaLabel: 'ダッシュページへ移動',
+    ariaLabel: 'ダッシュボードページへ移動',
   },
   {
     path: '/customers',
@@ -215,7 +218,6 @@ export function Header() {
               // Remove on production
               opacity: 0.8,
               fontSize: { xs: '12px', md: '14px' },
-              // backgroundColor: 'red',
             }}>
             <span className="nav-text">UIデモ</span>
           </NavButton>
@@ -224,49 +226,3 @@ export function Header() {
     </StyledAppBar>
   );
 }
-
-// export const Header = () => {
-//   return (
-//     <AppBar position="static" sx={{ backgroundColor: '#2563eb' }}>
-//       <Toolbar>
-//         <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-//           CRMツール
-//         </Typography>
-//         <Button
-//           color="inherit"
-//           component={RouterLink}
-//           to="/"
-//           startIcon={<HomeIcon />}
-//           sx={{
-//             fontSize: '16px',
-//             fontWeight: 'bold',
-//             minHeight: '48px',
-//             px: 3,
-//             mx: 1,
-//             '&:hover': {
-//               backgroundColor: 'rgba(255, 255, 255, 0.1)',
-//             },
-//           }}>
-//           ダッシュボード
-//         </Button>
-//         <Button
-//           color="inherit"
-//           component={RouterLink}
-//           to="/customers"
-//           startIcon={<PeopleIcon />}
-//           sx={{
-//             fontSize: '16px',
-//             fontWeight: 'bold',
-//             minHeight: '48px',
-//             px: 3,
-//             mx: 1,
-//             '&:hover': {
-//               backgroundColor: 'rgba(255, 255, 255, 0.1)',
-//             },
-//           }}>
-//           顧客管理
-//         </Button>
-//       </Toolbar>
-//     </AppBar>
-//   );
-// };

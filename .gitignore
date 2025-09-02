@@ -95,6 +95,9 @@ out/
 # Cursor specific
 .cursor/
 
+# CLAUDE
+CLAUDE.md
+
 # Database
 *.db
 *.db-journal

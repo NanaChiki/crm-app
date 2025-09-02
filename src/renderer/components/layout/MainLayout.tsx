@@ -2,19 +2,6 @@ import { Box, Container, styled } from '@mui/material';
 import React from 'react';
 import { Header } from './Header';
 
-// Header Component Placeholder
-// const HeaderPlaceholder = styled(Box)(({ theme }) => ({
-//   height: '64px',
-//   backgroundColor: theme.palette.primary.main,
-//   display: 'flex',
-//   alignItems: 'center',
-//   justifyContent: 'center',
-//   color: theme.palette.primary.contrastText,
-//   fontSize: '18px',
-//   fontWeight: 600,
-//   boxShadow: theme.shadows[2],
-// }));
-
 // Main Content Area
 const MainContentArea = styled(Box)(({ theme }) => ({
   minHeight: 'calc(100vh - 64px)',
@@ -48,8 +35,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         minHeight: '100vh',
         alignItems: 'center',
       }}>
-      {/* Header Area - I'll replace this with the actual header component later*/}
-      {/* <HeaderPlaceholder>建築事業者向けCRMツール</HeaderPlaceholder> */}
+      {/* Header Area */}
       <Header />
       {/* Main Content Area*/}
       <MainContentArea component="main">

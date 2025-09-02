@@ -2,6 +2,7 @@ import {
   Home as HomeIcon,
   NavigateNext as NavigateNextIcon,
 } from '@mui/icons-material';
+import type { TypographyProps } from '@mui/material';
 import {
   Box,
   Breadcrumbs,
@@ -28,7 +29,7 @@ const StyledPageHeader = styled(Box)(({ theme }) => ({
 }));
 
 // ページタイトル（50代向けに大きめ）
-const PageTitle = styled(Typography)(({ theme }) => ({
+const PageTitle = styled(Typography)<TypographyProps>(({ theme }) => ({
   fontSize: '28px',
   fontWeight: 700,
   color: theme.palette.text.primary,
@@ -77,7 +78,7 @@ const StyledBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
     },
 
     // 現在のページ　（リンクではない）
-    '& .span': {
+    '& span': {
       color: theme.palette.text.primary,
       fontWeight: 500,
     },
@@ -100,7 +101,7 @@ const ActionButtonArea = styled(Box)(({ theme }) => ({
 
 // TypeScript型定義
 export interface BreadcrumbItem {
-  /**　パンくずのラベル */
+  /** パンくずのラベル */
   label: string;
   /** リンク先のパス（最後のアイテムの場合は省略可） */
   path?: string;
@@ -197,7 +198,6 @@ export function PageHeader({
       <Box
         sx={{
           display: 'flex',
-          alignItems: 'center',
           justifyContent: 'space-between',
           alignItems: isMobile ? 'flex-start' : 'center',
           flexDirection: isMobile ? 'column' : 'row',

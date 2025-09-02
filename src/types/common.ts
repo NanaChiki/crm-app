@@ -271,7 +271,7 @@ export interface PaginationState {
 
   /** 次のページがあるか
    * 【UI制御】「次へ」ボタンの有効/無効切り替え */
-  hasNext: boolean;
+  hasNextPage: boolean;
 }
 
 // =============================================================================
