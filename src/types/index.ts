@@ -1,26 +1,8 @@
-import {
-  ApiResponse,
-  AppError,
-  FormState,
-  LoadingState,
-  PaginationState,
-  SearchFilters,
-  SnackbarMessage,
-  SortOrder,
-  ValidationError,
-} from './common';
-import {
-  CreateCustomerInput,
-  Customer,
-  CustomerListItem,
-  CustomerSearchParams,
-  UpdateCustomerInput,
-} from './customer';
+import { ApiResponse, FormState } from './common';
+import { CreateCustomerInput, Customer, UpdateCustomerInput } from './customer';
 import {
   CreateServiceRecordInput,
   ServiceRecord,
-  ServiceRecordListItem,
-  ServiceRecordSearchParams,
   ServiceRecordWithCustomer,
   UpdateServiceRecordInput,
 } from './service';
@@ -125,98 +107,26 @@ export type {
  */
 
 // 顧客管理でよく使われる組み合わせ
-export type CustomerForm = FormState<CreateCustomerInput>;
+export type CustomerCreateForm = FormState<CreateCustomerInput>;
 export type CustomerUpdateForm = FormState<UpdateCustomerInput>;
-export type CustomersApiResponse = ApiResponse<Customer[]>;
+export type CustomerListApiResponse = ApiResponse<Customer[]>;
 export type CustomerApiResponse = ApiResponse<Customer>;
 
 // サービス履歴管理でよく使われる組み合わせ
-export type ServiceForm = FormState<CreateServiceRecordInput>;
+export type ServiceCreateForm = FormState<CreateServiceRecordInput>;
 export type ServiceUpdateForm = FormState<UpdateServiceRecordInput>;
-export type ServicesApiResponse = ApiResponse<ServiceRecord[]>;
+export type ServiceRecordListApiResponse = ApiResponse<ServiceRecord[]>;
 export type ServiceApiResponse = ApiResponse<ServiceRecord>;
-export type ServicesWithCustomerApiResponse = ApiResponse<
+export type ServiceRecordWithCustomerListApiResponse = ApiResponse<
   ServiceRecordWithCustomer[]
 >;
 
-// 一覧画面でよく使われる状態の組み合わせ
-export type CustomerListState = {
-  /** 顧客一覧データ */
-  items: CustomerListItem[];
-  /** ローディング・エラー状態 */
-  loading: LoadingState;
-  /** ページネーション状態 */
-  pagination: PaginationState;
-  /** 検索フィルタ */
-  filters: CustomerSearchParams;
-  /**ソート順序 */
-  sort: SortOrder;
-};
-
-// 一覧画面でよく使われる状態の組み合わせ
-export type ServiceListState = {
-  /** 顧客一覧データ */
-  items: ServiceRecordListItem[];
-  /** ローディング・エラー状態 */
-  loading: LoadingState;
-  /** ページネーション状態 */
-  pagination: PaginationState;
-  /** 検索フィルタ */
-  filters: ServiceRecordSearchParams;
-  /**ソート順序 */
-  sort: SortOrder;
-};
-
-// =============================================================================
-// 🎨 コンポーネント Props型の統一（React使用時）
-// =============================================================================
-
-/**
- * Reactコンポーネントで共通使用されるProps型を事前定義
- *
- * 【設計意図】
- * - コンポーネント間での一貫したProps設計
- * - エラーハンドリングや成功処理の統一
- * - 50代向けの操作フィードバック機能を標準化
- */
-
-// 基本的なコンポーネントProps
-export type BaseComponentProps = {
-  /** ローディング状態 (任意) */
-  loading?: LoadingState;
-  /** エラー時のコールバック */
-  onError?: (error: AppError) => void;
-  /** 成功時のコールバック */
-  onSuccess?: (message: string) => void;
-};
-
-// 一覧表示コンポーネント用Props
-export type ListComponentProps<T> = BaseComponentProps & {
-  /** 表示するアイテム一覧 */
-  items: T[];
-  /** ページネーション状態 */
-  pagination: PaginationState;
-  /** ページ変更時のコールバック */
-  onPageChange: (page: number) => void;
-  /** ソート変更時のコールバック */
-  onSort: (sort: SortOrder) => void;
-};
-
-// フォームコンポーネント用Props
-export type FormComponentProps<T> = BaseComponentProps & {
-  /** フォーム状態 */
-  formState: FormState<T>;
-  /** フォーム送信時のコールバック */
-  onSubmit: (data: T) => void;
-  /** フォーム値変更時のコールバック */
-  onFieldChange: (field: keyof T, value: any) => void;
-};
 // =============================================================================
 // 🔮 将来の拡張に備えた型定義の準備
 // =============================================================================
 
 /**
- * 将来の機能追加に備えた型システムの拡張性確保
+ * 将来の機能追加に備えた型システムの拡張性確保（仮）
  *
  * 【Phase 2 対応予定】
  * - Reminder（リマインダー）機能の型定義
@@ -233,19 +143,6 @@ export type FormComponentProps<T> = BaseComponentProps & {
  * 2. このindex.tsに新しいエクスポートセクションを追加
  * 3. 既存の型エイリアスとの組み合わせ型を定義
  *
- * 【10個以上の型定義ファイルへの準備】
- * - カテゴリ別のコメントセクション維持
- * - アルファベット順序でのファイル整理
- * - 依存関係を考慮したインポート順序
- */
-
-// 将来追加される型定義ファイルのプレースホルダー
-// export type { ... } from './reminder';    // Phase 2: リマインダー機能
-// export type { ... } from './calendar';    // Phase 2: カレンダー機能
-// export type { ... } from './report';      // Phase 2: レポート機能
-// export type { ... } from './electron';    // Phase 3: Electron固有型
-// export type { ... } from './file';        // Phase 3: ファイル操作型
-// export type { ... } from './print';       // Phase 3: 印刷機能型
 
 // =============================================================================
 // 📖 使用例とベストプラクティス
@@ -272,13 +169,13 @@ export type FormComponentProps<T> = BaseComponentProps & {
  *   CreateCustomerInput,
  *   ServiceRecord,
  *   LoadingState,
- *   CustomerForm,        // ← エイリアスで簡潔に！
- *   CustomersApiResponse // ← エイリアスで分かりやすく！
+ *   CustomerCreateForm,        // ← エイリアスで簡潔に！
+ *   CustomerApiResponse // ← エイリアスで分かりやすく！
  * } from '@/types';
  *
  * // 短くて覚えやすい型名
- * const customerForm: CustomerForm = { ... };
- * const customerAPI: CustomersApiResponse = { ... };
+ * const customerForm: CustomerCreateForm = { ... };
+ * const customerAPI: CustomerApiResponse = { ... };
  * ```
  *
  * 🎓 効果：
@@ -296,11 +193,11 @@ export type FormComponentProps<T> = BaseComponentProps & {
  * import {
  *   // 顧客関連
  *   Customer,
- *   CustomerForm,
+ *   CustomerCreateForm,
  *
  *   // サービス関連
  *   ServiceRecord,
- *   ServiceForm,
+ *   ServiceCreateForm,
  *
  *   // UI関連
  *   LoadingState,
@@ -311,7 +208,7 @@ export type FormComponentProps<T> = BaseComponentProps & {
  * ❌ Avoid（無秩序な羅列）：
  * ```typescript
  * import {
- *   Customer, LoadingState, ServiceForm, SnackbarMessage
+ *   Customer, LoadingState, ServiceCreateForm, SnackbarMessage
  * } from '@/types';
  * ```
  */

@@ -24,11 +24,36 @@ function Dashboard() {
       {/** PageHeader コンポーネントの使用例 */}
       <PageHeader
         title="Dashboard"
-        subtitle="ダッシュボードの概要"
+        subtitle="Dashboard Overview"
+        breadcrumbs={[{ label: 'ダッシュボード', path: '/' }]}
         actions={
-          <ButtonUI variant="outlined" onClick={handleAddCustomer}>
-            新規顧客追加
-          </ButtonUI>
+          <>
+            <ButtonUI variant="outlined" onClick={handleAddCustomer}>
+              Add New Customer (Tentative)
+            </ButtonUI>
+          </>
+        }
+      />
+      <PageHeader
+        title="田中工務店"
+        subtitle="東京都中央区大門1-1-1"
+        breadcrumbs={[
+          { label: 'ダッシュボード', path: '/' },
+          { label: '顧客一覧', path: '/customers' },
+          { label: '田中工務店', path: '/customers' },
+        ]}
+        actions={
+          <>
+            <ButtonUI variant="outlined" onClick={handleAddCustomer}>
+              新規顧客追加
+            </ButtonUI>
+            <ButtonUI
+              variant="outlined"
+              color="error"
+              onClick={handleAddCustomer}>
+              削除
+            </ButtonUI>
+          </>
         }
       />
 

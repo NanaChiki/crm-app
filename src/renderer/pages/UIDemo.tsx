@@ -1,7 +1,13 @@
 import { Add, Delete, Edit } from '@mui/icons-material';
 import { Box, Container, Divider, Grid, Typography } from '@mui/material';
 import { useState } from 'react';
-import { Button, Card, ConfirmModal, Input, Modal } from '../components/ui';
+import {
+  Button,
+  Card,
+  ConfirmModal,
+  Input,
+  Modal,
+} from '../components/ui/indexUI';
 
 export default function UIDemo() {
   const [showModal, setShowModal] = useState(false);
