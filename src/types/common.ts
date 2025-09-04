@@ -109,11 +109,17 @@ export interface AppError {
   message: string;
 
   /** エラーの種類
-   * 【network】「インターネット接続を確認してください」
-   * 【validation】「入力内容に不備があります」
-   * 【permission】「この操作を行う権限がありません」
-   * 【server】「一時的な問題が発生しています」 */
-  type: 'network' | 'validation' | 'permission' | 'server';
+   * 【NETWORK_ERROR】「インターネット接続を確認してください」
+   * 【VALIDATION_ERROR】「入力内容に不備があります」
+   * 【NOT_FOUND】「データが見つかりません」
+   * 【PERMISSION_DENIED】「この操作を行う権限がありません」
+   * 【SERVER_ERROR】「一時的な問題が発生しています」 */
+  type:
+    | 'NETWORK_ERROR'
+    | 'VALIDATION_ERROR'
+    | 'NOT_FOUND'
+    | 'PERMISSION_DENIED'
+    | 'SERVER_ERROR';
 
   /** 解決方法の提案（50代向けの具体的な手順）
    * 【例】「ページを再読み込みしてもう一度お試しください」 */
