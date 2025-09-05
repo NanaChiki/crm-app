@@ -230,7 +230,6 @@ export function AppProvider({ children }: AppProviderProps) {
       const newMessage: SnackbarMessage = {
         message: displayMessage,
         severity,
-        timestamp: new Date(), // 修正予定 (timestamp)
         duration,
       };
 
@@ -309,8 +308,7 @@ export function AppProvider({ children }: AppProviderProps) {
         console.error('🚨 AppError Details:', {
           type: error.type,
           message: error.message,
-          code: error.code, // 修正予定 (errorCode)
-          details: error.details, // 修正予定 (technical)
+          details: error.technical,
           userMessage: userFriendlyMessage,
         });
       }

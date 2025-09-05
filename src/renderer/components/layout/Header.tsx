@@ -14,7 +14,11 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import {
+  Link as RouterLink,
+  useLocation,
+  type LinkProps,
+} from 'react-router-dom'; // ← LinkPropsを追加
 
 // AppBar styled for those in their 50s
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -37,12 +41,34 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
-// Navigation Button (Bigger for those in their 50s)
-// const NavButton = styled(Button)<{ isActive?: boolean }>(
-// ButtonPropsと組み合わせるために、shouldForwardPropを使用
+// =============================
+// 🔧 修正: NavButton の型定義
+// =============================
+
+/**
+ * 【修正内容】React Router Link との互換性を追加
+ *
+ * Material-UI v5 でButtonとReact Router Linkを組み合わせる際の型問題を解決：
+ * 1. LinkProps から必要な props を抽出
+ * 2. ButtonProps と組み合わせて型安全性を保つ
+ * 3. shouldForwardProp でカスタムpropsを適切に処理
+ */
+
+// React Router Link の主要プロパティを抽出
+type RouterLinkProps = Pick<LinkProps, 'to' | 'replace' | 'state'>;
+
+// NavButton用の拡張型定義
+interface NavButtonProps extends Omit<ButtonProps, 'href'>, RouterLinkProps {
+  isActive?: boolean;
+}
+
 const NavButton = styled(Button, {
-  shouldForwardProp: (prop) => prop !== 'isActive',
-})<ButtonProps & { isActive?: boolean }>(({ theme, isActive }) => ({
+  shouldForwardProp: (prop) =>
+    prop !== 'isActive' && // カスタムprop
+    prop !== 'to' && // Router prop
+    prop !== 'replace' && // Router prop
+    prop !== 'state', // Router prop
+})<NavButtonProps>(({ theme, isActive }) => ({
   // Basic styles
   minHeight: '48px',
   minWidth: '120px',

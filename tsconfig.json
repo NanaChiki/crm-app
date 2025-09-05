@@ -22,6 +22,7 @@
       "@/pages/*": ["./renderer/pages/*"],
       "@/hooks/*": ["./renderer/hooks/*"],
       "@/utils/*": ["./renderer/utils/*"],
+      "@/types": ["./types/index"], // ← 修正: index.tsを指すように変更
       "@/types/*": ["./types/*"]
     }
   },
