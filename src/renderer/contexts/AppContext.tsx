@@ -207,6 +207,8 @@ export function AppProvider({ children }: AppProviderProps) {
     // 50代向け配慮：ローディング開始時の安心メッセージ
     if (loading) {
       console.log('🔄 処理中です。しばらくお待ちください...');
+    } else {
+      console.log('🔄 処理が完了しました。');
     }
   }, []);
 

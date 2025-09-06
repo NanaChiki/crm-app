@@ -2,7 +2,6 @@ import {
   Home as HomeIcon,
   NavigateNext as NavigateNextIcon,
 } from '@mui/icons-material';
-import type { TypographyProps } from '@mui/material';
 import {
   Box,
   Breadcrumbs,
@@ -11,6 +10,7 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  type TypographyProps,
 } from '@mui/material';
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -77,7 +77,7 @@ const StyledBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
       borderRadius: theme.spacing(0.5),
     },
 
-    // 現在のページ　（リンクではない）
+    // 現在のページ（リンクではない）
     '& span': {
       color: theme.palette.text.primary,
       fontWeight: 500,
@@ -114,9 +114,9 @@ export interface PageHeaderProps {
   title: string;
   /** パンくずリストのアイテム */
   breadcrumbs?: BreadcrumbItem[];
-  /** アクションボタン　（新規追加ボタンなど） */
+  /** アクションボタン（新規追加ボタンなど） */
   actions?: React.ReactNode;
-  /** サブタイトル　（オプション） */
+  /** サブタイトル（オプション） */
   subtitle?: string;
   /** ヘッダー下の区切り線を表示するか */
   showDivider?: boolean;

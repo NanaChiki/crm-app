@@ -3,7 +3,6 @@ import {
   Home as HomeIcon,
   People as PeopleIcon,
 } from '@mui/icons-material';
-import type { ButtonProps, TypographyProps } from '@mui/material';
 import {
   AppBar,
   Box,
@@ -13,6 +12,8 @@ import {
   styled,
   useMediaQuery,
   useTheme,
+  type ButtonProps,
+  type TypographyProps,
 } from '@mui/material';
 import {
   Link as RouterLink,

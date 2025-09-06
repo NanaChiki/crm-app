@@ -45,7 +45,7 @@ export default function UIDemo() {
         </Typography>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Button size="small" variant="contained" startIcon={<Add />}>
                 Small (44px)
@@ -59,7 +59,7 @@ export default function UIDemo() {
             </Box>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Button variant="outlined" color="secondary">
                 アウトライン
@@ -73,7 +73,7 @@ export default function UIDemo() {
             </Box>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Button loading disabled>
                 ローディング中
@@ -99,7 +99,7 @@ export default function UIDemo() {
         </Typography>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Input
                 inputSize="small"
@@ -126,7 +126,7 @@ export default function UIDemo() {
             </Box>
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Input
                 isPassword
@@ -167,7 +167,7 @@ export default function UIDemo() {
         </Typography>
 
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6} lg={4}>
+          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
             <Card
               title="株式会社サンプル建設"
               subtitle="顧客ID: #001 • 登録日: 2025/01/15"
@@ -188,7 +188,7 @@ export default function UIDemo() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6} lg={4}>
+          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
             <Card
               title="住宅リフォーム工事"
               subtitle="サービス記録 • 2025/01/10"
@@ -206,7 +206,7 @@ export default function UIDemo() {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6} lg={4}>
+          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
             <Card
               title="メンテナンス予定"
               subtitle="次回点検 • 2025/02/01"

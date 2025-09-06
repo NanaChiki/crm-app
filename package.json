@@ -2,6 +2,7 @@
   "name": "crm-app",
   "productName": "crm-app",
   "version": "1.0.0",
+  "type": "module",
   "description": "小規模建築事業者向けCRMツール - React + Vite + Electron with HMR",
   "main": "dist/main/main.js",
   "scripts": {
@@ -16,8 +17,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "lint": "eslint src --ext .ts,.tsx",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
@@ -57,10 +58,14 @@
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.7",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
     "@vitejs/plugin-react": "^5.0.1",
     "concurrently": "^9.2.0",
     "cross-env": "^7.0.3",
     "electron": "37.3.1",
+    "eslint": "^9.35.0",
+    "eslint-plugin-react": "^7.37.5",
     "typescript": "^5.9.2",
     "vite": "^7.1.3"
   },
