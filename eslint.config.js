@@ -1,10 +1,13 @@
 import js from '@eslint/js';
 import typescript from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
+import prettier from 'eslint-config-prettier';
 import react from 'eslint-plugin-react';
+import globals from 'globals';
 
 export default [
   js.configs.recommended,
+  prettier,
   {
     files: ['src/**/*.{js,jsx,ts,tsx}'],
 
@@ -18,39 +21,43 @@ export default [
         },
       },
       globals: {
-        // ブラウザ環境
-        window: 'readonly',
-        document: 'readonly',
-        console: 'readonly',
-        setTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearTimeout: 'readonly',
-        clearInterval: 'readonly',
-        alert: 'readonly',
-        confirm: 'readonly',
-        prompt: 'readonly',
-
-        // DOM型
-        HTMLElement: 'readonly',
-        HTMLButtonElement: 'readonly',
-        HTMLDivElement: 'readonly',
-        HTMLInputElement: 'readonly',
-        HTMLFormElement: 'readonly',
-        Element: 'readonly',
-        Event: 'readonly',
-        MouseEvent: 'readonly',
-        KeyboardEvent: 'readonly',
-
-        // Node.js環境
-        process: 'readonly',
-        Buffer: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        require: 'readonly',
-        module: 'readonly',
-        exports: 'readonly',
-        global: 'readonly',
+        ...globals.browser,
+        ...globals.node,
       },
+      // globals: {
+      //   // ブラウザ環境
+      //   window: 'readonly',
+      //   document: 'readonly',
+      //   console: 'readonly',
+      //   setTimeout: 'readonly',
+      //   setInterval: 'readonly',
+      //   clearTimeout: 'readonly',
+      //   clearInterval: 'readonly',
+      //   alert: 'readonly',
+      //   confirm: 'readonly',
+      //   prompt: 'readonly',
+
+      //   // DOM型
+      //   HTMLElement: 'readonly',
+      //   HTMLButtonElement: 'readonly',
+      //   HTMLDivElement: 'readonly',
+      //   HTMLInputElement: 'readonly',
+      //   HTMLFormElement: 'readonly',
+      //   Element: 'readonly',
+      //   Event: 'readonly',
+      //   MouseEvent: 'readonly',
+      //   KeyboardEvent: 'readonly',
+
+      //   // Node.js環境
+      //   process: 'readonly',
+      //   Buffer: 'readonly',
+      //   __dirname: 'readonly',
+      //   __filename: 'readonly',
+      //   require: 'readonly',
+      //   module: 'readonly',
+      //   exports: 'readonly',
+      //   global: 'readonly',
+      // },
     },
 
     plugins: {
