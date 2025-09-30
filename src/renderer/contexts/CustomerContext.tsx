@@ -218,6 +218,65 @@ interface CustomerContextType {
 }
 
 // =============================================================================
+// 💾 モックデータ管理（ファイルスコープ）
+// =============================================================================
+
+/**
+ * モックデータのメモリ管理
+ *
+ * 【修正理由】
+ * 以前の実装では、fetchCustomers()内でモックデータを定義していたため、
+ * refreshCustomers()実行時に常に元のデータが復活してしまう問題がありました。
+ *
+ * 【解決策】
+ * - モックデータをファイルスコープで管理
+ * - CRUD操作時に直接このデータを変更
+ * - fetchCustomers()はこのデータを参照
+ *
+ * これにより、削除・更新・追加の変更が永続化され、
+ * refreshCustomers()実行後も保持されます。
+ *
+ * 【将来の実装】
+ * 実際のAPI/Prisma実装時は、この部分を削除し、
+ * 各CRUD関数内で実際のDB呼び出しに置き換えます。
+ */
+const mockCustomersData: Customer[] = [
+  {
+    customerId: 1,
+    companyName: '田中建設株式会社',
+    contactPerson: '田中太郎',
+    phone: '090-1234-5678',
+    email: 'tanaka@tanaka-kensetsu.co.jp',
+    address: '東京都世田谷区桜丘1-2-3',
+    notes: '定期メンテナンス契約あり。年2回の点検実施。',
+    createdAt: new Date('2024-01-15'),
+    updatedAt: new Date('2024-08-20'),
+  },
+  {
+    customerId: 2,
+    companyName: '山田工務店',
+    contactPerson: '山田花子',
+    phone: '03-5555-1234',
+    email: 'info@yamada-koumuten.com',
+    address: '東京都杉並区高円寺南2-4-5',
+    notes: '新築工事専門。品質重視のお客様。',
+    createdAt: new Date('2024-02-10'),
+    updatedAt: new Date('2024-08-18'),
+  },
+  {
+    customerId: 3,
+    companyName: '佐藤リフォーム',
+    contactPerson: '佐藤次郎',
+    phone: '080-9999-8888',
+    email: 'sato@sato-reform.jp',
+    address: '東京都練馬区石神井公園3-7-9',
+    notes: 'リフォーム専門。お客様の要望を丁寧にヒアリングしてくれる。',
+    createdAt: new Date('2024-03-05'),
+    updatedAt: new Date('2024-08-22'),
+  },
+];
+
+// =============================================================================
 // 🎨 Context作成 - 顧客データ専用
 // =============================================================================
 
@@ -334,58 +393,24 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
       // グローバルローディング（重い操作の場合）
       setGlobalLoading(true);
 
-      // 【現段階】モックデータで動作確認
+      // 【現段階】ファイルスコープのモックデータを参照
+      // 【修正】CRUD操作の変更が永続化されるよう、mockCustomersDataを参照
       // 【将来】実際のAPI呼び出し: const response = await api.getCustomers();
-
-      // モックデータ（デモ用）- 50代建築業者を想定
-      const mockCustomers: Customer[] = [
-        {
-          customerId: 1,
-          companyName: '田中建設株式会社',
-          contactPerson: '田中太郎',
-          phone: '090-1234-5678',
-          email: 'tanaka@tanaka-kensetsu.co.jp',
-          address: '東京都世田谷区桜丘1-2-3',
-          notes: '定期メンテナンス契約あり。年2回の点検実施。',
-          createdAt: new Date('2024-01-15'),
-          updatedAt: new Date('2024-08-20'),
-        },
-        {
-          customerId: 2,
-          companyName: '山田工務店',
-          contactPerson: '山田花子',
-          phone: '03-5555-1234',
-          email: 'info@yamada-koumuten.com',
-          address: '東京都杉並区高円寺南2-4-5',
-          notes: '新築工事専門。品質重視のお客様。',
-          createdAt: new Date('2024-02-10'),
-          updatedAt: new Date('2024-08-18'),
-        },
-        {
-          customerId: 3,
-          companyName: '佐藤リフォーム',
-          contactPerson: '佐藤次郎',
-          phone: '080-9999-8888',
-          email: 'sato@sato-reform.jp',
-          address: '東京都練馬区石神井公園3-7-9',
-          notes: 'リフォーム専門。お客様の要望を丁寧にヒアリングしてくれる。',
-          createdAt: new Date('2024-03-05'),
-          updatedAt: new Date('2024-08-22'),
-        },
-      ];
 
       // API応答のシミュレーション（1.5秒の待機）
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // 顧客データの設定
-      setCustomers(mockCustomers);
+      // ファイルスコープのモックデータをコピーして設定
+      // （参照ではなくコピーすることで、予期しない変更を防ぐ）
+      const customersCopy = [...mockCustomersData];
+      setCustomers(customersCopy);
 
       // ローディング終了
       setLoading({ isLoading: false, error: null });
 
       // 成功メッセージの表示 (50代向け：件数を明示)
       showSnackbar(
-        `${mockCustomers.length}件の顧客情報を読み込みました`,
+        `${mockCustomersData.length}件の顧客情報を読み込みました`,
         'success',
         4000
       );
@@ -460,6 +485,9 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
           createdAt: new Date(),
           updatedAt: new Date(),
         };
+
+        // 【修正】ファイルスコープのモックデータに追加（永続化）
+        mockCustomersData.push(newCustomer);
 
         // 顧客一覧に追加
         setCustomers((prev) => [...prev, newCustomer]);
@@ -536,6 +564,14 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
           updatedAt: new Date(),
         };
 
+        // 【修正】ファイルスコープのモックデータを更新（永続化）
+        const mockIndex = mockCustomersData.findIndex(
+          (c) => c.customerId === customerId
+        );
+        if (mockIndex !== -1) {
+          mockCustomersData[mockIndex] = updatedCustomer;
+        }
+
         // customers 配列の更新
         setCustomers((prev) =>
           prev.map((customer) =>
@@ -604,6 +640,17 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
 
         // 【現段階】モックAPI呼び出し
         await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // 【修正】ファイルスコープのモックデータから削除（永続化）
+        const mockIndex = mockCustomersData.findIndex(
+          (c) => c.customerId === customerId
+        );
+        if (mockIndex !== -1) {
+          mockCustomersData.splice(mockIndex, 1);
+          console.log(
+            `💾 モックデータから削除: ${existingCustomer.companyName} (残り${mockCustomersData.length}件)`
+          );
+        }
 
         // customers 配列から削除
         setCustomers((prev) =>
