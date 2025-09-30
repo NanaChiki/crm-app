@@ -61,6 +61,7 @@ import { Button } from '../components/ui/Button';
 // Custom Hooks
 import { useApp } from '../contexts/AppContext';
 import { useCustomer } from '../contexts/CustomerContext';
+import { useServiceRecords } from '../hooks/useServiceRecords';
 
 // Types
 import { Customer } from '../../types';
@@ -193,6 +194,25 @@ export const CustomerDetailPage: React.FC = () => {
     );
   }, [customerId, customers]);
 
+  // ================================
+  // サービス履歴データ取得（タブ間で共有）
+  // ================================
+
+  /**
+   * サービス履歴データの一元管理
+   *
+   * 【修正理由】ServiceRecordListとMaintenancePredictionで
+   * 別々のuseServiceRecordsインスタンスを使用すると、
+   * 片方でデータを更新しても他方が自動更新されない問題を解決。
+   *
+   * CustomerDetailPageで1つのインスタンスを管理し、
+   * 両コンポーネントにpropsとして渡すことでデータを同期。
+   */
+  const serviceRecordsHook = useServiceRecords({
+    customerId: currentCustomer?.customerId,
+    autoLoad: true,
+  });
+
   /**
    * ブレッドクラムデータ
    */
@@ -252,7 +272,7 @@ export const CustomerDetailPage: React.FC = () => {
         if (customerLoading || customers.length === 0) {
           console.log('⏳ 顧客データ読み込み待機中...');
           setPageState((prev) => ({ ...prev, loading: true, error: null }));
-          return;
+          // return;
         }
 
         // 顧客データ存在確認
@@ -452,6 +472,9 @@ export const CustomerDetailPage: React.FC = () => {
   );
   /**
    * タブコンテンツレンダリング
+   *
+   * 【修正】serviceRecordsHookを両コンポーネントに渡すことで
+   * データの同期を実現
    */
   const renderTabContent = () => {
     if (!currentCustomer) {
@@ -468,11 +491,19 @@ export const CustomerDetailPage: React.FC = () => {
         );
 
       case 'history':
-        return <ServiceRecordList customerId={currentCustomer.customerId} />;
+        return (
+          <ServiceRecordList
+            customerId={currentCustomer.customerId}
+            serviceRecordsHook={serviceRecordsHook}
+          />
+        );
 
       case 'maintenance':
         return (
-          <MaintenancePrediction customerId={currentCustomer.customerId} />
+          <MaintenancePrediction
+            customerId={currentCustomer.customerId}
+            serviceRecordsHook={serviceRecordsHook}
+          />
         );
 
       default:

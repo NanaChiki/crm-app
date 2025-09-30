@@ -74,6 +74,8 @@ import {
 interface ServiceRecordListProps {
   /** 表示対象の顧客ID */
   customerId: number;
+  /** サービス履歴Hook（親から渡される、データ同期用） */
+  serviceRecordsHook?: ReturnType<typeof useServiceRecords>;
 }
 
 interface ServiceFormData {
@@ -253,6 +255,7 @@ const getMonthName = (month: number): string => {
 // ================================
 export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
   customerId,
+  serviceRecordsHook: providedHook,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -288,16 +291,27 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
   // ================================
   // Context API連携
   // ================================
+
+  /**
+   * サービス履歴Hook
+   *
+   * 【修正】親から渡されたHookがあればそれを使用し、
+   * なければ自分でuseServiceRecordsを呼び出す。
+   * これにより、CustomerDetailPageでの一元管理と、
+   * 単独使用（将来的に）の両方に対応。
+   */
+  const localHook = useServiceRecords({
+    customerId,
+    autoLoad: !providedHook, // 親から渡されていない場合のみ自動読み込み
+  });
+
   const {
     serviceRecords,
     createServiceRecord,
     updateServiceRecord,
     deleteServiceRecord,
     loading,
-  } = useServiceRecords({
-    customerId,
-    autoLoad: true,
-  });
+  } = providedHook || localHook;
 
   const { showSnackbar } = useApp();
 

@@ -60,6 +60,8 @@ import { ServiceRecordWithCustomer } from '../../../types';
 interface MaintenancePredictionProps {
   // 顧客対象ID
   customerId: number;
+  /** サービス履歴Hook（親から渡される、データ同期用） */
+  serviceRecordsHook?: ReturnType<typeof useServiceRecords>;
 }
 
 //緊急度レベル
@@ -236,6 +238,7 @@ const formatDateForDisplay = (date: Date): string => {
 
 export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
   customerId,
+  serviceRecordsHook: providedHook,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -243,10 +246,21 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
   // ================================
   // データ取得
   // ================================
-  const { serviceRecords, loading, hasRecords } = useServiceRecords({
+
+  /**
+   * サービス履歴Hook
+   *
+   * 【修正】親から渡されたHookがあればそれを使用し、
+   * なければ自分でuseServiceRecordsを呼び出す。
+   * これにより、ServiceRecordListでデータ更新があった際も
+   * MaintenancePredictionが自動的に最新データで再レンダリングされる。
+   */
+  const localHook = useServiceRecords({
     customerId,
-    autoLoad: true,
+    autoLoad: !providedHook, // 親から渡されていない場合のみ自動読み込み
   });
+
+  const { serviceRecords, loading, hasRecords } = providedHook || localHook;
 
   // ================================
   // 計算値・メモ化データ
@@ -419,9 +433,12 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
 
     return (
       <Card key={prediction.serviceType} cardsize="medium">
-        <Box sx={{ p: responsiveSettings.cardPadding }}>
+        <Box
+          sx={{
+            p: responsiveSettings.cardPadding,
+          }}>
           {/* ヘッダー */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1, mb: 2 }}>
             <Typography sx={{ fontSize: '24px' }}>{prediction.icon}</Typography>
             <Typography
               variant="h6"
