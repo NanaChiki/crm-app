@@ -19,8 +19,9 @@ import React from 'react';
 import {
   Link as RouterLink,
   useLocation,
+  useNavigate,
   type LinkProps,
-} from 'react-router-dom'; // ← LinkPropsを追加
+} from 'react-router-dom'; // ← useNavigateを追加
 
 // AppBar styled for those in their 50s
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -56,8 +57,8 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
  * 3. shouldForwardProp でカスタムpropsを適切に処理
  */
 
-// React Router Link の主要プロパティを抽出
-type RouterLinkProps = Pick<LinkProps, 'to' | 'replace' | 'state'>;
+// React Router Link の主要プロパティを抽出（オプショナルに変更）
+type RouterLinkProps = Partial<Pick<LinkProps, 'to' | 'replace' | 'state'>>;
 
 // NavButton用の拡張型定義
 interface NavButtonProps
@@ -183,6 +184,19 @@ export function Header() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const location = useLocation();
+  const navigate = useNavigate();
+
+  /**
+   * ナビゲーションハンドラー
+   *
+   * 【修正理由】styled-componentsとReact Router Linkの組み合わせで
+   * ナビゲーションが動作しない問題を解決するため、
+   * useNavigate()フックを使った明示的なナビゲーションに変更
+   */
+  const handleNavigate = (path: string) => {
+    console.log(`🔗 Header ナビゲーション: ${path}`);
+    navigate(path);
+  };
 
   return (
     <StyledAppBar position="static" color="primary" elevation={3}>
@@ -227,12 +241,11 @@ export function Header() {
             return (
               <NavButton
                 key={item.path}
-                component={RouterLink}
-                to={item.path}
                 startIcon={item.icon}
                 isActive={isActive}
                 aria-label={item.ariaLabel}
-                aria-current={isActive ? 'page' : undefined}>
+                aria-current={isActive ? 'page' : undefined}
+                onClick={() => handleNavigate(item.path)}>
                 <span className="nav-text">{item.label}</span>
               </NavButton>
             );
@@ -240,12 +253,11 @@ export function Header() {
 
           {/* Demo Page Link (Development Only)*/}
           <NavButton
-            component={RouterLink}
-            to="/ui-demo"
             startIcon={<DashboardIcon />}
             isActive={location.pathname === '/ui-demo'}
             aria-label="UIデモページへ移動"
             aria-current={location.pathname === '/ui-demo' ? 'page' : undefined}
+            onClick={() => handleNavigate('/ui-demo')}
             sx={{
               // Remove on production
               opacity: 0.8,
