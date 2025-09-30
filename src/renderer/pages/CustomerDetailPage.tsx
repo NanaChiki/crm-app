@@ -238,8 +238,6 @@ export const CustomerDetailPage: React.FC = () => {
   useEffect(() => {
     const initializeCustomer = async () => {
       try {
-        setPageState((prev) => ({ ...prev, loading: true, error: null }));
-
         // 顧客ID検証
         if (!customerId) {
           throw new Error(MESSAGES.error.invalidId);
@@ -250,8 +248,10 @@ export const CustomerDetailPage: React.FC = () => {
           throw new Error(MESSAGES.error.invalidId);
         }
 
-        // 顧客データ読み込み待機
-        if (customerLoading) {
+        // 顧客データが読み込まれるまで待機
+        if (customerLoading || customers.length === 0) {
+          console.log('⏳ 顧客データ読み込み待機中...');
+          setPageState((prev) => ({ ...prev, loading: true, error: null }));
           return;
         }
 
@@ -279,11 +279,13 @@ export const CustomerDetailPage: React.FC = () => {
           error: errorMessage,
         }));
 
+        // handleError の引数を修正（AppError型に準拠）
         handleError({
           message: errorMessage,
-          type: 'SERVER_ERROR',
-          technical: error instanceof Error ? error.stack : String(error),
+          type: 'NOT_FOUND',
         });
+
+        console.error('❌ 顧客詳細ページエラー:', error);
       }
     };
 
