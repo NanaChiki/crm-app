@@ -292,11 +292,10 @@ export const CustomerDetailPage: React.FC = () => {
     initializeCustomer();
   }, [
     customerId,
-    customers,
-    currentCustomer,
+    customers.length,
     customerLoading,
-    selectCustomer,
-    handleError,
+    // Note: currentCustomer, selectCustomer, handleErrorは依存配列から除外
+    // 理由: 無限ループ防止。customersとcustomerIdの変更のみを監視
   ]);
 
   /**

@@ -15,6 +15,7 @@ import {
   type ButtonProps,
   type TypographyProps,
 } from '@mui/material';
+import React from 'react';
 import {
   Link as RouterLink,
   useLocation,
@@ -59,8 +60,11 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
 type RouterLinkProps = Pick<LinkProps, 'to' | 'replace' | 'state'>;
 
 // NavButton用の拡張型定義
-interface NavButtonProps extends Omit<ButtonProps, 'href'>, RouterLinkProps {
+interface NavButtonProps
+  extends Omit<ButtonProps, 'href' | 'component'>,
+    RouterLinkProps {
   isActive?: boolean;
+  component?: React.ElementType; // componentプロパティを明示的に追加
 }
 
 const NavButton = styled(Button, {
@@ -68,7 +72,8 @@ const NavButton = styled(Button, {
     prop !== 'isActive' && // カスタムprop
     prop !== 'to' && // Router prop
     prop !== 'replace' && // Router prop
-    prop !== 'state', // Router prop
+    prop !== 'state' && // Router prop
+    prop !== 'component', // React Router component prop
 })<NavButtonProps>(({ theme, isActive }) => ({
   // Basic styles
   minHeight: '48px',
