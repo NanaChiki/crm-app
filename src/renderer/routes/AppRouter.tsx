@@ -25,8 +25,9 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-// Pages - Phase 5A, 5B完成
+// Pages - Phase 5A, 5B, 5C完成
 import CustomerDetailPage from '../pages/CustomerDetailPage';
+import CustomerFormPage from '../pages/CustomerFormPage';
 import CustomerListPage from '../pages/CustomerListPage';
 import Dashboard from '../pages/Dashboard';
 import NotFoundPage from '../pages/NotFoundPage';
@@ -109,12 +110,9 @@ export const AppRouter: React.FC = () => {
       {/* 顧客一覧ページ - Phase 1 / Step 5A完成 */}
       <Route path="/customers" element={<CustomerListPage />} />
 
-      {/* 新規顧客登録ページ - Phase 1 / Step 5C未実装 */}
+      {/* 新規顧客登録ページ - Phase 1 / Step 5C完成 ✅ */}
       {/* 注意: /customers/:customerIdより先に定義する必要がある */}
-      <Route
-        path="/customers/new"
-        element={<ComingSoonPage pageName="新規顧客登録" />}
-      />
+      <Route path="/customers/new" element={<CustomerFormPage />} />
 
       {/* 顧客詳細ページ - Phase 1 / Step 5B完成 */}
       {/* :customerIdパラメータで特定の顧客を表示 */}
