@@ -31,7 +31,7 @@ import CustomerFormPage from '../pages/CustomerFormPage';
 import CustomerListPage from '../pages/CustomerListPage';
 import Dashboard from '../pages/Dashboard';
 import NotFoundPage from '../pages/NotFoundPage';
-
+import ReportsPage from '../pages/ReportsPage';
 // ================================
 // 未実装ページ用プレースホルダー
 // ================================
@@ -132,11 +132,11 @@ export const AppRouter: React.FC = () => {
           集計・レポート
           ================================ */}
 
-      {/* 集計レポートページ - Phase 1 / Step 5E未実装 */}
-      <Route
-        path="/reports"
-        element={<ComingSoonPage pageName="集計レポート" />}
-      />
+      {/* ================================ 
+          集計・レポート 
+          ================================ */}
+      {/* 集計レポートページ - Phase 5E完成 */}
+      <Route path="/reports" element={<ReportsPage />} />
 
       {/* ================================
           エラーページ

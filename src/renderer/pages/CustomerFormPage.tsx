@@ -111,7 +111,7 @@ const MESSAGES = {
   },
 
   info: {
-    requiredFields: '※ 印の項目は必ず入力してください',
+    requiredFields: '※ 必須の項目は必ず入力してください',
     cancelConfirm: '入力内容が保存されていません。本当にキャンセルしますか？',
   },
 

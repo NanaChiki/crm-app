@@ -1,4 +1,5 @@
 import {
+  Assessment as AssessmentIcon,
   Dashboard as DashboardIcon,
   Home as HomeIcon,
   People as PeopleIcon,
@@ -165,6 +166,12 @@ const navigationItems = [
     label: '顧客管理',
     icon: <PeopleIcon />,
     ariaLabel: '顧客管理ページへ移動',
+  },
+  {
+    path: '/reports',
+    label: '集計レポート',
+    icon: <AssessmentIcon />,
+    ariaLabel: '集計レポートページへ移動',
   },
 ] as const;
 
