@@ -30,7 +30,7 @@
 import {
   ArrowBack as ArrowBackIcon,
   History as HistoryIcon,
-  Home as HomeIcon,
+  People as PeopleIcon,
   Person as PersonIcon,
   Schedule as ScheduleIcon,
   Warning as WarningIcon,
@@ -219,14 +219,14 @@ export const CustomerDetailPage: React.FC = () => {
    */
   const breadcrumbs = useMemo(() => {
     const baseBreadcrumbs = [
-      { label: 'ホーム', href: '/', icon: <HomeIcon fontSize="small" /> },
-      { label: '顧客一覧', href: '/customers' },
+      { label: '顧客管理', href: '/customers', icon: <PeopleIcon /> },
     ];
 
     if (currentCustomer) {
       baseBreadcrumbs.push({
         label: currentCustomer.companyName,
         href: '',
+        icon: <PersonIcon />,
       });
     }
 

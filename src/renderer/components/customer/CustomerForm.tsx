@@ -140,7 +140,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
   onUnsavedChanges,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // ================================
   // 状態管理
@@ -210,7 +210,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
   const responsiveSettings = useMemo(
     () => ({
       buttonSize: isMobile ? 'large' : 'medium',
-      fontSize: isMobile ? '18px' : '16px',
+      fontSize: isMobile ? '20px' : '22px',
       contentPadding: isMobile ? 2 : 3,
       cardSpacing: isMobile ? 2 : 3,
     }),
@@ -320,7 +320,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
             startIcon={<SaveIcon />}
             sx={{
               minHeight: '48px',
-              fontSize: isMobile ? '16px' : '18px',
+              fontSize: isMobile ? '16px' : '14px',
               fontWeight: 'bold',
               px: isMobile ? 2 : 2,
               flex: isMobile ? 1 : 'none',
@@ -333,7 +333,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
             disabled={isSubmitting}
             sx={{
               minHeight: '48px',
-              fontSize: isMobile ? '16px' : '18px',
+              fontSize: isMobile ? '16px' : '14px',
               fontWeight: 'bold',
               px: isMobile ? 2 : 2,
               flex: isMobile ? 1 : 'none',
@@ -349,7 +349,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
             startIcon={<EditIcon />}
             sx={{
               minHeight: '48px',
-              fontSize: isMobile ? '16px' : '18px',
+              fontSize: isMobile ? '16px' : '14px',
               fontWeight: 'bold',
               px: isMobile ? 2 : 2,
               flex: isMobile ? 1 : 'none',
@@ -365,7 +365,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
             startIcon={<DeleteIcon />}
             sx={{
               minHeight: '48px',
-              fontSize: isMobile ? '16px' : '18px',
+              fontSize: isMobile ? '16px' : '14px',
               fontWeight: 'bold',
               px: isMobile ? 2 : 2,
               flex: isMobile ? 1 : 'none',
@@ -439,10 +439,10 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
   const renderCustomerSummary = () => (
     <Box sx={{ mt: 4 }}>
       <Typography
-        variant="h6"
+        variant="h5"
         sx={{
           mb: 3,
-          fontSize: isMobile ? '20px' : '18px',
+          fontSize: responsiveSettings.fontSize,
           fontWeight: 'bold',
         }}>
         📊 顧客情報サマリー
@@ -461,6 +461,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              cursor: 'pointer',
             }}>
             <Box
               sx={{
@@ -516,6 +517,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              cursor: 'pointer',
             }}>
             <Box
               sx={{
@@ -571,6 +573,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              cursor: 'pointer',
             }}>
             <Box
               sx={{
@@ -626,6 +629,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              cursor: 'pointer',
             }}>
             <Box
               sx={{
@@ -723,7 +727,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
 
       {/* 顧客情報フォーム */}
       <Card>
-        <Grid container spacing={4}>
+        <Grid container spacing={4} sx={{ cursor: 'pointer', p: 2 }}>
           {/* 会社名 */}
           <Grid size={{ xs: 12, md: 6 }}>
             {renderField(
@@ -813,37 +817,20 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
         modalsize="small"
         sx={{
           '& .MuiDialog-paper': {
-            margin: isMobile ? '16px' : '32px',
-            maxWidth: isMobile ? 'calc(100vw - 32px)' : '400px',
-            width: isMobile ? 'calc(100vw - 32px)' : '400px',
-            maxHeight: isMobile ? 'calc(100vh - 64px)' : 'auto',
-            borderRadius: '12px',
+            maxHeight: isMobile ? '55vh' : 'auto',
           },
         }}>
-        <Box
-          sx={{
-            textAlign: 'center',
-            p: isMobile ? 3 : 2,
-          }}>
+        <Box sx={{ textAlign: 'center', p: 2 }}>
           <Typography
             variant="h6"
             sx={{
               mb: 2,
               color: theme.palette.error.main,
-              fontSize: isMobile ? '18px' : '16px',
               fontWeight: 'bold',
             }}>
             ⚠️ 重要な操作です
           </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              mb: 3,
-              whiteSpace: 'pre-line',
-              fontSize: isMobile ? '16px' : '14px',
-              lineHeight: 1.5,
-              fontWeight: 'bold',
-            }}>
+          <Typography variant="body1" sx={{ mb: 3 }}>
             {MESSAGES.confirm.delete}
           </Typography>
           <Stack
@@ -851,7 +838,6 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
             spacing={2}
             justifyContent="center"
             sx={{
-              alignItems: isMobile ? 'stretch' : 'center',
               gap: isMobile ? 2 : 0,
             }}>
             <Button
@@ -859,13 +845,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
               onClick={() =>
                 setEditState((prev) => ({ ...prev, showDeleteDialog: false }))
               }
-              sx={{
-                minHeight: '48px',
-                fontSize: isMobile ? '16px' : '14px',
-                fontWeight: 'bold',
-                px: isMobile ? 3 : 2,
-                order: isMobile ? 2 : 1,
-              }}>
+              sx={{ order: isMobile ? 2 : 1 }}>
               キャンセル
             </Button>
             <Button
@@ -873,14 +853,8 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
               color="error"
               onClick={handleDelete}
               startIcon={<DeleteIcon />}
-              sx={{
-                minHeight: '48px',
-                fontSize: isMobile ? '16px' : '14px',
-                fontWeight: 'bold',
-                px: isMobile ? 3 : 2,
-                order: isMobile ? 1 : 2,
-              }}>
-              削除
+              sx={{ order: isMobile ? 1 : 2 }}>
+              削除する
             </Button>
           </Stack>
         </Box>

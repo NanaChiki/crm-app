@@ -31,6 +31,8 @@
 
 import {
   Add as AddIcon,
+  List as ListIcon,
+  People as PeopleIcon,
   Refresh as RefreshIcon,
   Search as SearchIcon,
   Warning as WarningIcon,
@@ -461,8 +463,8 @@ export const CustomerListPage: React.FC = () => {
         title="顧客一覧"
         subtitle={`${paginationData.totalItems}件の顧客が登録されています`}
         breadcrumbs={[
-          { label: '顧客管理', path: '/customers' },
-          { label: '一覧' },
+          { label: '顧客管理', path: '/customers', icon: <PeopleIcon /> },
+          { label: '一覧', icon: <ListIcon /> },
         ]}
       />
 
