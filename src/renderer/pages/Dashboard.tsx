@@ -1,116 +1,3 @@
-// import { useNavigate } from 'react-router-dom';
-
-// import { useCustomer } from "@/contexts/CustomerContext";
-// import { useNavigate } from "react-router-dom";
-
-// import { Box, Container, Grid, Typography } from '@mui/material';
-// import { AppError } from '../../types';
-// import PageHeader from '../components/layout/PageHeader';
-// import { useApp } from '../contexts/AppContext';
-// import { useCustomer } from '../contexts/CustomerContext';
-
-// // Custom UIs
-// import { Button } from '../components/ui/Button';
-// import { Card } from '../components/ui/Card';
-
-// function Dashboard() {
-//   const { customers, loading, fetchCustomers } = useCustomer();
-//   const { showSnackbar, handleError } = useApp();
-//   const navigate = useNavigate();
-//   const handleRefresh = async () => {
-//     try {
-//       await fetchCustomers();
-//       showSnackbar('顧客一覧を更新しました(DASHBOARD)', 'success');
-//     } catch (error) {
-//       handleError(
-//         error as AppError,
-//         '顧客一覧を更新できませんでした(DASHBOARD)'
-//       );
-//     }
-//   };
-//   const handleTestError = () => {
-//     showSnackbar('テストエラーです(DASHBOARD)', 'error');
-//   };
-//   const handleTestInfo = () => {
-//     showSnackbar('テスト情報です(DASHBOARD)', 'info');
-//   };
-
-//   return (
-//     <Container maxWidth="lg" sx={{ py: 4 }}>
-//       {/**  PageHeader コンポーネントの使用例 */}
-//       <PageHeader
-//         title="Dashboard"
-//         actions={
-//           <Box sx={{ display: 'flex', gap: 2 }}>
-//             <Button variant="contained" onClick={handleRefresh}>
-//               データ更新
-//             </Button>
-//             <Button variant="outlined" onClick={handleTestError}>
-//               エラーテスト
-//             </Button>
-//             <Button variant="outlined" onClick={handleTestInfo}>
-//               通知テスト
-//             </Button>
-//           </Box>
-//         }
-//       />
-
-//       {loading.isLoading ? (
-//         <Typography variant="h6">読み込み中...</Typography>
-//       ) : (
-//         <>
-//           <Grid container spacing={3}>
-//             <Grid size={{ xs: 12, md: 6 }} sx={{ mb: 3 }}>
-//               <Card title="顧客一覧" subtitle="顧客一覧を表示します">
-//                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-//                   <Typography variant="h3" color="primary">
-//                     {customers.length} 件
-//                   </Typography>
-//                   <Typography
-//                     variant="body2"
-//                     color="text.secondary"
-//                     sx={{ mb: 1 }}>
-//                     登録済み顧客
-//                   </Typography>
-//                   <Button
-//                     size="small"
-//                     variant="contained"
-//                     fullWidth
-//                     loading={loading.isLoading}
-//                     onClick={() => navigate('/customers')}>
-//                     顧客一覧へ Customer List
-//                   </Button>
-//                 </Box>
-//               </Card>
-//             </Grid>
-
-//             <Grid size={{ xs: 12, md: 6 }}>
-//               <Card
-//                 title="最近の顧客"
-//                 subtitle="最近登録された顧客を表示します">
-//                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-//                   {customers.slice(0, 3).map((customer) => (
-//                     <Box key={customer.customerId}>
-//                       <Typography variant="body1">
-//                         {customer.companyName}
-//                       </Typography>
-//                       <Typography variant="body2" color="text.secondary">
-//                         {customer.contactPerson || '担当者未登録'}
-//                       </Typography>
-//                     </Box>
-//                   ))}
-//                 </Box>
-//               </Card>
-//             </Grid>
-//           </Grid>
-//         </>
-//       )}
-//     </Container>
-//   );
-// }
-
-// export default Dashboard;
-
 /**
  * Dashboard.tsx
  *
@@ -122,28 +9,41 @@
  * 【主な機能】
  * ✅ クイックアクション（新規登録、顧客一覧、レポート）
  * ✅ ビジネスサマリー4枚（総顧客数、今月サービス件数、今月売上、要対応顧客数）
- * ✅ 最近のサービス履歴（5件）
- * ✅ メンテナンス推奨顧客（緊急度順）
- * ✅ 最近の顧客（既存機能維持）
+ * ✅ タブ式コンテンツ（最近のサービス、メンテナンス推奨、最近の顧客）
  *
  * 【50代配慮】
  * - 大きな数値表示で事業状況を一目で把握
+ * - タブ式で縦長を解消、一覧性向上
  * - 色分けで緊急度を視覚化
  * - アイコン付きで直感的
  * - クリック可能な要素を明確に
  */
 
-import { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Box, Chip, Container, Grid, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Chip,
+  Container,
+  Grid,
+  Tab,
+  Tabs,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 
 // Icons
 import {
   Add as AddIcon,
   Assessment as AssessmentIcon,
   Build as BuildIcon,
+  History as HistoryIcon,
+  Notifications as NotificationsIcon,
   People as PeopleIcon,
+  PersonAdd as PersonAddIcon,
   TrendingUp as TrendingUpIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
@@ -161,20 +61,31 @@ import { useServiceRecords } from '../hooks/useServiceRecords';
 import { Customer } from '../../types';
 
 // ================================
+// 型定義
+// ================================
+type TabValue = 'services' | 'maintenance' | 'customers';
+
+// ================================
 // メインコンポーネント
 // ================================
 function Dashboard() {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  // ================================
+  // 状態管理
+  // ================================
+  const [currentTab, setCurrentTab] = useState<TabValue>('services');
 
   // ================================
   // データ取得
   // ================================
 
   // 顧客データ
-  const { customers, loading } = useCustomer();
+  const { customers, loading /*error*/ } = useCustomer();
 
   // 全サービス履歴を取得
-  const { serviceRecords } = useServiceRecords({
+  const { serviceRecords, error: serviceError } = useServiceRecords({
     autoLoad: true,
   });
 
@@ -224,8 +135,9 @@ function Dashboard() {
     serviceRecords.forEach((record) => {
       const existing = customerLastService.get(record.customerId);
       const serviceDate = new Date(record.serviceDate);
+      console.log('from Dashboard', serviceDate);
 
-      if (!existing || serviceDate > existing.lastServiceDate) {
+      if (!existing || serviceDate >= existing.lastServiceDate) {
         customerLastService.set(record.customerId, {
           customerId: record.customerId,
           lastServiceDate: serviceDate,
@@ -271,6 +183,280 @@ function Dashboard() {
     return maintenanceAlerts.filter((a) => a.urgency === 'high').length;
   }, [maintenanceAlerts]);
 
+  /**
+   * 最近の顧客（登録日順）
+   */
+  const recentCustomers = useMemo(() => {
+    return customers
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+      .slice(0, 10);
+  }, [customers]);
+
+  /**
+   * 最近のサービス履歴（日付降順）
+   */
+  const recentServices = useMemo(() => {
+    return serviceRecords
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.serviceDate).getTime() - new Date(a.serviceDate).getTime()
+      )
+      .slice(0, 10);
+  }, [serviceRecords]);
+
+  // ================================
+  // イベントハンドラー
+  // ================================
+
+  /**
+   * タブ切り替え
+   */
+  const handleTabChange = (event: React.SyntheticEvent, newValue: TabValue) => {
+    setCurrentTab(newValue);
+  };
+
+  // ================================
+  // サブコンポーネント: タブコンテンツ
+  // ================================
+
+  /**
+   * 最近のサービス履歴タブ
+   */
+  const renderServicesTab = () => (
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
+      {recentServices.length > 0 ? (
+        <>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {recentServices.map((record) => {
+              const customer = customers.find(
+                (c) => c.customerId === record.customerId
+              );
+              return (
+                <Box
+                  key={record.recordId}
+                  sx={{
+                    p: 2,
+                    border: 1,
+                    borderColor: 'divider',
+                    borderRadius: 1,
+                    '&:hover': {
+                      bgcolor: 'action.hover',
+                      cursor: 'pointer',
+                    },
+                  }}
+                  onClick={() =>
+                    navigate(`/customers/${record.customerId}#history`)
+                  }>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 'bold',
+                      mb: 1,
+                      fontSize: { xs: 18, md: 20 },
+                    }}>
+                    {customer?.companyName || '不明'}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      fontSize: { xs: 16, md: 18 },
+                      fontWeight: 'bold',
+                      mb: 0.5,
+                    }}>
+                    {record.serviceType || 'サービス'} -{' '}
+                    {record.amount
+                      ? `￥${record.amount.toLocaleString()}`
+                      : '金額未設定'}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: 14, md: 16 } }}>
+                    {new Date(record.serviceDate).toLocaleDateString('ja-JP')}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/customers')}
+              sx={{
+                mt: 3,
+                fontSize: { xs: 16, md: 18 },
+                minHeight: 48,
+              }}>
+              全てのサービス履歴を見る
+            </Button>
+          </Box>
+        </>
+      ) : (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontSize: { xs: 16, md: 18 }, textAlign: 'center', py: 8 }}>
+          サービス履歴がありません
+        </Typography>
+      )}
+    </Box>
+  );
+
+  /**
+   * メンテナンス推奨顧客タブ
+   */
+  const renderMaintenanceTab = () => (
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
+      {maintenanceAlerts.length > 0 ? (
+        <>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {maintenanceAlerts.map((alert) => (
+              <Box
+                key={alert.customer.customerId}
+                sx={{
+                  p: 2,
+                  border: 2,
+                  borderColor:
+                    alert.urgency === 'high' ? 'error.main' : 'warning.main',
+                  borderRadius: 1,
+                  bgcolor:
+                    alert.urgency === 'high'
+                      ? 'error.lighter'
+                      : 'warning.lighter',
+                  '&:hover': {
+                    cursor: 'pointer',
+                    opacity: 0.9,
+                  },
+                }}
+                onClick={() =>
+                  navigate(
+                    `/customers/${alert.customer.customerId}#maintenance`
+                  )
+                }>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Chip
+                    label={
+                      alert.urgency === 'high' ? '🔴 要対応' : '🟡 推奨時期'
+                    }
+                    color={alert.urgency === 'high' ? 'error' : 'warning'}
+                    sx={{ fontWeight: 'bold', fontSize: { xs: 14, md: 16 } }}
+                  />
+                </Box>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    fontWeight: 'bold',
+                    mb: 1,
+                    fontSize: { xs: 18, md: 20 },
+                  }}>
+                  {alert.customer.companyName || '不明'}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: 16, md: 18 } }}>
+                  {alert.lastServiceType || 'サービス'}から{alert.yearsSince}
+                  年経過
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/customers')}
+              sx={{ mt: 3, fontSize: { xs: 16, md: 18 }, minHeight: 48 }}>
+              全ての顧客を見る
+            </Button>
+          </Box>
+        </>
+      ) : (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontSize: { xs: 16, md: 18 }, textAlign: 'center', py: 8 }}>
+          メンテナンス推奨顧客がありません
+        </Typography>
+      )}
+    </Box>
+  );
+
+  /**
+   * 最近の顧客タブ
+   */
+  const renderCustomersTab = () => (
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
+      {recentCustomers.length > 0 ? (
+        <>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {recentCustomers.map((customer) => (
+              <Box
+                key={customer.customerId}
+                sx={{
+                  p: 2,
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                    cursor: 'pointer',
+                  },
+                }}
+                onClick={() => navigate(`/customers/${customer.customerId}`)}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    fontWeight: 'bold',
+                    mb: 1,
+                    fontSize: { xs: 18, md: 20 },
+                  }}>
+                  {customer.companyName || '不明'}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: 16, md: 18 }, mb: 0.5 }}>
+                  {customer.contactPerson || '担当者未登録'}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: 14, md: 16 } }}>
+                  登録日:{' '}
+                  {new Date(customer.createdAt).toLocaleDateString('ja-JP')}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/customers')}
+              sx={{ mt: 3, fontSize: { xs: 16, md: 18 }, minHeight: 48 }}>
+              顧客一覧へ
+            </Button>
+          </Box>
+        </>
+      ) : (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontSize: { xs: 16, md: 18 }, textAlign: 'center', py: 8 }}>
+          登録済みの顧客がありません
+        </Typography>
+      )}
+    </Box>
+  );
+
   // ================================
   // レンダリング
   // ================================
@@ -281,6 +467,14 @@ function Dashboard() {
         title="ダッシュボード"
         subtitle="事業の現状を一目で確認できます"
       />
+
+      {/* エラー表示 */}
+      {/*{(error || serviceError) && (*/}
+      {serviceError && (
+        <Alert severity="error" sx={{ mb: 3, fontSize: 16 }}>
+          データの読み込みに失敗しました。ページを再読み込みしてください。
+        </Alert>
+      )}
 
       {loading.isLoading ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>
@@ -294,19 +488,19 @@ function Dashboard() {
           <Box sx={{ mb: 6 }}>
             <Typography
               variant="h6"
-              sx={{ mb: 2, fontWeight: 'bold', fontSize: 20 }}>
+              sx={{ mb: 2, fontWeight: 'bold', fontSize: { xs: 20, md: 24 } }}>
               ⚡ よく使う機能
             </Typography>
             <Grid container spacing={2}>
-              <Grid size={{ xs: 9, md: 4 }}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Button
                   variant="contained"
                   fullWidth
                   size="large"
-                  startIcon={<AddIcon />}
+                  startIcon={<AddIcon fontSize="large" />}
                   onClick={() => navigate('/customers/new')}
                   sx={{
-                    minHeight: 56,
+                    minHeight: { xs: 48, md: 56 },
                     fontSize: 16,
                     fontWeight: 'bold',
                   }}>
@@ -314,15 +508,15 @@ function Dashboard() {
                 </Button>
               </Grid>
 
-              <Grid size={{ xs: 9, md: 4 }}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Button
                   variant="contained"
                   fullWidth
                   size="large"
-                  startIcon={<PeopleIcon />}
+                  startIcon={<PeopleIcon fontSize="large" />}
                   onClick={() => navigate('/customers')}
                   sx={{
-                    minHeight: 56,
+                    minHeight: { xs: 48, md: 56 },
                     fontSize: 16,
                     fontWeight: 'bold',
                   }}>
@@ -330,15 +524,15 @@ function Dashboard() {
                 </Button>
               </Grid>
 
-              <Grid size={{ xs: 9, md: 4 }}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Button
                   variant="contained"
                   fullWidth
                   size="large"
-                  startIcon={<AssessmentIcon />}
+                  startIcon={<AssessmentIcon fontSize="large" />}
                   onClick={() => navigate('/reports')}
                   sx={{
-                    minHeight: 56,
+                    minHeight: { xs: 48, md: 56 },
                     fontSize: 16,
                     fontWeight: 'bold',
                   }}>
@@ -347,12 +541,11 @@ function Dashboard() {
               </Grid>
             </Grid>
           </Box>
-
           {/* 📊 ビジネスサマリー */}
           <Box sx={{ mb: 6 }}>
             <Typography
               variant="h6"
-              sx={{ mb: 2, fontWeight: 'bold', fontSize: 20 }}>
+              sx={{ mb: 2, fontWeight: 'bold', fontSize: { xs: 20, md: 24 } }}>
               📊 今月の事業サマリー
             </Typography>
             <Grid container spacing={3}>
@@ -371,7 +564,11 @@ function Dashboard() {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ mb: 1, fontSize: 22, fontWeight: 'bold' }}>
+                      sx={{
+                        mb: 1,
+                        fontSize: { xs: 20, md: 22 },
+                        fontWeight: 'bold',
+                      }}>
                       総顧客数
                     </Typography>
                     <Typography
@@ -402,7 +599,11 @@ function Dashboard() {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ mb: 1, fontSize: 22, fontWeight: 'bold' }}>
+                      sx={{
+                        mb: 1,
+                        fontSize: { xs: 20, md: 22 },
+                        fontWeight: 'bold',
+                      }}>
                       今月のサービス件数
                     </Typography>
                     <Typography
@@ -430,7 +631,11 @@ function Dashboard() {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ mb: 1, fontSize: 22, fontWeight: 'bold' }}>
+                      sx={{
+                        mb: 1,
+                        fontSize: { xs: 20, md: 22 },
+                        fontWeight: 'bold',
+                      }}>
                       今月の売上
                     </Typography>
                     <Typography
@@ -440,7 +645,7 @@ function Dashboard() {
                         color: 'warning.main',
                         fontSize: { xs: 36, md: 42 },
                       }}>
-                      ¥{(thisMonthRevenue / 10000).toFixed(0)}万
+                      ¥{thisMonthRevenue.toLocaleString()}
                     </Typography>
                   </Box>
                 </Card>
@@ -458,7 +663,11 @@ function Dashboard() {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ mb: 1, fontSize: 22, fontWeight: 'bold' }}>
+                      sx={{
+                        mb: 1,
+                        fontSize: { xs: 20, md: 22 },
+                        fontWeight: 'bold',
+                      }}>
                       要対応顧客数
                     </Typography>
                     <Typography
@@ -476,307 +685,96 @@ function Dashboard() {
             </Grid>
           </Box>
 
-          {/* 2カラムレイアウト */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            {/* 左カラム: 最近のサービス履歴 */}
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Card sx={{ width: '100%' }}>
-                <Box sx={{ p: 3 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{ mb: 2, fontWeight: 'bold', fontSize: 22 }}>
-                    🔧 最近のサービス履歴
-                  </Typography>
-                  {serviceRecords.length > 0 ? (
-                    <>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 2,
-                        }}>
-                        {serviceRecords
-                          .sort(
-                            (a, b) =>
-                              new Date(b.serviceDate).getTime() -
-                              new Date(a.serviceDate).getTime()
-                          )
-                          .slice(0, 5)
-                          .map((record) => {
-                            const customer = customers.find(
-                              (c) => c.customerId === record.customerId
-                            );
-                            return (
-                              <Box
-                                key={record.recordId}
-                                sx={{
-                                  p: 2,
-                                  border: 1,
-                                  borderColor: 'divider',
-                                  borderRadius: 1,
-                                  '&:hover': {
-                                    bgcolor: 'action.hover',
-                                    cursor: 'pointer',
-                                  },
-                                }}
-                                onClick={() =>
-                                  navigate(
-                                    `/customers/${record.customerId}#history`
-                                  )
-                                }>
-                                <Typography
-                                  variant="subtitle1"
-                                  sx={{
-                                    fontWeight: 'bold',
-                                    mb: 1,
-                                    fontSize: 20,
-                                  }}>
-                                  {customer?.companyName || '不明'}
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                  sx={{ fontSize: 18 }}>
-                                  {record.serviceType || 'サービス'} -{' '}
-                                  {record.amount
-                                    ? `¥${Number(
-                                        record.amount
-                                      ).toLocaleString()}`
-                                    : '金額未設定'}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  sx={{ fontSize: 16 }}>
-                                  {new Date(
-                                    record.serviceDate
-                                  ).toLocaleDateString('ja-JP')}
-                                </Typography>
-                              </Box>
-                            );
-                          })}
-                      </Box>
-
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        onClick={() => navigate('/customers')}
-                        sx={{ mt: 2, fontSize: 16 }}>
-                        全てのサービス履歴を見る
-                      </Button>
-                    </>
-                  ) : (
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: 16, textAlign: 'center', py: 4 }}>
-                      サービス履歴がありません
-                    </Typography>
-                  )}
-                </Box>
-              </Card>
-            </Grid>
-
-            {/* 右カラム: メンテナンス推奨顧客 */}
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <Card sx={{ width: '100%' }}>
-                <Box sx={{ p: 3 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{ mb: 2, fontWeight: 'bold', fontSize: 22 }}>
-                    🔔 メンテナンス推奨顧客
-                  </Typography>
-
-                  {maintenanceAlerts.length > 0 ? (
-                    <>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 2,
-                        }}>
-                        {maintenanceAlerts.map((alert) => (
-                          <Box
-                            key={alert.customer.customerId}
-                            sx={{
-                              p: 2,
-                              border: 2,
-                              borderColor:
-                                alert.urgency === 'high'
-                                  ? 'error.main'
-                                  : 'warning.main',
-                              borderRadius: 1,
-                              bgcolor:
-                                alert.urgency === 'high'
-                                  ? 'error.lighter'
-                                  : 'warning.lighter',
-                            }}>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 1,
-                                mb: 1,
-                              }}>
-                              <Chip
-                                label={
-                                  alert.urgency === 'high'
-                                    ? '🔴 要対応'
-                                    : '🟡 推奨時期'
-                                }
-                                color={
-                                  alert.urgency === 'high' ? 'error' : 'warning'
-                                }
-                                size="small"
-                                sx={{ fontWeight: 'bold', fontSize: 16 }}
-                              />
-                            </Box>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ fontSize: 18 }}>
-                              {alert.lastServiceType || 'サービス'}から
-                              {alert.yearsSince}年経過
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                              <Button
-                                size="small"
-                                variant="contained"
-                                onClick={() =>
-                                  navigate(
-                                    `/customers/${alert.customer.customerId}`
-                                  )
-                                }
-                                sx={{ fontSize: 14 }}>
-                                詳細を見る
-                              </Button>
-                            </Box>
-                          </Box>
-                        ))}
-                      </Box>
-                    </>
-                  ) : (
-                    <Typography
-                      color="text.secondary"
-                      sx={{ textAlign: 'center', py: 4, fontSize: 16 }}>
-                      現在、メンテナンス推奨顧客はありません
-                    </Typography>
-                  )}
-                </Box>
-              </Card>
-            </Grid>
-          </Grid>
-
-          {/* 最近追加した顧客 - 既存実装を維持 */}
-          <Box sx={{ mb: 6 }}>
+          {/**  📋 タブ式コンテンツエリア*/}
+          <Box sx={{ mb: 4 }}>
             <Card>
-              <Box sx={{ p: 3 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ mb: 2, fontWeight: 'bold', fontSize: 22 }}>
-                  👥 最近の顧客
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 2, fontSize: 16 }}>
-                  最近登録された顧客を表示します
-                </Typography>
-
-                {customers.length > 0 ? (
-                  <>
+              {/* タブヘッダー */}
+              <Tabs
+                value={currentTab}
+                onChange={handleTabChange}
+                variant={isMobile ? 'fullWidth' : 'standard'}
+                centered={!isMobile}
+                sx={{
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  '& .MuiTab-root': {
+                    minHeight: { xs: 56, md: 64 },
+                    fontSize: { xs: 18, md: 20 },
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    padding: { xs: '12px 16px', md: '12px 24px' },
+                  },
+                }}>
+                <Tab
+                  value="services"
+                  label={
                     <Box
-                      sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      {customers
-                        .slice()
-                        .sort(
-                          (a, b) =>
-                            new Date(b.createdAt).getTime() -
-                            new Date(a.createdAt).getTime()
-                        )
-                        .slice(0, 5)
-                        .map((customer) => (
-                          <Box
-                            key={customer.customerId}
-                            sx={{
-                              p: 2,
-                              border: 1,
-                              borderColor: 'divider',
-                              borderRadius: 1,
-                              '&:hover': {
-                                bgcolor: 'action.hover',
-                                cursor: 'pointer',
-                              },
-                            }}
-                            onClick={() =>
-                              navigate(`/customers/${customer.customerId}`)
-                            }>
-                            <Typography
-                              variant="subtitle1"
-                              sx={{
-                                fontWeight: 'bold',
-                                fontSize: 20,
-                              }}>
-                              {customer.companyName || '不明'}
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ fontSize: 18 }}>
-                              {customer.contactPerson || '担当者未登録'}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ fontSize: 16 }}>
-                              登録日:{' '}
-                              {new Date(customer.createdAt).toLocaleDateString(
-                                'ja-JP'
-                              )}
-                            </Typography>
-                          </Box>
-                        ))}
+                      sx={{
+                        display: 'flex',
+                        gap: 1,
+                        alignItems: 'center',
+                      }}>
+                      <HistoryIcon />
+                      <Typography
+                        sx={{
+                          fontSize: { xs: 16, md: 18 },
+                          fontWeight: 'bold',
+                        }}>
+                        最近のサービス ({recentServices.length})
+                      </Typography>
                     </Box>
+                  }
+                />
+                <Tab
+                  value="maintenance"
+                  label={
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 1,
+                        alignItems: 'center',
+                      }}>
+                      <NotificationsIcon />
+                      <Typography
+                        sx={{
+                          fontSize: { xs: 16, md: 18 },
+                          fontWeight: 'bold',
+                        }}>
+                        メンテナンス推奨 ({maintenanceAlerts.length})
+                      </Typography>
+                    </Box>
+                  }
+                />
+                <Tab
+                  value="customers"
+                  label={
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 1,
+                        alignItems: 'center',
+                      }}>
+                      <PersonAddIcon />
+                      <Typography
+                        sx={{
+                          fontSize: { xs: 16, md: 18 },
+                          fontWeight: 'bold',
+                        }}>
+                        最近の顧客 ({recentCustomers.length})
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </Tabs>
 
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      onClick={() => navigate('/customers')}
-                      sx={{ mt: 2, fontSize: 16 }}>
-                      顧客一覧へ
-                    </Button>
-                  </>
-                ) : (
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: 16, textAlign: 'center', py: 4 }}>
-                    登録済み顧客がありません
-                  </Typography>
-                )}
+              {/* タブコンテンツ */}
+              <Box>
+                {currentTab === 'services' && renderServicesTab()}
+                {currentTab === 'maintenance' && renderMaintenanceTab()}
+                {currentTab === 'customers' && renderCustomersTab()}
               </Box>
             </Card>
           </Box>
-
-          {/* 
-  【今後実装予定 - Phase 2】
-  今週のリマインダーカード
-  
-  <Box sx={{ mb: 4 }}>
-    <Card>
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-          📅 今週のリマインダー
-        </Typography>
-        
-        Phase 2でOutLook連携リマインダー機能を実装予定:
-        - 今週送信予定のリマインダー表示
-        - リマインダーの編集・削除
-        - OutLook予定表との同期状態表示
-      </Box>
-    </Card>
-  </Box>
-*/}
         </>
       )}
     </Container>
