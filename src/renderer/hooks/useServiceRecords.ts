@@ -376,104 +376,151 @@ const mockServiceRecordsData: ServiceRecordWithCustomer[] = [
   {
     recordId: 1,
     customerId: 1,
-    serviceDate: new Date('2024-12-15'),
-    serviceType: '外壁塗装',
-    serviceDescription: '南面外壁の塗装作業完了。使用塗料：シリコン系',
-    amount: 350000,
+    serviceDate: new Date('2012-03-10'),
+    serviceType: '水回りリフォーム',
+    serviceDescription: 'キッチン・浴室リフォーム',
+    amount: 850000,
     status: 'completed',
-    createdAt: new Date('2024-12-15'),
-    updatedAt: new Date('2024-12-15'),
+    createdAt: new Date('2012-03-10'),
+    updatedAt: new Date('2012-03-10'),
     customer: {
       customerId: 1,
-      companyName: '田中建設',
-      contactPerson: '田中太郎',
+      companyName: '佐藤リフォーム',
+      contactPerson: null,
     },
   },
   {
     recordId: 2,
     customerId: 2,
-    serviceDate: new Date('2024-12-10'),
-    serviceType: '屋根修理',
-    serviceDescription: '台風による瓦の破損修理。瓦10枚交換',
-    amount: 85000,
+    serviceDate: new Date('2013-06-15'),
+    serviceType: '外壁塗装',
+    serviceDescription: '全面外壁塗装工事',
+    amount: 450000,
     status: 'completed',
-    createdAt: new Date('2024-12-10'),
-    updatedAt: new Date('2024-12-10'),
+    createdAt: new Date('2013-06-15'),
+    updatedAt: new Date('2013-06-15'),
     customer: {
       customerId: 2,
-      companyName: '山田工務店',
-      contactPerson: '山田花子',
+      companyName: '田中建設',
+      contactPerson: '田中太郎',
     },
   },
   {
     recordId: 3,
-    customerId: 1,
-    serviceDate: new Date('2024-12-05'),
-    serviceType: '定期点検',
-    serviceDescription: '年次点検。外壁・屋根・配管の状態確認',
-    amount: null,
-    status: 'completed',
-    createdAt: new Date('2024-12-05'),
-    updatedAt: new Date('2024-12-05'),
-    customer: {
-      customerId: 1,
-      companyName: '田中建設',
-      contactPerson: '田中太郎',
-    },
-  },
-  {
-    recordId: 4,
     customerId: 3,
-    serviceDate: new Date('2024-11-28'),
-    serviceType: '配管工事',
-    serviceDescription: 'キッチン水道管の交換工事',
-    amount: 45000,
+    serviceDate: new Date('2015-08-20'),
+    serviceType: '屋根修理',
+    serviceDescription: '屋根全面補修',
+    amount: 380000,
     status: 'completed',
-    createdAt: new Date('2024-11-28'),
-    updatedAt: new Date('2024-11-28'),
+    createdAt: new Date('2015-08-20'),
+    updatedAt: new Date('2015-08-20'),
     customer: {
       customerId: 3,
-      companyName: '佐藤リフォーム',
-      contactPerson: null,
-    },
-  },
-  // 前年データ（前年比表示のため）
-  {
-    recordId: 5,
-    customerId: 1,
-    serviceDate: new Date('2023-11-20'),
-    serviceType: '外壁塗装',
-    serviceDescription: '北面外壁の塗装作業',
-    amount: 280000,
-    status: 'completed',
-    createdAt: new Date('2023-11-20'),
-    updatedAt: new Date('2023-11-20'),
-    customer: {
-      customerId: 1,
-      companyName: '田中建設',
-      contactPerson: '田中太郎',
-    },
-  },
-  {
-    recordId: 6,
-    customerId: 2,
-    serviceDate: new Date('2023-10-15'),
-    serviceType: '屋根修理',
-    serviceDescription: '雨漏り修理',
-    amount: 120000,
-    status: 'completed',
-    createdAt: new Date('2023-10-15'),
-    updatedAt: new Date('2023-10-15'),
-    customer: {
-      customerId: 2,
       companyName: '山田工務店',
       contactPerson: '山田花子',
     },
   },
+  {
+    recordId: 4,
+    customerId: 2,
+    serviceDate: new Date('2018-12-01'),
+    serviceType: '屋根修理',
+    serviceDescription: '北面外壁の塗装作業',
+    amount: 280000,
+    status: 'completed',
+    createdAt: new Date('2018-12-01'),
+    updatedAt: new Date('2018-12-01'),
+    customer: {
+      customerId: 2,
+      companyName: '田中建設',
+      contactPerson: '田中太郎',
+    },
+  },
+  {
+    recordId: 5,
+    customerId: 1,
+    serviceDate: new Date('2019-1-10'),
+    serviceType: '配管工事',
+    serviceDescription: 'キッチン水道管の交換工事',
+    amount: 45000,
+    status: 'completed',
+    createdAt: new Date('2019-1-10'),
+    updatedAt: new Date('2019-1-10'),
+    customer: {
+      customerId: 1,
+      companyName: '佐藤リフォーム',
+      contactPerson: null,
+    },
+  },
+  {
+    recordId: 6,
+    customerId: 3,
+    serviceDate: new Date('2019-1-15'),
+    serviceType: '定期点検',
+    serviceDescription: '年次点検。外壁・屋根・配管の状態確認',
+    amount: 120000,
+    status: 'completed',
+    createdAt: new Date('2019-1-15'),
+    updatedAt: new Date('2019-1-15'),
+    customer: {
+      customerId: 3,
+      companyName: '山田工務店',
+      contactPerson: '山田花子',
+    },
+  },
+  // {
+  //   recordId: 8,
+  //   customerId: 2,
+  //   serviceDate: new Date('2024-12-05'),
+  //   serviceType: '定期点検',
+  //   serviceDescription: '年次点検。外壁・屋根・配管の状態確認',
+  //   amount: null,
+  //   status: 'completed',
+  //   createdAt: new Date('2024-12-05'),
+  //   updatedAt: new Date('2024-12-05'),
+  //   customer: {
+  //     customerId: 2,
+  //     companyName: '田中建設',
+  //     contactPerson: '田中太郎',
+  //   },
+  // },
+  // {
+  //   recordId: 9,
+  //   customerId: 3,
+  //   serviceDate: new Date('2024-12-10'),
+  //   serviceType: '屋根修理',
+  //   serviceDescription: '台風による瓦の破損修理。瓦10枚交換',
+  //   amount: 85000,
+  //   status: 'completed',
+  //   createdAt: new Date('2024-12-10'),
+  //   updatedAt: new Date('2024-12-10'),
+  //   customer: {
+  //     customerId: 3,
+  //     companyName: '山田工務店',
+  //     contactPerson: '山田花子',
+  //   },
+  // },
+  // {
+  //   recordId: 10,
+  //   customerId: 2,
+  //   serviceDate: new Date('2024-12-15'),
+  //   serviceType: '外壁塗装',
+  //   serviceDescription: '南面外壁の塗装作業完了。使用塗料：シリコン系',
+  //   amount: 350000,
+  //   status: 'completed',
+  //   createdAt: new Date('2024-12-15'),
+  //   updatedAt: new Date('2024-12-15'),
+  //   customer: {
+  //     customerId: 2,
+  //     companyName: '田中建設',
+  //     contactPerson: '田中太郎',
+  //   },
+  // },
 ];
 
 // 次のレコードID（自動採番用）
-let nextRecordId = 7;
+let nextRecordId = 10;
 
 // =============================================================================
 // 🚀 メインHook実装
@@ -1189,13 +1236,26 @@ export const useServiceRecords = (
   // =============================
 
   /**
-   * 初期データ読み込み
+   * 初期データ読み込み + customerId変更時の再読み込み
    */
   useEffect(() => {
     if (autoLoad && !isInitialized) {
       loadServiceRecords();
     }
   }, [autoLoad, isInitialized, loadServiceRecords]);
+
+  /**
+   * customerId変更時の再読み込み
+   *
+   * 【修正】CustomerDetailPageで顧客を切り替えた時に
+   * 正しいデータが表示されるよう、customerIdが変更されたら再読み込み
+   */
+  useEffect(() => {
+    if (customerId !== undefined && isInitialized) {
+      // customerIdが変更されたら初期化フラグをリセットして再読み込み
+      setIsInitialized(false);
+    }
+  }, [customerId, isInitialized]);
 
   /**
    * 選択中顧客変更時の自動フィルター適用

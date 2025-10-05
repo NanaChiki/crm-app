@@ -122,47 +122,72 @@ function Dashboard() {
   /**
    * メンテナンス推奨顧客の計算
    *
-   * 【ロジック】
-   * - 各顧客の最終サービス日を計算
-   * - 5年以上経過した顧客を抽出
+   * 【改善されたロジック】
+   * - 顧客ごと＋サービス種別ごとの最終実施日を計算
+   * - 同じ顧客の同じサービス種別で5年以上経過したものを抽出
    * - 緊急度別（10年以上=high、5-10年=medium）に分類
    * - 経過年数の長い順にソート
+   *
+   * 【例】
+   * 田中建設の「外壁塗装」が2013年実施 → 11年経過 → 要対応
+   * 田中建設の「定期点検」が2024年実施 → 0年経過 → 対象外
+   */
+  /**
+   * メンテナンス推奨アラートの計算
+   *
+   * 【改善されたロジック v2.0】
+   * - 顧客×サービス種別ごとに独立したアラートを生成
+   * - 同じ顧客でも異なるserviceTypeなら別々に表示
+   * - 例: 田中建設の「外壁塗装」と「屋根修理」がどちらも5年超なら両方表示
    */
   const maintenanceAlerts = useMemo(() => {
-    // 顧客ごとの最終サービス日を計算
-    const customerLastService = new Map();
+    // 顧客ごと＋サービス種別ごとの最終実施日を計算
+    // キー: "customerId-serviceType"
+    const customerServiceLastDate = new Map<
+      string,
+      {
+        customerId: number;
+        serviceType: string;
+        lastServiceDate: Date;
+      }
+    >();
 
     serviceRecords.forEach((record) => {
-      const existing = customerLastService.get(record.customerId);
+      const key = `${record.customerId}-${record.serviceType}`;
+      const existing = customerServiceLastDate.get(key);
       const serviceDate = new Date(record.serviceDate);
-      console.log('from Dashboard', serviceDate);
 
-      if (!existing || serviceDate >= existing.lastServiceDate) {
-        customerLastService.set(record.customerId, {
+      // 同じserviceTypeの最新日付を保存（最新実施日基準でメンテナンス判定）
+      if (!existing || serviceDate > existing.lastServiceDate) {
+        customerServiceLastDate.set(key, {
           customerId: record.customerId,
+          serviceType: record.serviceType || '',
           lastServiceDate: serviceDate,
-          serviceType: record.serviceType,
         });
       }
     });
 
-    // 5年以上経過した顧客を抽出
+    // 5年以上経過したサービスを抽出（顧客×サービス種別ごと）
+    const now = new Date();
     const alerts: {
       customer: Customer;
       yearsSince: number;
       lastServiceType: string;
       urgency: 'high' | 'medium';
     }[] = [];
-    const now = new Date();
 
-    customerLastService.forEach((service, customerId) => {
+    customerServiceLastDate.forEach((service) => {
       const yearsSince =
         (now.getTime() - service.lastServiceDate.getTime()) /
         (1000 * 60 * 60 * 24 * 365.25);
 
-      if (yearsSince >= 5) {
-        const customer = customers.find((c) => c.customerId === customerId);
+      // 小数点誤差を考慮して4.99年以上を対象とする
+      if (yearsSince >= 4.99) {
+        const customer = customers.find(
+          (c) => c.customerId === service.customerId
+        );
         if (customer) {
+          // 🎯 変更点: 同じ顧客でもserviceTypeが異なれば別アラートとして追加
           alerts.push({
             customer,
             yearsSince: Math.floor(yearsSince),
@@ -173,6 +198,7 @@ function Dashboard() {
       }
     });
 
+    // 経過年数降順でソート → 上位5件を返却
     return alerts.sort((a, b) => b.yearsSince - a.yearsSince).slice(0, 5);
   }, [serviceRecords, customers]);
 
@@ -271,7 +297,7 @@ function Dashboard() {
                     }}>
                     {record.serviceType || 'サービス'} -{' '}
                     {record.amount
-                      ? `￥${record.amount.toLocaleString()}`
+                      ? `¥${record.amount.toLocaleString()}`
                       : '金額未設定'}
                   </Typography>
                   <Typography
@@ -318,7 +344,7 @@ function Dashboard() {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {maintenanceAlerts.map((alert) => (
               <Box
-                key={alert.customer.customerId}
+                key={`${alert.customer.customerId}-${alert.lastServiceType}`}
                 sx={{
                   p: 2,
                   border: 2,
@@ -469,8 +495,7 @@ function Dashboard() {
       />
 
       {/* エラー表示 */}
-      {/*{(error || serviceError) && (*/}
-      {serviceError && (
+      {(loading.error || serviceError) && (
         <Alert severity="error" sx={{ mb: 3, fontSize: 16 }}>
           データの読み込みに失敗しました。ページを再読み込みしてください。
         </Alert>
