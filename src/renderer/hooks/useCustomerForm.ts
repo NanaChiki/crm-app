@@ -221,7 +221,7 @@ const VALIDATION_RULES: Record<keyof CreateCustomerInput, BaseValidationRule> =
     phone: {
       required: false,
       maxLength: 20,
-      pattern: /^[\d\-\(\)\+\s]*$/,
+      pattern: /^[\d\-()+ \s]*$/,
       errorMessages: {
         pattern:
           '電話番号は数字、ハイフン、括弧、スペースのみ使用できます（例：03-1234-5678）',

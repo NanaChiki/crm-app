@@ -102,7 +102,7 @@ export default function UIDemo() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Input
-                inputSize="small"
+                inputsize="small"
                 label="会社名（Small）"
                 placeholder="株式会社サンプル"
                 helperText="正式な会社名を入力してください"
@@ -111,14 +111,14 @@ export default function UIDemo() {
               />
 
               <Input
-                inputSize="medium"
+                inputsize="medium"
                 label="担当者名（Medium）"
                 placeholder="山田太郎"
                 helperText="担当者のフルネームを入力"
               />
 
               <Input
-                inputSize="large"
+                inputsize="large"
                 label="住所（Large）"
                 placeholder="東京都渋谷区..."
                 helperText="郵便番号から入力してください"
@@ -193,7 +193,7 @@ export default function UIDemo() {
               title="住宅リフォーム工事"
               subtitle="サービス記録 • 2025/01/10"
               status="completed"
-              cardSize="medium">
+              cardsize="medium">
               <Typography variant="body2" sx={{ mb: 2 }}>
                 💰 <strong>金額:</strong> ¥1,500,000
               </Typography>
@@ -211,7 +211,7 @@ export default function UIDemo() {
               title="メンテナンス予定"
               subtitle="次回点検 • 2025/02/01"
               status="pending"
-              cardSize="large"
+              cardsize="large"
               onEdit={() => alert('メンテナンス編集')}>
               <Typography variant="body2" sx={{ mb: 2 }}>
                 🔧 <strong>種類:</strong> 定期点検
