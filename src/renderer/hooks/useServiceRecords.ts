@@ -362,6 +362,21 @@ const COMMON_SERVICE_TYPES = [
 // =============================================================================
 
 /**
+ * データ変更リスナー
+ * 複数のuseServiceRecordsインスタンス間でデータ変更を通知するためのリスナー配列
+ */
+type DataChangeListener = () => void;
+const dataChangeListeners: DataChangeListener[] = [];
+
+/**
+ * データ変更通知
+ * mockServiceRecordsDataが変更された時に全てのリスナーに通知
+ */
+const notifyDataChange = () => {
+  dataChangeListeners.forEach((listener) => listener());
+};
+
+/**
  * モックサービス履歴データ（ファイルスコープで永続化）
  *
  * 【重要】この変数は関数の外側（ファイルスコープ）で定義することで、
@@ -371,6 +386,7 @@ const COMMON_SERVICE_TYPES = [
  * - CRUD操作の結果を永続化するため、ファイルスコープで管理
  * - 複数のuseServiceRecordsインスタンス間でデータを共有
  * - refreshServiceRecords実行時に最新データを取得可能
+ * - データ変更時にリスナーに通知して全インスタンスを更新
  */
 const mockServiceRecordsData: ServiceRecordWithCustomer[] = [
   {
@@ -773,6 +789,9 @@ export const useServiceRecords = (
           setServiceRecords((prev) => [...prev, newRecord]);
         }
 
+        // 全てのuseServiceRecordsインスタンスに変更を通知
+        notifyDataChange();
+
         showSnackbar(MESSAGES.success.create, 'success');
 
         // ServiceRecord型として返す（customerプロパティを除外）
@@ -849,6 +868,9 @@ export const useServiceRecords = (
           )
         );
 
+        // 全てのuseServiceRecordsインスタンスに変更を通知
+        notifyDataChange();
+
         showSnackbar(MESSAGES.success.update, 'success');
 
         // ServiceRecord型として返す（customerプロパティを除外）
@@ -906,6 +928,9 @@ export const useServiceRecords = (
         setServiceRecords((prev) =>
           prev.filter((record) => record.recordId !== id)
         );
+
+        // 全てのuseServiceRecordsインスタンスに変更を通知
+        notifyDataChange();
 
         showSnackbar(MESSAGES.success.delete, 'success');
         return true;
@@ -1249,8 +1274,34 @@ export const useServiceRecords = (
     if (autoLoad && !isInitialized) {
       loadServiceRecords();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoLoad]);
+
+  /**
+   * データ変更リスナーの登録
+   *
+   * 【重要】他のuseServiceRecordsインスタンスでデータが変更された時に
+   * このインスタンスも自動的に最新データを読み込む。
+   * これにより、Dashboard等の別コンポーネントで新しいサービス履歴が追加されても
+   * 即座に反映される。
+   */
+  useEffect(() => {
+    const handleDataChange = () => {
+      console.log('🔄 他のインスタンスでデータ変更を検知、再読み込み中...');
+      loadServiceRecords();
+    };
+
+    // リスナーを登録
+    dataChangeListeners.push(handleDataChange);
+
+    // クリーンアップ: コンポーネントアンマウント時にリスナーを削除
+    return () => {
+      const index = dataChangeListeners.indexOf(handleDataChange);
+      if (index > -1) {
+        dataChangeListeners.splice(index, 1);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * 選択中顧客変更時の自動フィルター適用
