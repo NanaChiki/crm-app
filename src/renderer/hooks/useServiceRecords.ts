@@ -1237,25 +1237,16 @@ export const useServiceRecords = (
 
   /**
    * 初期データ読み込み + customerId変更時の再読み込み
+   *
+   * 【修正】autoLoadとcustomerIdの変更を1つのuseEffectで処理することで
+   * 無限ループを防止。isInitializedはloadServiceRecordsの完了を管理するだけで、
+   * 再読み込みトリガーには使用しない。
    */
   useEffect(() => {
-    if (autoLoad && !isInitialized) {
+    if (autoLoad) {
       loadServiceRecords();
     }
-  }, [autoLoad, isInitialized, loadServiceRecords]);
-
-  /**
-   * customerId変更時の再読み込み
-   *
-   * 【修正】CustomerDetailPageで顧客を切り替えた時に
-   * 正しいデータが表示されるよう、customerIdが変更されたら再読み込み
-   */
-  useEffect(() => {
-    if (customerId !== undefined && isInitialized) {
-      // customerIdが変更されたら初期化フラグをリセットして再読み込み
-      setIsInitialized(false);
-    }
-  }, [customerId, isInitialized]);
+  }, [autoLoad, customerId]);
 
   /**
    * 選択中顧客変更時の自動フィルター適用

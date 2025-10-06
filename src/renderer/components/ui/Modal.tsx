@@ -17,21 +17,21 @@ import { Button } from './Button';
 
 // 50代向けのモーダルスタイル
 const StyledDialog = styled(Dialog)<CustomModalProps>(
-  ({ theme, modalSize }) => ({
+  ({ theme, modalsize }) => ({
     '& .MuiDialog-paper': {
       // サイズ調整
       minWidth:
-        modalSize === 'small'
-          ? '400px'
-          : modalSize === 'medium'
+        modalsize === 'small'
           ? '500px'
-          : '600px',
-      maxWidth:
-        modalSize === 'small'
-          ? '450px'
-          : modalSize === 'medium'
+          : modalsize === 'medium'
           ? '550px'
           : '650px',
+      maxWidth:
+        modalsize === 'small'
+          ? '550px'
+          : modalsize === 'medium'
+          ? '650px'
+          : '700px',
       borderRadius: '16px',
       padding: '8px',
 
@@ -140,7 +140,7 @@ const getIcon = (type: IconType, color?: string) => {
 
 // カスタムプロパティの型定義
 interface CustomModalProps extends Omit<DialogProps, 'title'> {
-  modalSize?: 'small' | 'medium' | 'large';
+  modalsize?: 'small' | 'medium' | 'large';
   title?: string;
   children?: React.ReactNode;
   onClose?: () => void;
@@ -177,7 +177,7 @@ export const Modal = forwardRef<HTMLDivElement, CustomModalProps>(
       iconType,
       loading = false,
       details,
-      modalSize = 'medium',
+      modalsize = 'medium',
       ...props
     },
     ref
@@ -199,7 +199,7 @@ export const Modal = forwardRef<HTMLDivElement, CustomModalProps>(
     return (
       <StyledDialog
         ref={ref}
-        modalSize={modalSize}
+        modalsize={modalsize}
         onClose={onClose}
         fullScreen={isMobile}
         maxWidth={false}

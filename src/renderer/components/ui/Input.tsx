@@ -10,28 +10,28 @@ import { forwardRef } from 'react';
 
 // 50代向けの入力フィールドスタイル
 const StyledTextField = styled(TextField)<CustomInputProps>(
-  ({ theme, inputSize }) => ({
+  ({ theme, inputsize }) => ({
     '& .MuiInputBase-root': {
       // 最小高さとフォントサイズ
       minHeight:
-        inputSize === 'small'
+        inputsize === 'small'
           ? '48px'
-          : inputSize === 'medium'
+          : inputsize === 'medium'
           ? '56px'
           : '64px',
       fontSize:
-        inputSize === 'small'
+        inputsize === 'small'
           ? '16px'
-          : inputSize === 'medium'
+          : inputsize === 'medium'
           ? '18px'
           : '20px',
 
       // パディング調整
       '& .MuiInputBase-input': {
         padding:
-          inputSize === 'small'
+          inputsize === 'small'
             ? '14px 16px'
-            : inputSize === 'medium'
+            : inputsize === 'medium'
             ? '18px 20px'
             : '22px 24px',
         fontSize: 'inherit',
@@ -69,9 +69,9 @@ const StyledTextField = styled(TextField)<CustomInputProps>(
     // ラベルのスタイル
     '& .MuiInputLabel-root': {
       fontSize:
-        inputSize === 'small'
+        inputsize === 'small'
           ? '16px'
-          : inputSize === 'medium'
+          : inputsize === 'medium'
           ? '18px'
           : '20px',
       fontWeight: 500,
@@ -103,7 +103,7 @@ const StyledTextField = styled(TextField)<CustomInputProps>(
 
 // カスタムプロパティの型定義
 interface CustomInputProps extends Omit<TextFieldProps, 'size'> {
-  inputSize?: 'small' | 'medium' | 'large';
+  inputsize?: 'small' | 'medium' | 'large';
   showPassword?: boolean;
   onTogglePassword?: () => void;
   isPassword?: boolean;
@@ -116,7 +116,7 @@ export const Input = forwardRef<HTMLDivElement, CustomInputProps>(
       label,
       error,
       helperText,
-      inputSize = 'medium',
+      inputsize = 'medium',
       showPassword = false,
       onTogglePassword,
       isPassword = false,
@@ -169,7 +169,7 @@ export const Input = forwardRef<HTMLDivElement, CustomInputProps>(
         label={label}
         error={error}
         helperText={helperText}
-        inputSize={inputSize}
+        inputsize={inputsize}
         type={isPassword ? (showPassword ? 'text' : 'password') : type}
         variant="outlined"
         fullWidth

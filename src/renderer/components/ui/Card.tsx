@@ -14,11 +14,11 @@ import {
 import React, { forwardRef } from 'react';
 
 // 50代向けのカードスタイル
-const StyledCard = styled(MuiCard)<CustomCardProps>(({ theme, cardSize }) => ({
+const StyledCard = styled(MuiCard)<CustomCardProps>(({ theme, cardsize }) => ({
   // サイズ調整
   borderRadius: '12px',
   padding:
-    cardSize === 'small' ? '16px' : cardSize === 'medium' ? '20px' : '24px',
+    cardsize === 'small' ? '16px' : cardsize === 'medium' ? '20px' : '24px',
 
   // シャドウとボーダー
   boxShadow: theme.shadows[2],
@@ -77,7 +77,7 @@ const CardHeader = styled(Box)(({ theme }) => ({
 
 // カスタムプロパティの型定義
 interface CustomCardProps extends Omit<MuiCardProps, 'children'> {
-  cardSize?: 'small' | 'medium' | 'large';
+  cardsize?: 'small' | 'medium' | 'large';
   title?: string;
   subtitle?: string;
   children?: React.ReactNode;
@@ -140,7 +140,7 @@ export const Card = forwardRef<HTMLDivElement, CustomCardProps>(
       status,
       clickable = false,
       onCardClick,
-      cardSize = 'medium',
+      cardsize = 'medium',
       ...props
     },
     ref
@@ -196,7 +196,7 @@ export const Card = forwardRef<HTMLDivElement, CustomCardProps>(
     return (
       <StyledCard
         ref={ref}
-        cardSize={cardSize}
+        cardsize={cardsize}
         onClick={clickable ? onCardClick : undefined}
         tabIndex={clickable ? 0 : undefined}
         role={clickable ? 'button' : undefined}

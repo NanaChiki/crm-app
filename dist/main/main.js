@@ -1,9 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var electron_1 = require("electron");
-var path = require("path");
+import { app, BrowserWindow, Menu } from 'electron';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+// ES modules用の__dirnameの代替
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 function createWindow() {
-    var mainWindow = new electron_1.BrowserWindow({
+    const mainWindow = new BrowserWindow({
         height: 800,
         width: 1200,
         minHeight: 600,
@@ -19,47 +21,47 @@ function createWindow() {
         center: true, // ウィンドウを画面中央に配置
     });
     // 開発環境ではlocalhost、本番環境ではファイルをロード
-    var isDev = process.env.NODE_ENV === 'development' || !electron_1.app.isPackaged;
+    const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
     if (isDev) {
         console.log('Loading development URL: http://localhost:5174');
         mainWindow.loadURL('http://localhost:5174'); // Updated to current Vite port
         mainWindow.webContents.openDevTools();
         // 詳細なログ追加
-        mainWindow.webContents.on('did-start-loading', function () {
+        mainWindow.webContents.on('did-start-loading', () => {
             console.log('Started loading content...');
         });
-        mainWindow.webContents.on('did-finish-load', function () {
+        mainWindow.webContents.on('did-finish-load', () => {
             console.log('Finished loading content successfully!');
             // ウィンドウを確実に前面に表示
             mainWindow.focus();
             mainWindow.moveTop();
         });
-        mainWindow.webContents.on('did-fail-load', function (event, errorCode, errorDescription) {
+        mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
             console.error('Failed to load content:', errorCode, errorDescription);
         });
     }
     else {
         mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
     }
-    mainWindow.once('ready-to-show', function () {
+    mainWindow.once('ready-to-show', () => {
         mainWindow.show();
     });
 }
 // Electronの初期化完了後にウィンドウを作成
-electron_1.app.whenReady().then(createWindow);
+app.whenReady().then(createWindow);
 // 全ウィンドウが閉じられた時の処理
-electron_1.app.on('window-all-closed', function () {
+app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
-        electron_1.app.quit();
+        app.quit();
     }
 });
-electron_1.app.on('activate', function () {
-    if (electron_1.BrowserWindow.getAllWindows().length === 0) {
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
 });
 // メニューバーの設定（50代ユーザー向けにシンプルに）
-electron_1.Menu.setApplicationMenu(electron_1.Menu.buildFromTemplate([
+Menu.setApplicationMenu(Menu.buildFromTemplate([
     {
         label: 'ファイル',
         submenu: [{ role: 'quit', label: '終了' }],
@@ -69,7 +71,7 @@ electron_1.Menu.setApplicationMenu(electron_1.Menu.buildFromTemplate([
         submenu: [
             {
                 label: 'このアプリについて',
-                click: function () {
+                click: () => {
                     // アプリ情報を表示
                 },
             },

@@ -243,6 +243,17 @@ interface CustomerContextType {
 const mockCustomersData: Customer[] = [
   {
     customerId: 1,
+    companyName: '佐藤リフォーム',
+    contactPerson: '佐藤次郎',
+    phone: '080-9999-8888',
+    email: 'sato@sato-reform.jp',
+    address: '東京都練馬区石神井公園3-7-9',
+    notes: 'リフォーム専門。お客様の要望を丁寧にヒアリングしてくれる。',
+    createdAt: new Date('2024-03-05'),
+    updatedAt: new Date('2024-08-22'),
+  },
+  {
+    customerId: 2,
     companyName: '田中建設株式会社',
     contactPerson: '田中太郎',
     phone: '090-1234-5678',
@@ -253,7 +264,7 @@ const mockCustomersData: Customer[] = [
     updatedAt: new Date('2024-08-20'),
   },
   {
-    customerId: 2,
+    customerId: 3,
     companyName: '山田工務店',
     contactPerson: '山田花子',
     phone: '03-5555-1234',
@@ -262,17 +273,6 @@ const mockCustomersData: Customer[] = [
     notes: '新築工事専門。品質重視のお客様。',
     createdAt: new Date('2024-02-10'),
     updatedAt: new Date('2024-08-18'),
-  },
-  {
-    customerId: 3,
-    companyName: '佐藤リフォーム',
-    contactPerson: '佐藤次郎',
-    phone: '080-9999-8888',
-    email: 'sato@sato-reform.jp',
-    address: '東京都練馬区石神井公園3-7-9',
-    notes: 'リフォーム専門。お客様の要望を丁寧にヒアリングしてくれる。',
-    createdAt: new Date('2024-03-05'),
-    updatedAt: new Date('2024-08-22'),
   },
 ];
 
