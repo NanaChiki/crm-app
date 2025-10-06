@@ -223,15 +223,24 @@ function Dashboard() {
   }, [customers]);
 
   /**
-   * 最近のサービス履歴（日付降順）
+   * 最近のサービス履歴（日付降順、同日の場合は作成日時降順）
    */
   const recentServices = useMemo(() => {
     return serviceRecords
       .slice()
-      .sort(
-        (a, b) =>
-          new Date(b.serviceDate).getTime() - new Date(a.serviceDate).getTime()
-      )
+      .sort((a, b) => {
+        // まずserviceDateで降順ソート
+        const dateCompare =
+          new Date(b.serviceDate).getTime() - new Date(a.serviceDate).getTime();
+
+        // serviceDateが同じ場合は、recordId（追加順）で降順ソート
+        // recordIdが大きい = 後から追加された = 新しい
+        if (dateCompare === 0) {
+          return b.recordId - a.recordId;
+        }
+
+        return dateCompare;
+      })
       .slice(0, 10);
   }, [serviceRecords]);
 

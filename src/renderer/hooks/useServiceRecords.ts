@@ -536,7 +536,7 @@ const mockServiceRecordsData: ServiceRecordWithCustomer[] = [
 ];
 
 // 次のレコードID（自動採番用）
-let nextRecordId = 10;
+let nextRecordId = mockServiceRecordsData.length + 1;
 
 // =============================================================================
 // 🚀 メインHook実装
@@ -611,49 +611,57 @@ export const useServiceRecords = (
    * - ローディング中は明確にメッセージ表示
    * - エラー時は分かりやすい原因と対処法を提示
    */
-  const loadServiceRecords = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    setError(null);
-    try {
-      // TODO: 実際のPrisma呼び出しに置き換え
-      await new Promise((resolve) => setTimeout(resolve, 800));
+  const loadServiceRecords = useCallback(
+    async (silent: boolean = false): Promise<void> => {
+      setLoading(true);
+      setError(null);
+      try {
+        // TODO: 実際のPrisma呼び出しに置き換え
+        await new Promise((resolve) => setTimeout(resolve, 800));
 
-      // ファイルスコープのモックデータを参照
-      const allRecords = [...mockServiceRecordsData];
+        // ファイルスコープのモックデータを参照
+        const allRecords = [...mockServiceRecordsData];
 
-      // カスタマー指定がある場合はフィルタリング
-      const filteredData = customerId
-        ? allRecords.filter((record) => record.customerId === customerId)
-        : allRecords;
+        // カスタマー指定がある場合はフィルタリング
+        const filteredData = customerId
+          ? allRecords.filter((record) => record.customerId === customerId)
+          : allRecords;
 
-      setServiceRecords(filteredData);
-      setIsInitialized(true);
+        setServiceRecords(filteredData);
+        setIsInitialized(true);
 
-      if (filteredData.length === 0) {
-        showSnackbar(MESSAGES.info.noRecords, 'info', 4000);
-      } else {
-        showSnackbar(MESSAGES.success.load, 'success');
+        // サイレントモード時はスナックバーを表示しない（リスナー経由の更新時）
+        if (!silent) {
+          if (filteredData.length === 0) {
+            showSnackbar(MESSAGES.info.noRecords, 'info', 4000);
+          } else {
+            showSnackbar(MESSAGES.success.load, 'success');
+          }
+        }
+      } catch (error) {
+        console.log('Service records loading error:', error);
+
+        const errorMessage =
+          error instanceof Error
+            ? error.message.includes('network')
+              ? MESSAGES.error.network
+              : MESSAGES.error.load
+            : MESSAGES.error.load;
+
+        setError(errorMessage);
+        if (!silent) {
+          handleError({
+            type: 'SERVER_ERROR',
+            message: errorMessage,
+            suggestion: 'ページを再読み込みしてもう一度お試しください',
+          });
+        }
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.log('Service records loading error:', error);
-
-      const errorMessage =
-        error instanceof Error
-          ? error.message.includes('network')
-            ? MESSAGES.error.network
-            : MESSAGES.error.load
-          : MESSAGES.error.load;
-
-      setError(errorMessage);
-      handleError({
-        type: 'SERVER_ERROR',
-        message: errorMessage,
-        suggestion: 'ページを再読み込みしてもう一度お試しください',
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [customerId, showSnackbar, handleError]);
+    },
+    [customerId, showSnackbar, handleError]
+  );
 
   /**
    * データ再読み込み
@@ -1287,7 +1295,8 @@ export const useServiceRecords = (
   useEffect(() => {
     const handleDataChange = () => {
       console.log('🔄 他のインスタンスでデータ変更を検知、再読み込み中...');
-      loadServiceRecords();
+      // サイレントモード（true）で再読み込み - スナックバー非表示
+      loadServiceRecords(true);
     };
 
     // リスナーを登録
@@ -1300,8 +1309,7 @@ export const useServiceRecords = (
         dataChangeListeners.splice(index, 1);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadServiceRecords]);
 
   /**
    * 選択中顧客変更時の自動フィルター適用
