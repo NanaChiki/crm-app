@@ -60,6 +60,7 @@ typings/
 # dotenv environment variables file
 .env
 .env.test
+.env.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -89,4 +90,18 @@ typings/
 .vite/
 
 # Electron-Forge
+out/
+
+# Cursor specific
+.cursor/
+
+# CLAUDE
+CLAUDE.md
+
+# Database
+*.db
+*.db-journal
+
+# Electron
+dist/
 out/
