@@ -767,8 +767,11 @@ export const useServiceRecords = (
         mockServiceRecordsData.push(newRecord);
         console.log(`💾 サービス履歴追加: recordId=${newRecord.recordId}`);
 
-        // 状態変更
-        setServiceRecords((prev) => [...prev, newRecord]);
+        // 状態更新: customerIdフィルターが指定されている場合は
+        // 追加するレコードがそのcustomerIdと一致する場合のみ追加
+        if (!customerId || newRecord.customerId === customerId) {
+          setServiceRecords((prev) => [...prev, newRecord]);
+        }
 
         showSnackbar(MESSAGES.success.create, 'success');
 
@@ -1236,17 +1239,18 @@ export const useServiceRecords = (
   // =============================
 
   /**
-   * 初期データ読み込み + customerId変更時の再読み込み
+   * 初期データ読み込み（初回のみ）
    *
-   * 【修正】autoLoadとcustomerIdの変更を1つのuseEffectで処理することで
-   * 無限ループを防止。isInitializedはloadServiceRecordsの完了を管理するだけで、
-   * 再読み込みトリガーには使用しない。
+   * 【修正】初回読み込みのみを行う。customerIdが変わっても
+   * loadServiceRecordsは呼ばない。createServiceRecord等のCRUD操作が
+   * 直接stateを更新するため、不要な再読み込みを避ける。
    */
   useEffect(() => {
-    if (autoLoad) {
+    if (autoLoad && !isInitialized) {
       loadServiceRecords();
     }
-  }, [autoLoad, customerId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoLoad]);
 
   /**
    * 選択中顧客変更時の自動フィルター適用
