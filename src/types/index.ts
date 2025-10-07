@@ -1,6 +1,12 @@
 import { ApiResponse, FormState } from './common';
 import { CreateCustomerInput, Customer, UpdateCustomerInput } from './customer';
 import {
+  CreateReminderInput,
+  Reminder,
+  ReminderWithCustomer,
+  UpdateReminderInput,
+} from './reminder';
+import {
   CreateServiceRecordInput,
   ServiceRecord,
   ServiceRecordWithCustomer,
@@ -122,16 +128,56 @@ export type ServiceRecordWithCustomerListApiResponse = ApiResponse<
 >;
 
 // =============================================================================
+// 🔔 Reminder（リマインダー）関連の型定義
+// =============================================================================
+
+/**
+ * リマインダー管理システムで使用する全ての型をエクスポート
+ *
+ * 【分類理由】
+ * - リマインダーデータの基本操作（CRUD）に必要な型群
+ * - Reminder エンティティを中心とした関連型
+ * - OutLook連携用の型定義
+ * - フォーム入力、検索、表示用の特化型
+ */
+export type {
+  // CRUD 操作用の型
+  CreateReminderInput,
+  // OutLook連携型
+  OutlookEmailData,
+  OutlookEventData,
+  // Basic entity type
+  Reminder,
+  // フィルター型
+  ReminderFilters,
+  // フォーム型
+  ReminderFormData,
+  // 作成元型
+  ReminderSource,
+  // ステータス型
+  ReminderStatus,
+  // リレーション付き型
+  ReminderWithCustomer,
+  ReminderWithRelations,
+  // CRUD 操作用の型 (2)
+  UpdateReminderInput,
+} from './reminder';
+
+// リマインダー管理でよく使われる組み合わせ
+export type ReminderCreateForm = FormState<CreateReminderInput>;
+export type ReminderUpdateForm = FormState<UpdateReminderInput>;
+export type ReminderListApiResponse = ApiResponse<ReminderWithCustomer[]>;
+export type ReminderApiResponse = ApiResponse<Reminder>;
+
+// =============================================================================
 // 🔮 将来の拡張に備えた型定義の準備
 // =============================================================================
 
 /**
  * 将来の機能追加に備えた型システムの拡張性確保（仮）
  *
- * 【Phase 2 対応予定】
- * - Reminder（リマインダー）機能の型定義
- * - Calendar（カレンダー）機能の型定義
- * - Report（レポート）機能の型定義
+ * 【Phase 2 完了】
+ * ✅ Reminder（リマインダー）機能の型定義
  *
  * 【Phase 3 対応予定】
  * - Electron固有の型定義

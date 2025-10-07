@@ -10,6 +10,7 @@ import { theme } from './styles/theme';
 // =============================
 import { AppProvider } from './contexts/AppContext';
 import { CustomerProvider } from './contexts/CustomerContext';
+import { ReminderProvider } from './contexts/ReminderContext';
 
 /**
  * 🎯 App Component - アプリケーションのルートコンポーネント
@@ -19,10 +20,11 @@ import { CustomerProvider } from './contexts/CustomerContext';
  * 最適なProvider階層順序：
  * 1. AppProvider（最上位）     - グローバル状態管理（通知、エラー、ローディング）
  * 2. CustomerProvider          - 顧客データ特化状態管理（CRUD、検索、選択）
- * 3. ThemeProvider             - Material-UI テーマ設定
- * 4. BrowserRouter             - React Router ナビゲーション
- * 5. MainLayout                - レイアウト構造
- * 6. AppRouter                 - ページルーティング
+ * 3. ReminderProvider          - リマインダーデータ管理（CRUD、OutLook連携）
+ * 4. ThemeProvider             - Material-UI テーマ設定
+ * 5. BrowserRouter             - React Router ナビゲーション
+ * 6. MainLayout                - レイアウト構造
+ * 7. AppRouter                 - ページルーティング
  *
  * 【50代・低ITリテラシー向け配慮】
  * • Provider階層の複雑さをコンポーネント内で隠蔽
@@ -34,14 +36,16 @@ function App() {
   return (
     <AppProvider>
       <CustomerProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <BrowserRouter>
-            <MainLayout>
-              <AppRouter />
-            </MainLayout>
-          </BrowserRouter>
-        </ThemeProvider>
+        <ReminderProvider>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <BrowserRouter>
+              <MainLayout>
+                <AppRouter />
+              </MainLayout>
+            </BrowserRouter>
+          </ThemeProvider>
+        </ReminderProvider>
       </CustomerProvider>
     </AppProvider>
   );
