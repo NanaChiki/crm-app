@@ -45,7 +45,7 @@ export interface ReminderFormData {
   serviceRecordId?: number | null;
   title: string;
   message: string;
-  reminderDate: Date;
+  reminderDate: Date | string;
   notes?: string;
 }
 
@@ -63,7 +63,7 @@ export interface UpdateReminderInput {
   reminderId: number;
   title?: string;
   message?: string;
-  reminderDate?: Date;
+  reminderDate: Date | string;
   status?: ReminderStatus;
   sentAt?: Date | null;
   notes?: string;
@@ -79,8 +79,8 @@ export interface UpdateReminderInput {
 export interface ReminderFilters {
   customerId?: number;
   status?: ReminderStatus;
-  startDate?: Date; // reminderDate >= startDate
-  endDate?: Date; // reminderDate <= endDate
+  startDate?: Date | string; // reminderDate >= startDate
+  endDate?: Date | string; // reminderDate <= endDate
   createdBy?: ReminderSource;
 }
 
