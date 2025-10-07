@@ -65,6 +65,7 @@ export interface UpdateReminderInput {
   message?: string;
   reminderDate?: Date;
   status?: ReminderStatus;
+  sentAt?: Date | null;
   notes?: string;
 }
 
