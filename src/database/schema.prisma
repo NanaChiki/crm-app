@@ -23,6 +23,7 @@ model Customer {
 
     // リレーション
     serviceRecords ServiceRecord[]
+    reminders      Reminder[]
 
     @@map("customers")
 }
@@ -39,7 +40,40 @@ model ServiceRecord {
     updatedAt          DateTime @updatedAt @map("updated_at")
 
     // リレーション
-    customer Customer @relation(fields: [customerId], references: [customerId], onDelete: Cascade)
+    customer  Customer   @relation(fields: [customerId], references: [customerId], onDelete: Cascade)
+    reminders Reminder[]
 
     @@map("service_records")
+}
+
+// フェーズ2: リマインダーモデル
+model Reminder {
+    reminderId      Int       @id @default(autoincrement()) @map("reminder_id")
+    customerId      Int       @map("customer_id")
+    serviceRecordId Int?      @map("service_record_id")
+
+    // リマインダー内容
+    title        String   // 例: "外壁塗装メンテナンス推奨"
+    message      String   // リマインダーメッセージ本文
+    reminderDate DateTime @map("reminder_date")
+
+    // 送信状態管理
+    status String    @default("scheduled") // scheduled, sent, cancelled
+    sentAt DateTime? @map("sent_at")
+
+    // OutLook連携情報
+    outlookEventId   String?  @map("outlook_event_id")
+    outlookEmailSent Boolean  @default(false) @map("outlook_email_sent")
+
+    // メタデータ
+    createdBy String   @default("system") @map("created_by") // system or manual
+    notes     String?
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // リレーション
+    customer      Customer       @relation(fields: [customerId], references: [customerId], onDelete: Cascade)
+    serviceRecord ServiceRecord? @relation(fields: [serviceRecordId], references: [recordId], onDelete: SetNull)
+
+    @@map("reminders")
 }
