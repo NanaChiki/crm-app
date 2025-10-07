@@ -271,6 +271,7 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
       await updateReminder({
         reminderId,
         status: 'cancelled',
+        sentAt: new Date(),
       });
     },
     [updateReminder]
