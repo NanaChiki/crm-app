@@ -305,11 +305,17 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
 
         // 日付範囲フィルター
         const reminderDate = new Date(reminder.reminderDate);
-        if (filters.startDate && reminderDate < filters.startDate) {
-          return false;
+        if (filters.startDate) {
+          const startDate = new Date(filters.startDate);
+          if (reminderDate < startDate) {
+            return false;
+          }
         }
-        if (filters.endDate && reminderDate > filters.endDate) {
-          return false;
+        if (filters.endDate) {
+          const endDate = new Date(filters.endDate);
+          if (reminderDate > endDate) {
+            return false;
+          }
         }
 
         return true;
