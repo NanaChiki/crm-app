@@ -53,7 +53,7 @@ export interface ReminderFormData {
  * リマインダー作成入力
  */
 export interface CreateReminderInput extends ReminderFormData {
-  createdBy?: ReminderSource;
+  createdBy?: string;
 }
 
 /**
