@@ -324,7 +324,7 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
   const getUpcomingReminders = useCallback(
     (days: number): ReminderWithCustomer[] => {
       const now = new Date();
-      const futureDate = new Date();
+      const futureDate = new Date(now);
       futureDate.setDate(futureDate.getDate() + days);
 
       return filterReminders({
