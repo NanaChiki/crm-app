@@ -26,6 +26,7 @@ import {
   CalendarToday as CalendarIcon,
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
+  Notifications as NotificationsIcon,
   Schedule as ScheduleIcon,
   TrendingUp as TrendingUpIcon,
   Warning as WarningIcon,
@@ -42,11 +43,12 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 // Custom Components
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
+import { ReminderForm } from '../reminder/ReminderForm';
 
 // Custom Hooks
 import { useServiceRecords } from '../../hooks/useServiceRecords';
@@ -352,6 +354,12 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
   );
 
   // ================================
+  // State
+  // ================================
+  const [isReminderFormOpen, setIsReminderFormOpen] = useState(false);
+  const [selectedPrediction, setSelectedPrediction] = useState<MaintenanceStatus | null>(null);
+
+  // ================================
   // イベントハンドラー
   // ================================
   const handleContactCustomer = useCallback(() => {
@@ -367,6 +375,16 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
   const handleCreateEstimate = useCallback(() => {
     // 将来的に見積もり機能と連携
     alert('見積もり作成機能は今後実装予定です');
+  }, []);
+
+  const handleCreateReminder = useCallback((prediction: MaintenanceStatus) => {
+    setSelectedPrediction(prediction);
+    setIsReminderFormOpen(true);
+  }, []);
+
+  const handleReminderFormClose = useCallback(() => {
+    setIsReminderFormOpen(false);
+    setSelectedPrediction(null);
   }, []);
 
   // ================================
@@ -564,18 +582,25 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
           {/* アクションボタン */}
           {(prediction.urgencyLevel === 'overdue' ||
             prediction.urgencyLevel === 'high') && (
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Button
                 variant="contained"
+                size="small"
+                startIcon={<NotificationsIcon />}
+                onClick={() => handleCreateReminder(prediction)}
+                sx={{
+                  fontSize: '14px',
+                  minWidth: 150,
+                }}>
+                リマインダー作成
+              </Button>
+              <Button
+                variant="outlined"
                 size="small"
                 onClick={handleCreateEstimate}
                 sx={{
                   fontSize: '14px',
-                  backgroundColor: urgencyConfig.textColor,
-                  '&:hover': {
-                    backgroundColor: urgencyConfig.textColor,
-                    opacity: 0.8,
-                  },
+                  minWidth: 120,
                 }}>
                 {MESSAGES.action.createEstimate}
               </Button>
@@ -682,6 +707,22 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
           {MESSAGES.info.analysisNote}
         </Typography>
       </Box>
+
+      {/* リマインダーフォームモーダル */}
+      {isReminderFormOpen && selectedPrediction && (
+        <ReminderForm
+          open={isReminderFormOpen}
+          onClose={handleReminderFormClose}
+          defaultCustomerId={customerId}
+          defaultTitle={`${selectedPrediction.serviceType}メンテナンス推奨`}
+          defaultMessage={`前回の${selectedPrediction.serviceType}から${selectedPrediction.yearsElapsed}年が経過しました。\nそろそろメンテナンスの時期ではないでしょうか？`}
+          defaultDate={
+            selectedPrediction.urgencyLevel === 'overdue'
+              ? new Date()
+              : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+          }
+        />
+      )}
     </Box>
   );
 };

@@ -55,6 +55,7 @@ import { Card } from '../components/ui/Card';
 
 // Custom Hooks
 import { useCustomer } from '../contexts/CustomerContext';
+import { useReminder } from '../contexts/ReminderContext';
 import { useServiceRecords } from '../hooks/useServiceRecords';
 
 // Types
@@ -63,7 +64,7 @@ import { Customer } from '../../types';
 // ================================
 // 型定義
 // ================================
-type TabValue = 'services' | 'maintenance' | 'customers';
+type TabValue = 'services' | 'maintenance' | 'reminders' | 'customers';
 
 // ================================
 // メインコンポーネント
@@ -88,6 +89,9 @@ function Dashboard() {
   const { serviceRecords, error: serviceError } = useServiceRecords({
     autoLoad: true,
   });
+
+  // リマインダーデータ取得
+  const { getUpcomingReminders } = useReminder();
 
   // ================================
   // データ計算（useMemoで最適化）
@@ -221,6 +225,13 @@ function Dashboard() {
       )
       .slice(0, 10);
   }, [customers]);
+
+  /**
+   * 今週のリマインダー（7日以内）
+   */
+  const upcomingReminders = useMemo(() => {
+    return getUpcomingReminders(7); // 7日以内
+  }, [getUpcomingReminders]);
 
   /**
    * 最近のサービス履歴（日付降順、同日の場合は作成日時降順）
@@ -427,6 +438,73 @@ function Dashboard() {
   /**
    * 最近の顧客タブ
    */
+  /**
+   * 今週のリマインダータブ
+   */
+  const renderRemindersTab = () => (
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
+      {upcomingReminders.length > 0 ? (
+        <>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {upcomingReminders.map((reminder) => (
+              <Box
+                key={reminder.reminderId}
+                sx={{
+                  p: 2,
+                  border: 1,
+                  borderColor: 'warning.main',
+                  borderRadius: 1,
+                  bgcolor: 'warning.lighter',
+                }}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: 'bold', mb: 0.5, fontSize: { xs: 18, md: 20 } }}>
+                  {reminder.title}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: 16, md: 18 } }}>
+                  {reminder.customer.companyName}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: 14, md: 16 } }}>
+                  送信予定: {new Date(reminder.reminderDate).toLocaleDateString('ja-JP')}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    onClick={() => navigate('/reminders')}
+                    sx={{ fontSize: { xs: 14, md: 16 } }}>
+                    詳細
+                  </Button>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => navigate('/reminders')}
+            sx={{ mt: 2, fontSize: { xs: 16, md: 18 }, minHeight: 48 }}>
+            すべてのリマインダーを見る
+          </Button>
+        </>
+      ) : (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontSize: { xs: 16, md: 18 }, textAlign: 'center', py: 8 }}>
+          今週のリマインダーはありません
+        </Typography>
+      )}
+    </Box>
+  );
+
   const renderCustomersTab = () => (
     <Box sx={{ p: { xs: 2, md: 3 } }}>
       {recentCustomers.length > 0 ? (
@@ -768,13 +846,41 @@ function Dashboard() {
                         gap: 1,
                         alignItems: 'center',
                       }}>
-                      <NotificationsIcon />
+                      <BuildIcon />
                       <Typography
                         sx={{
                           fontSize: { xs: 16, md: 18 },
                           fontWeight: 'bold',
                         }}>
                         メンテナンス推奨 ({maintenanceAlerts.length})
+                      </Typography>
+                    </Box>
+                  }
+                />
+                <Tab
+                  value="reminders"
+                  label={
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 1,
+                        alignItems: 'center',
+                      }}>
+                      <NotificationsIcon />
+                      {upcomingReminders.length > 0 && (
+                        <Chip
+                          label={upcomingReminders.length}
+                          color="warning"
+                          size="small"
+                          sx={{ fontWeight: 'bold' }}
+                        />
+                      )}
+                      <Typography
+                        sx={{
+                          fontSize: { xs: 16, md: 18 },
+                          fontWeight: 'bold',
+                        }}>
+                        今週のリマインダー
                       </Typography>
                     </Box>
                   }
@@ -805,6 +911,7 @@ function Dashboard() {
               <Box>
                 {currentTab === 'services' && renderServicesTab()}
                 {currentTab === 'maintenance' && renderMaintenanceTab()}
+                {currentTab === 'reminders' && renderRemindersTab()}
                 {currentTab === 'customers' && renderCustomersTab()}
               </Box>
             </Card>
