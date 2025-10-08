@@ -109,6 +109,8 @@ export const ReminderListPage: React.FC = () => {
     fetchReminders,
     deleteReminder,
     markAsSent,
+    cancelReminder,
+    rescheduleReminder,
     sendReminderEmail,
   } = useReminder();
 
@@ -201,6 +203,26 @@ export const ReminderListPage: React.FC = () => {
     navigate(`/customers/${customerId}`);
   }, [navigate]);
 
+  const handleCancelReminder = useCallback(async (reminderId: number) => {
+    const confirmed = window.confirm('このリマインダーをキャンセルしてもよろしいですか？');
+    if (!confirmed) return;
+
+    try {
+      await cancelReminder(reminderId);
+      showSnackbar('リマインダーをキャンセルしました', 'success');
+    } catch (error) {
+      showSnackbar('キャンセルに失敗しました', 'error');
+    }
+  }, [cancelReminder, showSnackbar]);
+
+  const handleReschedule = useCallback(async (reminderId: number) => {
+    try {
+      await rescheduleReminder(reminderId);
+    } catch (error) {
+      // エラーハンドリングはrescheduleReminder内で実施済み
+    }
+  }, [rescheduleReminder]);
+
   // ================================
   // レンダリング: リマインダーカード
   // ================================
@@ -208,6 +230,7 @@ export const ReminderListPage: React.FC = () => {
   const renderReminderCard = (reminder: ReminderWithCustomer) => {
     const statusConfig = STATUS_CONFIG[reminder.status as ReminderStatus];
     const isScheduled = reminder.status === 'scheduled';
+    const isCancelled = reminder.status === 'cancelled';
     const daysUntil = Math.ceil(
       (new Date(reminder.reminderDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
     );
@@ -303,6 +326,30 @@ export const ReminderListPage: React.FC = () => {
                   onClick={() => handleEdit(reminder)}
                   sx={{ minWidth: 100 }}>
                   編集
+                </Button>
+              )}
+
+              {isScheduled && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="warning"
+                  startIcon={<CancelIcon />}
+                  onClick={() => handleCancelReminder(reminder.reminderId)}
+                  sx={{ minWidth: 100 }}>
+                  キャンセル
+                </Button>
+              )}
+
+              {isCancelled && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  color="primary"
+                  startIcon={<ScheduleIcon />}
+                  onClick={() => handleReschedule(reminder.reminderId)}
+                  sx={{ minWidth: 140 }}>
+                  再スケジュール
                 </Button>
               )}
 
