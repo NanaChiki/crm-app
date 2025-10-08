@@ -19,7 +19,7 @@
  * - クリック可能な要素を明確に
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -91,7 +91,16 @@ function Dashboard() {
   });
 
   // リマインダーデータ取得
-  const { getUpcomingReminders } = useReminder();
+  const { getUpcomingReminders, fetchReminders } = useReminder();
+
+  // ================================
+  // Effects
+  // ================================
+
+  // リマインダーを初回ロード時に取得
+  useEffect(() => {
+    fetchReminders();
+  }, [fetchReminders]);
 
   // ================================
   // データ計算（useMemoで最適化）

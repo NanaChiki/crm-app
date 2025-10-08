@@ -25,6 +25,7 @@ import React, {
 
 // Contexts
 import { useApp } from './AppContext';
+import { useCustomer } from './CustomerContext';
 
 // Types
 import type {
@@ -35,6 +36,11 @@ import type {
   ReminderFilters,
   ReminderStatus,
 } from '../../types';
+
+// ================================
+// モックデータストレージ
+// ================================
+let mockReminderStorage: Reminder[] = [];
 
 // ================================
 // 型定義
@@ -90,6 +96,7 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
   // ================================
 
   const { showSnackbar } = useApp();
+  const { customers } = useCustomer();
 
   // ================================
   // State
@@ -116,11 +123,48 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         // 現在はモックデータで実装
         console.log('📅 リマインダー取得開始', filters);
 
-        // モックデータ（Phase 2Bで実際のAPI実装）
-        const mockReminders: ReminderWithCustomer[] = [];
+        // モックストレージから取得
+        let filteredReminders = mockReminderStorage;
 
-        setReminders(mockReminders);
-        console.log(`✅ ${mockReminders.length}件のリマインダーを取得しました`);
+        // フィルタリング適用
+        if (filters) {
+          filteredReminders = filteredReminders.filter((reminder) => {
+            if (filters.customerId && reminder.customerId !== filters.customerId) {
+              return false;
+            }
+            if (filters.status && reminder.status !== filters.status) {
+              return false;
+            }
+            if (filters.createdBy && reminder.createdBy !== filters.createdBy) {
+              return false;
+            }
+            if (filters.startDate) {
+              const reminderDate = new Date(reminder.reminderDate);
+              if (reminderDate < filters.startDate) {
+                return false;
+              }
+            }
+            if (filters.endDate) {
+              const reminderDate = new Date(reminder.reminderDate);
+              if (reminderDate > filters.endDate) {
+                return false;
+              }
+            }
+            return true;
+          });
+        }
+
+        // 顧客情報を付加
+        const remindersWithCustomer: ReminderWithCustomer[] = filteredReminders.map((reminder) => {
+          const customer = customers.find((c) => c.customerId === reminder.customerId);
+          return {
+            ...reminder,
+            customer: customer!,
+          };
+        }).filter((r) => r.customer); // 顧客が見つからないものは除外
+
+        setReminders(remindersWithCustomer);
+        console.log(`✅ ${remindersWithCustomer.length}件のリマインダーを取得しました`);
       } catch (err) {
         const errorMessage = 'リマインダーの取得に失敗しました';
         console.error('❌ リマインダー取得エラー:', err);
@@ -130,7 +174,7 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         setLoading(false);
       }
     },
-    [showSnackbar]
+    [showSnackbar, customers]
   );
 
   /**
@@ -146,17 +190,25 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
 
         // TODO: Prismaクライアント経由で作成
         // 現在はモック実装
-        const newReminder = {
+        const newReminder: Reminder = {
           reminderId: Date.now(),
-          ...data,
-          status: 'scheduled' as ReminderStatus,
+          customerId: data.customerId,
+          serviceRecordId: data.serviceRecordId || null,
+          title: data.title,
+          message: data.message,
+          reminderDate: data.reminderDate,
+          status: 'scheduled',
           sentAt: null,
           outlookEventId: null,
           outlookEmailSent: false,
           createdBy: data.createdBy || 'manual',
+          notes: data.notes || null,
           createdAt: new Date(),
           updatedAt: new Date(),
-        } as Reminder;
+        };
+
+        // モックストレージに追加
+        mockReminderStorage.push(newReminder);
 
         // 一覧を再取得
         await fetchReminders();
@@ -190,10 +242,22 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         console.log('📝 リマインダー更新開始', data);
 
         // TODO: Prismaクライアント経由で更新
-        const updatedReminder = {
-          reminderId: data.reminderId,
+        const index = mockReminderStorage.findIndex(
+          (r) => r.reminderId === data.reminderId
+        );
+
+        if (index === -1) {
+          throw new Error('リマインダーが見つかりません');
+        }
+
+        // 更新データをマージ
+        const updatedReminder: Reminder = {
+          ...mockReminderStorage[index],
+          ...data,
           updatedAt: new Date(),
-        } as Reminder;
+        };
+
+        mockReminderStorage[index] = updatedReminder;
 
         // 一覧を再取得
         await fetchReminders();
@@ -227,6 +291,9 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         console.log('🗑️ リマインダー削除開始', reminderId);
 
         // TODO: Prismaクライアント経由で削除
+        mockReminderStorage = mockReminderStorage.filter(
+          (r) => r.reminderId !== reminderId
+        );
 
         // 一覧を再取得
         await fetchReminders();
