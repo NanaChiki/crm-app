@@ -12,6 +12,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 function createWindow(): void {
+  const preloadPath = path.join(__dirname, 'preload.js');
+  console.log('📂 Preload script path:', preloadPath);
+  console.log('📂 __dirname:', __dirname);
+
   const mainWindow = new BrowserWindow({
     height: 800,
     width: 1200,
@@ -20,7 +24,7 @@ function createWindow(): void {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
+      preload: preloadPath,
     },
     titleBarStyle: 'default',
     show: true,
@@ -50,7 +54,7 @@ function createWindow(): void {
 
     mainWindow.webContents.on(
       'did-fail-load',
-      (event, errorCode, errorDescription) => {
+      (_event: any, errorCode: number, errorDescription: string) => {
         console.error('Failed to load content:', errorCode, errorDescription);
       }
     );
@@ -107,7 +111,7 @@ Menu.setApplicationMenu(
 /**
  * OutLookメール送信
  */
-ipcMain.handle('outlook:send-email', async (event, emailData) => {
+ipcMain.handle('outlook:send-email', async (_event: any, emailData: any) => {
   try {
     console.log('📧 IPC: OutLookメール送信リクエスト', emailData);
 
@@ -128,7 +132,7 @@ ipcMain.handle('outlook:send-email', async (event, emailData) => {
 /**
  * OutLookカレンダー予定作成
  */
-ipcMain.handle('outlook:create-event', async (event, eventData) => {
+ipcMain.handle('outlook:create-event', async (_event: any, eventData: any) => {
   try {
     console.log('📅 IPC: OutLookカレンダー予定作成リクエスト', eventData);
 
