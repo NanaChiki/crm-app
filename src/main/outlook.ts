@@ -18,6 +18,11 @@
  */
 
 import { shell } from 'electron';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+// child_processのexecをPromise化
+const execAsync = promisify(exec);
 
 // ================================
 // 型定義
@@ -92,18 +97,13 @@ export async function sendOutlookEmail(
 
     if (platform === 'darwin') {
       // macOS: openコマンドを使用
-      const { exec } = require('child_process');
-      await new Promise<void>((resolve, reject) => {
-        exec(`open "${mailtoLink}"`, (error: any) => {
-          if (error) {
-            console.error('❌ macOS open command error:', error);
-            reject(error);
-          } else {
-            console.log('✅ macOS open command success');
-            resolve();
-          }
-        });
-      });
+      try {
+        await execAsync(`open "${mailtoLink}"`);
+        console.log('✅ macOS open command success');
+      } catch (error) {
+        console.error('❌ macOS open command error:', error);
+        throw error;
+      }
     } else {
       // Windows/Linux: shell.openExternalを使用
       await shell.openExternal(mailtoLink);
