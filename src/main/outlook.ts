@@ -81,8 +81,33 @@ export async function sendOutlookEmail(
 
     const mailtoLink = `mailto:${options.to}?subject=${subject}&body=${body}${cc}`;
 
+    console.log('📎 Mailto link:', mailtoLink);
+    console.log('📎 Link length:', mailtoLink.length);
+
     // 既定のメールクライアント起動
-    await shell.openExternal(mailtoLink);
+    // macOSではshell.openExternalが動作しない場合があるため、
+    // プラットフォーム別の処理を実装
+    const platform = process.platform;
+    console.log('💻 Platform:', platform);
+
+    if (platform === 'darwin') {
+      // macOS: openコマンドを使用
+      const { exec } = require('child_process');
+      await new Promise<void>((resolve, reject) => {
+        exec(`open "${mailtoLink}"`, (error: any) => {
+          if (error) {
+            console.error('❌ macOS open command error:', error);
+            reject(error);
+          } else {
+            console.log('✅ macOS open command success');
+            resolve();
+          }
+        });
+      });
+    } else {
+      // Windows/Linux: shell.openExternalを使用
+      await shell.openExternal(mailtoLink);
+    }
 
     console.log('✅ メールクライアント起動成功');
     return {
