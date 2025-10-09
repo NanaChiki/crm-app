@@ -1,6 +1,11 @@
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain } from 'electron';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import {
+  sendOutlookEmail,
+  createOutlookEvent,
+  getFriendlyErrorMessage,
+} from './outlook.js';
 
 // ES modules用の__dirnameの代替
 const __filename = fileURLToPath(import.meta.url);
@@ -94,3 +99,51 @@ Menu.setApplicationMenu(
     },
   ])
 );
+
+// ================================
+// OutLook連携IPCハンドラー
+// ================================
+
+/**
+ * OutLookメール送信
+ */
+ipcMain.handle('outlook:send-email', async (event, emailData) => {
+  try {
+    console.log('📧 IPC: OutLookメール送信リクエスト', emailData);
+
+    const result = await sendOutlookEmail(emailData);
+
+    return result;
+  } catch (error: any) {
+    console.error('❌ IPC: メール送信エラー:', error);
+
+    return {
+      success: false,
+      message: getFriendlyErrorMessage(error.message),
+      error: error.message,
+    };
+  }
+});
+
+/**
+ * OutLookカレンダー予定作成
+ */
+ipcMain.handle('outlook:create-event', async (event, eventData) => {
+  try {
+    console.log('📅 IPC: OutLookカレンダー予定作成リクエスト', eventData);
+
+    const result = await createOutlookEvent(eventData);
+
+    return result;
+  } catch (error: any) {
+    console.error('❌ IPC: カレンダー予定作成エラー:', error);
+
+    return {
+      success: false,
+      message: getFriendlyErrorMessage(error.message),
+      error: error.message,
+    };
+  }
+});
+
+console.log('✅ OutLook IPC ハンドラー登録完了');

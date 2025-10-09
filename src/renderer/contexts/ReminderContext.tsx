@@ -16,25 +16,31 @@
 
 import React, {
   createContext,
-  useContext,
-  useState,
-  useCallback,
-  useMemo,
   ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
 } from 'react';
 
 // Contexts
 import { useApp } from './AppContext';
 import { useCustomer } from './CustomerContext';
 
+// OutLook API
+import {
+  sendReminderEmail as sendEmailAPI,
+  createReminderEvent as createEventAPI,
+  getOutlookErrorGuidance,
+} from '../utils/outlookAPI';
+
 // Types
 import type {
-  Reminder,
-  ReminderWithCustomer,
   CreateReminderInput,
-  UpdateReminderInput,
+  Reminder,
   ReminderFilters,
-  ReminderStatus,
+  ReminderWithCustomer,
+  UpdateReminderInput,
 } from '../../types';
 
 // ================================
@@ -124,12 +130,15 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         // 現在はモックデータで実装
         console.log('📅 リマインダー取得開始', filters);
         console.log('📦 モックストレージ総数:', mockReminderStorage.length);
-        console.log('📦 モックストレージ内容:', mockReminderStorage.map(r => ({
-          id: r.reminderId,
-          customerId: r.customerId,
-          title: r.title,
-          status: r.status
-        })));
+        console.log(
+          '📦 モックストレージ内容:',
+          mockReminderStorage.map((r) => ({
+            id: r.reminderId,
+            customerId: r.customerId,
+            title: r.title,
+            status: r.status,
+          }))
+        );
 
         // モックストレージから取得
         let filteredReminders = mockReminderStorage;
@@ -138,8 +147,13 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         if (filters) {
           console.log('🔍 フィルター適用:', filters);
           filteredReminders = filteredReminders.filter((reminder) => {
-            if (filters.customerId && reminder.customerId !== filters.customerId) {
-              console.log(`❌ customerId不一致: ${reminder.customerId} !== ${filters.customerId}`);
+            if (
+              filters.customerId &&
+              reminder.customerId !== filters.customerId
+            ) {
+              console.log(
+                `❌ customerId不一致: ${reminder.customerId} !== ${filters.customerId}`
+              );
               return false;
             }
             if (filters.status && reminder.status !== filters.status) {
@@ -166,21 +180,30 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         }
 
         // 顧客情報を付加
-        const remindersWithCustomer: ReminderWithCustomer[] = filteredReminders.map((reminder) => {
-          const customer = customers.find((c) => c.customerId === reminder.customerId);
-          return {
-            ...reminder,
-            customer: customer!,
-          };
-        }).filter((r) => r.customer); // 顧客が見つからないものは除外
+        const remindersWithCustomer: ReminderWithCustomer[] = filteredReminders
+          .map((reminder) => {
+            const customer = customers.find(
+              (c) => c.customerId === reminder.customerId
+            );
+            return {
+              ...reminder,
+              customer: customer!,
+            };
+          })
+          .filter((r) => r.customer); // 顧客が見つからないものは除外
 
         setReminders(remindersWithCustomer);
-        console.log(`✅ ${remindersWithCustomer.length}件のリマインダーを取得しました`);
-        console.log('✅ リマインダー詳細:', remindersWithCustomer.map(r => ({
-          id: r.reminderId,
-          customer: r.customer.companyName,
-          status: r.status
-        })));
+        console.log(
+          `✅ ${remindersWithCustomer.length}件のリマインダーを取得しました`
+        );
+        console.log(
+          '✅ リマインダー詳細:',
+          remindersWithCustomer.map((r) => ({
+            id: r.reminderId,
+            customer: r.customer.companyName,
+            status: r.status,
+          }))
+        );
       } catch (err) {
         const errorMessage = 'リマインダーの取得に失敗しました';
         console.error('❌ リマインダー取得エラー:', err);
@@ -478,14 +501,18 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
       futureDate.setHours(23, 59, 59, 999);
 
       console.log(`📅 今後${days}日以内のリマインダーを検索中...`);
-      console.log(`📅 検索範囲: ${now.toLocaleDateString()} 〜 ${futureDate.toLocaleDateString()}`);
+      console.log(
+        `📅 検索範囲: ${now.toLocaleDateString()} 〜 ${futureDate.toLocaleDateString()}`
+      );
       console.log(`総リマインダー数: ${reminders.length}`);
 
       // reminderDate を基準にフィルタリング
       const filtered = reminders.filter((reminder) => {
         // ステータスがscheduledのものだけ
         if (reminder.status !== 'scheduled') {
-          console.log(`❌ ステータス不一致: ${reminder.title} (status: ${reminder.status})`);
+          console.log(
+            `❌ ステータス不一致: ${reminder.title} (status: ${reminder.status})`
+          );
           return false;
         }
 
@@ -493,8 +520,12 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
 
         console.log(`🔍 チェック中: ${reminder.title}`);
         console.log(`   reminderDate: ${reminderDate.toLocaleString()}`);
-        console.log(`   範囲: ${now.toLocaleString()} 〜 ${futureDate.toLocaleString()}`);
-        console.log(`   結果: ${reminderDate >= now && reminderDate <= futureDate}`);
+        console.log(
+          `   範囲: ${now.toLocaleString()} 〜 ${futureDate.toLocaleString()}`
+        );
+        console.log(
+          `   結果: ${reminderDate >= now && reminderDate <= futureDate}`
+        );
 
         // 今日から指定日数以内
         return reminderDate >= now && reminderDate <= futureDate;
@@ -529,37 +560,92 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
 
   /**
    * リマインダーメール送信
-   * Phase 2Cで実装予定
    */
   const sendReminderEmail = useCallback(
     async (reminderId: number): Promise<void> => {
-      console.log('📧 メール送信機能はPhase 2Cで実装予定', reminderId);
-      showSnackbar(
-        'メール送信機能はPhase 2Cで実装予定です',
-        'info'
-      );
-      // TODO: Phase 2Cで実装
+      const reminder = getReminderById(reminderId);
+      if (!reminder) {
+        showSnackbar('リマインダーが見つかりません', 'error');
+        return;
+      }
+
+      try {
+        console.log('📧 リマインダーメール送信開始', reminderId);
+
+        // 顧客メールアドレス確認
+        if (!reminder.customer.email) {
+          showSnackbar(
+            '顧客のメールアドレスが登録されていません。\n顧客情報を確認してください。',
+            'error'
+          );
+          return;
+        }
+
+        // メール送信
+        const result = await sendEmailAPI(
+          reminder.customer.email,
+          reminder.title,
+          reminder.message
+        );
+
+        if (result.success) {
+          // 送信成功時はステータス更新
+          await markAsSent(reminderId);
+          showSnackbar(result.message, 'success');
+        } else {
+          // 送信失敗
+          const guidance = getOutlookErrorGuidance(result.error || '');
+          showSnackbar(guidance, 'error');
+        }
+      } catch (error) {
+        console.error('❌ メール送信エラー:', error);
+        showSnackbar('メール送信に失敗しました', 'error');
+      }
     },
-    [showSnackbar]
+    [getReminderById, markAsSent, showSnackbar]
   );
 
   /**
    * OutLookカレンダー予定作成
-   * Phase 2Cで実装予定
    */
   const createOutlookEvent = useCallback(
     async (reminderId: number): Promise<void> => {
-      console.log(
-        '📅 カレンダー予定作成機能はPhase 2Cで実装予定',
-        reminderId
-      );
-      showSnackbar(
-        'カレンダー予定作成機能はPhase 2Cで実装予定です',
-        'info'
-      );
-      // TODO: Phase 2Cで実装
+      const reminder = getReminderById(reminderId);
+      if (!reminder) {
+        showSnackbar('リマインダーが見つかりません', 'error');
+        return;
+      }
+
+      try {
+        console.log('📅 カレンダー予定作成開始', reminderId);
+
+        // カレンダー予定データ作成
+        const eventData = {
+          subject: reminder.title,
+          body: reminder.message,
+          start: new Date(reminder.reminderDate),
+          end: new Date(
+            new Date(reminder.reminderDate).getTime() + 60 * 60 * 1000
+          ), // 1時間後
+          location: reminder.customer.address || '',
+          reminder: 60, // 1時間前にリマインダー
+        };
+
+        // カレンダー予定作成
+        const result = await createEventAPI(eventData);
+
+        if (result.success) {
+          showSnackbar(result.message, 'success');
+        } else {
+          const guidance = getOutlookErrorGuidance(result.error || '');
+          showSnackbar(guidance, 'error');
+        }
+      } catch (error) {
+        console.error('❌ カレンダー予定作成エラー:', error);
+        showSnackbar('カレンダー予定の作成に失敗しました', 'error');
+      }
     },
-    [showSnackbar]
+    [getReminderById, showSnackbar]
   );
 
   // ================================
@@ -624,9 +710,7 @@ export const useReminder = (): ReminderContextType => {
   const context = useContext(ReminderContext);
 
   if (context === undefined) {
-    throw new Error(
-      'useReminder must be used within a ReminderProvider'
-    );
+    throw new Error('useReminder must be used within a ReminderProvider');
   }
 
   return context;

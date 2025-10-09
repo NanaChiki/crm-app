@@ -467,7 +467,11 @@ function Dashboard() {
                 }}>
                 <Typography
                   variant="subtitle1"
-                  sx={{ fontWeight: 'bold', mb: 0.5, fontSize: { xs: 18, md: 20 } }}>
+                  sx={{
+                    fontWeight: 'bold',
+                    mb: 0.5,
+                    fontSize: { xs: 18, md: 20 },
+                  }}>
                   {reminder.title}
                 </Typography>
                 <Typography
@@ -480,7 +484,8 @@ function Dashboard() {
                   variant="caption"
                   color="text.secondary"
                   sx={{ fontSize: { xs: 14, md: 16 } }}>
-                  送信予定: {new Date(reminder.reminderDate).toLocaleDateString('ja-JP')}
+                  送信予定:{' '}
+                  {new Date(reminder.reminderDate).toLocaleDateString('ja-JP')}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                   <Button
@@ -495,13 +500,14 @@ function Dashboard() {
             ))}
           </Box>
 
-          <Button
-            fullWidth
-            variant="outlined"
-            onClick={() => navigate('/reminders')}
-            sx={{ mt: 2, fontSize: { xs: 16, md: 18 }, minHeight: 48 }}>
-            すべてのリマインダーを見る
-          </Button>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/reminders')}
+              sx={{ mt: 2, fontSize: { xs: 16, md: 18 }, minHeight: 48 }}>
+              すべてのリマインダーを見る
+            </Button>
+          </Box>
         </>
       ) : (
         <Typography
