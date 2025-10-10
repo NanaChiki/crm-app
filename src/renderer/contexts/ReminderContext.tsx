@@ -29,9 +29,9 @@ import { useCustomer } from './CustomerContext';
 
 // OutLook API
 import {
-  sendReminderEmail as sendEmailAPI,
   createReminderEvent as createEventAPI,
   getOutlookErrorGuidance,
+  sendReminderEmail as sendEmailAPI,
 } from '../utils/outlookAPI';
 
 // Types
@@ -581,7 +581,7 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
           return;
         }
 
-        // メール送信
+        // メール下書き作成
         const result = await sendEmailAPI(
           reminder.customer.email,
           reminder.title,
@@ -589,9 +589,13 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         );
 
         if (result.success) {
-          // 送信成功時はステータス更新
-          await markAsSent(reminderId);
-          showSnackbar(result.message, 'success');
+          // 下書き作成成功時は「下書き作成中」ステータスに変更
+          // ユーザーがメールクライアントで送信ボタンを押すまで待機
+          await updateReminder({ reminderId, status: 'drafting' });
+          showSnackbar(
+            'メールアプリで下書きを確認してください。\n送信後、手動で「送信済み」に変更できます。',
+            'info'
+          );
         } else {
           // 送信失敗
           const guidance = getOutlookErrorGuidance(result.error || '');
@@ -602,7 +606,7 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         showSnackbar('メール送信に失敗しました', 'error');
       }
     },
-    [getReminderById, markAsSent, showSnackbar]
+    [getReminderById, updateReminder, showSnackbar]
   );
 
   /**

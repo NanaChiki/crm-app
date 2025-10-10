@@ -44,6 +44,7 @@ import {
   Delete as DeleteIcon,
   Send as SendIcon,
   Notifications as NotificationsIcon,
+  Drafts as DraftsIcon,
 } from '@mui/icons-material';
 
 // Custom Components
@@ -65,13 +66,18 @@ import type { ReminderStatus, ReminderWithCustomer } from '../../types';
 // 定数定義
 // ================================
 
-type TabValue = 'scheduled' | 'sent' | 'cancelled';
+type TabValue = 'scheduled' | 'drafting' | 'sent' | 'cancelled';
 
 const STATUS_CONFIG = {
   scheduled: {
     label: '送信予定',
     color: 'primary' as const,
     icon: <ScheduleIcon />,
+  },
+  drafting: {
+    label: '下書き作成中',
+    color: 'warning' as const,
+    icon: <DraftsIcon />,
   },
   sent: {
     label: '送信済み',
@@ -186,18 +192,31 @@ export const ReminderListPage: React.FC = () => {
     setReminderToDelete(null);
   }, [reminderToDelete, deleteReminder, showSnackbar]);
 
-  const handleSendNow = useCallback(async (reminderId: number) => {
-    const confirmed = window.confirm(MESSAGES.sendConfirm);
+  // 下書き作成: メールアプリを開いてステータスを「下書き作成中」に変更
+  const handleCreateDraft = useCallback(async (reminderId: number) => {
+    const confirmed = window.confirm('メールアプリで下書きを作成しますか？');
     if (!confirmed) return;
 
     try {
       await sendReminderEmail(reminderId);
-      await markAsSent(reminderId);
-      showSnackbar('リマインダーを送信しました', 'success');
+      // sendReminderEmail内でステータスが'drafting'に変更される
     } catch (error) {
-      showSnackbar('送信に失敗しました', 'error');
+      showSnackbar('下書き作成に失敗しました', 'error');
     }
-  }, [sendReminderEmail, markAsSent, showSnackbar]);
+  }, [sendReminderEmail, showSnackbar]);
+
+  // 今すぐ送信: draftingステータスから送信済みに変更
+  const handleSendNow = useCallback(async (reminderId: number) => {
+    const confirmed = window.confirm('メールを送信しましたか？\n「送信済み」ステータスに変更します。');
+    if (!confirmed) return;
+
+    try {
+      await markAsSent(reminderId);
+      showSnackbar('リマインダーを送信済みにしました', 'success');
+    } catch (error) {
+      showSnackbar('ステータス更新に失敗しました', 'error');
+    }
+  }, [markAsSent, showSnackbar]);
 
   const handleCustomerClick = useCallback((customerId: number) => {
     navigate(`/customers/${customerId}`);
@@ -223,6 +242,7 @@ export const ReminderListPage: React.FC = () => {
     }
   }, [rescheduleReminder]);
 
+
   // ================================
   // レンダリング: リマインダーカード
   // ================================
@@ -230,6 +250,7 @@ export const ReminderListPage: React.FC = () => {
   const renderReminderCard = (reminder: ReminderWithCustomer) => {
     const statusConfig = STATUS_CONFIG[reminder.status as ReminderStatus];
     const isScheduled = reminder.status === 'scheduled';
+    const isDrafting = reminder.status === 'drafting';
     const isCancelled = reminder.status === 'cancelled';
     const daysUntil = Math.ceil(
       (new Date(reminder.reminderDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
@@ -307,14 +328,16 @@ export const ReminderListPage: React.FC = () => {
 
             {/* アクションボタン */}
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {/* 送信予定: 下書き作成ボタン */}
               {isScheduled && (
                 <Button
                   variant="contained"
                   size="small"
-                  startIcon={<SendIcon />}
-                  onClick={() => handleSendNow(reminder.reminderId)}
-                  sx={{ minWidth: 120 }}>
-                  今すぐ送信
+                  color="warning"
+                  startIcon={<DraftsIcon />}
+                  onClick={() => handleCreateDraft(reminder.reminderId)}
+                  sx={{ minWidth: 140 }}>
+                  下書き作成
                 </Button>
               )}
 
@@ -338,6 +361,19 @@ export const ReminderListPage: React.FC = () => {
                   onClick={() => handleCancelReminder(reminder.reminderId)}
                   sx={{ minWidth: 100 }}>
                   キャンセル
+                </Button>
+              )}
+
+              {/* 下書き作成中: 今すぐ送信ボタン */}
+              {isDrafting && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  color="success"
+                  startIcon={<SendIcon />}
+                  onClick={() => handleSendNow(reminder.reminderId)}
+                  sx={{ minWidth: 140 }}>
+                  今すぐ送信
                 </Button>
               )}
 
