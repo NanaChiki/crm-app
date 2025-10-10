@@ -19,10 +19,11 @@ export type { Reminder } from '@prisma/client';
  * リマインダーのステータス
  *
  * - scheduled: 送信予定（まだ送信していない）
+ * - drafting: 下書き作成中（メールアプリで下書き作成中）
  * - sent: 送信済み
  * - cancelled: キャンセル（送信しない）
  */
-export type ReminderStatus = 'scheduled' | 'sent' | 'cancelled';
+export type ReminderStatus = 'scheduled' | 'drafting' | 'sent' | 'cancelled';
 
 /**
  * リマインダーの作成元

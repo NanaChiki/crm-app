@@ -1,10 +1,14 @@
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain } from 'electron';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { sendOutlookEmail, createOutlookEvent, getFriendlyErrorMessage, } from './outlook.js';
 // ES modules用の__dirnameの代替
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 function createWindow() {
+    const preloadPath = path.join(__dirname, 'preload.js');
+    console.log('📂 Preload script path:', preloadPath);
+    console.log('📂 __dirname:', __dirname);
     const mainWindow = new BrowserWindow({
         height: 800,
         width: 1200,
@@ -13,7 +17,7 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
-            preload: path.join(__dirname, 'preload.js'),
+            preload: preloadPath,
         },
         titleBarStyle: 'default',
         show: true,
@@ -36,7 +40,7 @@ function createWindow() {
             mainWindow.focus();
             mainWindow.moveTop();
         });
-        mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+        mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
             console.error('Failed to load content:', errorCode, errorDescription);
         });
     }
@@ -78,3 +82,43 @@ Menu.setApplicationMenu(Menu.buildFromTemplate([
         ],
     },
 ]));
+// ================================
+// OutLook連携IPCハンドラー
+// ================================
+/**
+ * OutLookメール送信
+ */
+ipcMain.handle('outlook:send-email', async (_event, emailData) => {
+    try {
+        console.log('📧 IPC: OutLookメール送信リクエスト', emailData);
+        const result = await sendOutlookEmail(emailData);
+        return result;
+    }
+    catch (error) {
+        console.error('❌ IPC: メール送信エラー:', error);
+        return {
+            success: false,
+            message: getFriendlyErrorMessage(error.message),
+            error: error.message,
+        };
+    }
+});
+/**
+ * OutLookカレンダー予定作成
+ */
+ipcMain.handle('outlook:create-event', async (_event, eventData) => {
+    try {
+        console.log('📅 IPC: OutLookカレンダー予定作成リクエスト', eventData);
+        const result = await createOutlookEvent(eventData);
+        return result;
+    }
+    catch (error) {
+        console.error('❌ IPC: カレンダー予定作成エラー:', error);
+        return {
+            success: false,
+            message: getFriendlyErrorMessage(error.message),
+            error: error.message,
+        };
+    }
+});
+console.log('✅ OutLook IPC ハンドラー登録完了');

@@ -66,6 +66,16 @@ export async function sendReminderEmail(
   try {
     console.log('📧 リマインダーメール送信:', { to, subject });
 
+    // window.outlookAPIの存在確認（デバッグ用）
+    if (!window.outlookAPI) {
+      console.error('❌ window.outlookAPIが未定義です。preload.jsが正しく読み込まれていません。');
+      return {
+        success: false,
+        message: 'メール送信機能の初期化に失敗しました。\nアプリを再起動してください。',
+        error: 'OUTLOOK_API_NOT_FOUND',
+      };
+    }
+
     // メールアドレスの簡易バリデーション
     if (!to || !to.includes('@')) {
       return {
