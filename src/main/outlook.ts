@@ -96,13 +96,35 @@ export async function sendOutlookEmail(
     console.log('💻 Platform:', platform);
 
     if (platform === 'darwin') {
-      // macOS: openコマンドを使用
+      // macOS: 複数の方法を試行
       try {
+        // 方法1: openコマンドでmailtoリンクを開く
+        console.log('🔧 Trying method 1: open mailto link');
         await execAsync(`open "${mailtoLink}"`);
         console.log('✅ macOS open command success');
-      } catch (error) {
-        console.error('❌ macOS open command error:', error);
-        throw error;
+      } catch (error1) {
+        console.error('❌ Method 1 failed:', error1);
+
+        try {
+          // 方法2: Mail.appを直接起動してmailtoリンクを渡す
+          console.log('🔧 Trying method 2: open with Mail.app');
+          await execAsync(`open -a Mail "${mailtoLink}"`);
+          console.log('✅ Mail.app launch success');
+        } catch (error2) {
+          console.error('❌ Method 2 failed:', error2);
+
+          try {
+            // 方法3: shell.openExternalを試す
+            console.log('🔧 Trying method 3: shell.openExternal');
+            await shell.openExternal(mailtoLink);
+            console.log('✅ shell.openExternal success');
+          } catch (error3) {
+            console.error('❌ All methods failed');
+            throw new Error(
+              'メールアプリの起動に失敗しました。\nデフォルトのメールアプリが設定されているか確認してください。'
+            );
+          }
+        }
       }
     } else {
       // Windows/Linux: shell.openExternalを使用
