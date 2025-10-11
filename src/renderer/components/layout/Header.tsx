@@ -2,6 +2,7 @@ import {
   Assessment as AssessmentIcon,
   Dashboard as DashboardIcon,
   Home as HomeIcon,
+  Notifications as NotificationsIcon,
   People as PeopleIcon,
 } from '@mui/icons-material';
 import {
@@ -166,6 +167,12 @@ const navigationItems = [
     label: '顧客管理',
     icon: <PeopleIcon />,
     ariaLabel: '顧客管理ページへ移動',
+  },
+  {
+    path: '/reminders',
+    label: 'リマインダー',
+    icon: <NotificationsIcon />,
+    ariaLabel: 'リマインダーページへ移動',
   },
   {
     path: '/reports',
