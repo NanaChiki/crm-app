@@ -34,6 +34,8 @@ import {
   useTheme,
   useMediaQuery,
   Fab,
+  Collapse,
+  IconButton,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -45,6 +47,7 @@ import {
   Send as SendIcon,
   Notifications as NotificationsIcon,
   Drafts as DraftsIcon,
+  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 
 // Custom Components
@@ -129,6 +132,7 @@ export const ReminderListPage: React.FC = () => {
   const [editingReminder, setEditingReminder] = useState<ReminderWithCustomer | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [reminderToDelete, setReminderToDelete] = useState<number | null>(null);
+  const [expandedMessages, setExpandedMessages] = useState<Set<number>>(new Set());
 
   // ================================
   // Effects
@@ -242,6 +246,18 @@ export const ReminderListPage: React.FC = () => {
     }
   }, [rescheduleReminder]);
 
+  const handleToggleMessage = useCallback((reminderId: number) => {
+    setExpandedMessages((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(reminderId)) {
+        newSet.delete(reminderId);
+      } else {
+        newSet.add(reminderId);
+      }
+      return newSet;
+    });
+  }, []);
+
 
   // ================================
   // レンダリング: リマインダーカード
@@ -255,6 +271,9 @@ export const ReminderListPage: React.FC = () => {
     const daysUntil = Math.ceil(
       (new Date(reminder.reminderDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
     );
+    const isExpanded = expandedMessages.has(reminder.reminderId);
+    const messageLines = reminder.message.split('\n').length;
+    const isLongMessage = messageLines > 3 || reminder.message.length > 100;
 
     return (
       <Card key={reminder.reminderId}>
@@ -287,19 +306,51 @@ export const ReminderListPage: React.FC = () => {
               />
             </Box>
 
-            {/* メッセージ */}
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                mb: 2,
-                whiteSpace: 'pre-wrap',
-                maxHeight: 100,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}>
-              {reminder.message}
-            </Typography>
+            {/* メッセージ（折りたたみ対応） */}
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  whiteSpace: 'pre-wrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: isExpanded ? 'unset' : 3,
+                  WebkitBoxOrient: 'vertical',
+                }}>
+                {reminder.message}
+              </Typography>
+              {isLongMessage && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mt: 1,
+                  }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleToggleMessage(reminder.reminderId)}
+                    sx={{
+                      transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.3s',
+                    }}>
+                    <ExpandMoreIcon />
+                  </IconButton>
+                  <Typography
+                    variant="caption"
+                    color="primary"
+                    sx={{
+                      cursor: 'pointer',
+                      '&:hover': { textDecoration: 'underline' },
+                    }}
+                    onClick={() => handleToggleMessage(reminder.reminderId)}>
+                    {isExpanded ? '折りたたむ' : 'もっと見る'}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
 
             {/* 送信予定日 */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -416,9 +467,19 @@ export const ReminderListPage: React.FC = () => {
         subtitle={MESSAGES.pageSubtitle}
       />
 
-      {/* ステータスタブ */}
+      {/* ステータスタブ（スクロール対応） */}
       <Box sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={selectedTab} onChange={handleTabChange}>
+        <Tabs
+          value={selectedTab}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{
+            '& .MuiTabs-scrollButtons': {
+              '&.Mui-disabled': { opacity: 0.3 },
+            },
+          }}>
           {Object.entries(STATUS_CONFIG).map(([value, config]) => (
             <Tab
               key={value}
@@ -428,8 +489,9 @@ export const ReminderListPage: React.FC = () => {
               iconPosition="start"
               sx={{
                 minHeight: 48,
-                fontSize: 16,
+                fontSize: { xs: 14, md: 16 },
                 fontWeight: 'bold',
+                minWidth: { xs: 120, md: 'auto' },
               }}
             />
           ))}

@@ -508,8 +508,8 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
 
       // reminderDate を基準にフィルタリング
       const filtered = reminders.filter((reminder) => {
-        // ステータスがscheduledのものだけ
-        if (reminder.status !== 'scheduled') {
+        // ステータスがscheduled または drafting のものだけ
+        if (reminder.status !== 'scheduled' && reminder.status !== 'drafting') {
           console.log(
             `❌ ステータス不一致: ${reminder.title} (status: ${reminder.status})`
           );
