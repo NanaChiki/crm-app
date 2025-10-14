@@ -218,63 +218,45 @@ interface CustomerContextType {
 }
 
 // =============================================================================
-// 💾 モックデータ管理（ファイルスコープ）
+// 🔌 Phase 2E: Prisma Database Integration
 // =============================================================================
 
 /**
- * モックデータのメモリ管理
+ * Window API Type Declaration for customerAPI
  *
- * 【修正理由】
- * 以前の実装では、fetchCustomers()内でモックデータを定義していたため、
- * refreshCustomers()実行時に常に元のデータが復活してしまう問題がありました。
+ * Phase 2E: CustomerContext now uses real Prisma database via Electron IPC
+ * All mock data has been migrated to prisma/mockData.ts for seeding
  *
- * 【解決策】
- * - モックデータをファイルスコープで管理
- * - CRUD操作時に直接このデータを変更
- * - fetchCustomers()はこのデータを参照
- *
- * これにより、削除・更新・追加の変更が永続化され、
- * refreshCustomers()実行後も保持されます。
- *
- * 【将来の実装】
- * 実際のAPI/Prisma実装時は、この部分を削除し、
- * 各CRUD関数内で実際のDB呼び出しに置き換えます。
+ * window.customerAPI provides IPC communication with Electron main process:
+ * - Main process (src/main/database/customerHandlers.ts) handles Prisma operations
+ * - Preload script (src/main/preload.ts) exposes customerAPI to renderer
+ * - This context consumes the API for CRUD operations
  */
-const mockCustomersData: Customer[] = [
-  {
-    customerId: 1,
-    companyName: '佐藤リフォーム',
-    contactPerson: '佐藤次郎',
-    phone: '080-9999-8888',
-    email: 'sato@sato-reform.jp',
-    address: '東京都練馬区石神井公園3-7-9',
-    notes: 'リフォーム専門。お客様の要望を丁寧にヒアリングしてくれる。',
-    createdAt: new Date('2024-03-05'),
-    updatedAt: new Date('2024-08-22'),
-  },
-  {
-    customerId: 2,
-    companyName: '田中建設株式会社',
-    contactPerson: '田中太郎',
-    phone: '090-1234-5678',
-    email: 'tanaka@tanaka-kensetsu.co.jp',
-    address: '東京都世田谷区桜丘1-2-3',
-    notes: '定期メンテナンス契約あり。年2回の点検実施。',
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-08-20'),
-  },
-  {
-    customerId: 3,
-    companyName: '山田工務店',
-    contactPerson: '山田花子',
-    phone: '03-5555-1234',
-    email: 'info@yamada-koumuten.com',
-    address: '東京都杉並区高円寺南2-4-5',
-    notes: '新築工事専門。品質重視のお客様。',
-    createdAt: new Date('2024-02-10'),
-    updatedAt: new Date('2024-08-18'),
-  },
-];
+declare global {
+  interface Window {
+    customerAPI: {
+      fetch: (filters?: CustomerFilters) => Promise<{
+        success: boolean;
+        data?: Customer[];
+        error?: string;
+      }>;
+      create: (input: CreateCustomerInput) => Promise<{
+        success: boolean;
+        data?: Customer;
+        error?: string;
+      }>;
+      update: (input: UpdateCustomerInput) => Promise<{
+        success: boolean;
+        data?: Customer;
+        error?: string;
+      }>;
+      delete: (customerId: number) => Promise<{
+        success: boolean;
+        error?: string;
+      }>;
+    };
+  }
+}
 
 // =============================================================================
 // 🎨 Context作成 - 顧客データ専用
@@ -386,39 +368,40 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
    * 3. メモリ使用量の最小化
    * 4. React.memo() との相性向上
    */
-  const fetchCustomers = useCallback(async () => {
+  const fetchCustomers = useCallback(async (filters?: CustomerFilters) => {
     try {
       // ローディング開始
       setLoading({ isLoading: true, error: null });
-      // グローバルローディング（重い操作の場合）
-      setGlobalLoading(true);
 
-      // 【現段階】ファイルスコープのモックデータを参照
-      // 【修正】CRUD操作の変更が永続化されるよう、mockCustomersDataを参照
-      // 【将来】実際のAPI呼び出し: const response = await api.getCustomers();
+      console.log('📋 DB: 顧客取得開始', filters);
 
-      // API応答のシミュレーション（1.5秒の待機）
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Phase 2E: Real Prisma database via window.customerAPI
+      const result = await window.customerAPI.fetch(filters);
 
-      // ファイルスコープのモックデータをコピーして設定
-      // （参照ではなくコピーすることで、予期しない変更を防ぐ）
-      const customersCopy = [...mockCustomersData];
-      setCustomers(customersCopy);
+      if (result.success && result.data) {
+        setCustomers(result.data);
+        console.log(`✅ ${result.data.length}件の顧客を取得しました`);
 
-      // ローディング終了
-      setLoading({ isLoading: false, error: null });
+        // 成功メッセージの表示 (50代向け：件数を明示)
+        showSnackbar(
+          `${result.data.length}件の顧客情報を読み込みました`,
+          'success',
+          4000
+        );
 
-      // 成功メッセージの表示 (50代向け：件数を明示)
-      showSnackbar(
-        `${mockCustomersData.length}件の顧客情報を読み込みました`,
-        'success',
-        4000
-      );
+        // ローディング終了
+        setLoading({ isLoading: false, error: null });
+      } else {
+        throw new Error(result.error || '顧客データの取得に失敗しました');
+      }
     } catch (error) {
+      console.error('❌ 顧客取得エラー:', error);
+
       // エラーハンドリング（AppContextに委譲）
+      const errorMessage = error instanceof Error ? error.message : '顧客データの取得に失敗しました';
       const appError: AppError = {
         type: 'SERVER_ERROR',
-        message: '顧客データの取得に失敗しました',
+        message: errorMessage,
         suggestion: 'もう一度お試しください',
         technical: error instanceof Error ? error.message : '不明なエラー',
       };
@@ -430,11 +413,8 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         appError,
         '顧客一覧を読み込めませんでした。もう一度お試しください。'
       );
-    } finally {
-      // グローバルローディング終了
-      setGlobalLoading(false);
     }
-  }, [showSnackbar, handleError, setGlobalLoading]);
+  }, [showSnackbar, handleError]);
 
   /**
    * 新規顧客作成の実装
