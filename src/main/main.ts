@@ -32,7 +32,7 @@ import {
 } from './database/serviceRecordHandlers';
 
 function createWindow(): void {
-  const preloadPath = path.join(__dirname, 'preload.cjs');
+  const preloadPath = path.join(__dirname, 'preload.js');
   console.log('📂 Preload script path:', preloadPath);
   console.log('📂 __dirname:', __dirname);
 
