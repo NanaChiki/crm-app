@@ -476,8 +476,12 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
 
       return reminders
         .filter((reminder) => {
-          if (reminder.status !== 'scheduled' && reminder.status !== 'drafting')
+          if (
+            reminder.status !== 'scheduled' &&
+            reminder.status !== 'drafting'
+          ) {
             return false;
+          }
 
           const reminderDate = new Date(reminder.reminderDate);
           return reminderDate >= now && reminderDate <= futureDate;

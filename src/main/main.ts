@@ -1,11 +1,10 @@
 import { app, BrowserWindow, Menu, ipcMain } from 'electron';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import {
   sendOutlookEmail,
   createOutlookEvent,
   getFriendlyErrorMessage,
-} from './outlook.js';
+} from './outlook';
 import {
   fetchReminders,
   createReminder,
@@ -16,28 +15,24 @@ import {
   rescheduleReminder,
   markReminderAsDrafting,
   disconnectPrisma,
-} from './database/reminderHandlers.js';
+} from './database/reminderHandlers';
 import {
   fetchCustomers,
   createCustomer,
   updateCustomer,
   deleteCustomer,
   disconnectPrismaCustomer,
-} from './database/customerHandlers.js';
+} from './database/customerHandlers';
 import {
   fetchServiceRecords,
   createServiceRecord,
   updateServiceRecord,
   deleteServiceRecord,
   disconnectPrismaServiceRecord,
-} from './database/serviceRecordHandlers.js';
-
-// ES modules用の__dirnameの代替
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+} from './database/serviceRecordHandlers';
 
 function createWindow(): void {
-  const preloadPath = path.join(__dirname, 'preload.js');
+  const preloadPath = path.join(__dirname, 'preload.cjs');
   console.log('📂 Preload script path:', preloadPath);
   console.log('📂 __dirname:', __dirname);
 
@@ -104,9 +99,23 @@ app.on('window-all-closed', () => {
 
 // アプリ終了時のクリーンアップ
 app.on('before-quit', async () => {
-  await disconnectPrisma();
-  await disconnectPrismaCustomer();
-  await disconnectPrismaServiceRecord();
+  try {
+    await disconnectPrisma();
+  } catch (error) {
+    console.error('❌ リマインダーPrisma切断エラー:', error);
+  }
+
+  try {
+    await disconnectPrismaCustomer();
+  } catch (error) {
+    console.error('❌ 顧客Prisma切断エラー:', error);
+  }
+
+  try {
+    await disconnectPrismaServiceRecord();
+  } catch (error) {
+    console.error('❌ サービス履歴Prisma切断エラー:', error);
+  }
 });
 
 app.on('activate', () => {

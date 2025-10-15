@@ -235,7 +235,7 @@ interface CustomerContextType {
 declare global {
   interface Window {
     customerAPI: {
-      fetch: (filters?: CustomerFilters) => Promise<{
+      fetch: (filters?: any) => Promise<{
         success: boolean;
         data?: Customer[];
         error?: string;
@@ -245,7 +245,7 @@ declare global {
         data?: Customer;
         error?: string;
       }>;
-      update: (input: UpdateCustomerInput) => Promise<{
+      update: (input: UpdateCustomerInput & { customerId: number }) => Promise<{
         success: boolean;
         data?: Customer;
         error?: string;
@@ -368,53 +368,59 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
    * 3. メモリ使用量の最小化
    * 4. React.memo() との相性向上
    */
-  const fetchCustomers = useCallback(async (filters?: CustomerFilters) => {
-    try {
-      // ローディング開始
-      setLoading({ isLoading: true, error: null });
+  const fetchCustomers = useCallback(
+    async (filters?: any) => {
+      try {
+        // ローディング開始
+        setLoading({ isLoading: true, error: null });
 
-      console.log('📋 DB: 顧客取得開始', filters);
+        console.log('📋 DB: 顧客取得開始', filters);
 
-      // Phase 2E: Real Prisma database via window.customerAPI
-      const result = await window.customerAPI.fetch(filters);
+        // Phase 2E: Real Prisma database via window.customerAPI
+        const result = await window.customerAPI.fetch(filters);
 
-      if (result.success && result.data) {
-        setCustomers(result.data);
-        console.log(`✅ ${result.data.length}件の顧客を取得しました`);
+        if (result.success && result.data) {
+          setCustomers(result.data);
+          console.log(`✅ ${result.data.length}件の顧客を取得しました`);
 
-        // 成功メッセージの表示 (50代向け：件数を明示)
-        showSnackbar(
-          `${result.data.length}件の顧客情報を読み込みました`,
-          'success',
-          4000
+          // 成功メッセージの表示 (50代向け：件数を明示)
+          showSnackbar(
+            `${result.data.length}件の顧客情報を読み込みました`,
+            'success',
+            4000
+          );
+
+          // ローディング終了
+          setLoading({ isLoading: false, error: null });
+        } else {
+          throw new Error(result.error || '顧客データの取得に失敗しました');
+        }
+      } catch (error) {
+        console.error('❌ 顧客取得エラー:', error);
+
+        // エラーハンドリング（AppContextに委譲）
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : '顧客データの取得に失敗しました';
+        const appError: AppError = {
+          type: 'SERVER_ERROR',
+          message: errorMessage,
+          suggestion: 'もう一度お試しください',
+          technical: error instanceof Error ? error.message : '不明なエラー',
+        };
+
+        setLoading({ isLoading: false, error: appError.message });
+
+        // AppContextのエラーハンドリングに委譲
+        handleError(
+          appError,
+          '顧客一覧を読み込めませんでした。もう一度お試しください。'
         );
-
-        // ローディング終了
-        setLoading({ isLoading: false, error: null });
-      } else {
-        throw new Error(result.error || '顧客データの取得に失敗しました');
       }
-    } catch (error) {
-      console.error('❌ 顧客取得エラー:', error);
-
-      // エラーハンドリング（AppContextに委譲）
-      const errorMessage = error instanceof Error ? error.message : '顧客データの取得に失敗しました';
-      const appError: AppError = {
-        type: 'SERVER_ERROR',
-        message: errorMessage,
-        suggestion: 'もう一度お試しください',
-        technical: error instanceof Error ? error.message : '不明なエラー',
-      };
-
-      setLoading({ isLoading: false, error: appError.message });
-
-      // AppContextのエラーハンドリングに委譲
-      handleError(
-        appError,
-        '顧客一覧を読み込めませんでした。もう一度お試しください。'
-      );
-    }
-  }, [showSnackbar, handleError]);
+    },
+    [showSnackbar, handleError]
+  );
 
   /**
    * 新規顧客作成の実装
@@ -443,53 +449,51 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
             technical: 'companyName is empty or whitespace only',
           };
 
+          setLoading({ isLoading: false, error: validationError.message });
           handleError(validationError);
           return null;
         }
 
-        // 【現段階】モックAPI呼び出し
-        // 【将来】実際のAPI: const response = await api.createCustomer(input);
+        console.log('📝 DB: 顧客作成開始', input.companyName);
 
-        // API応答のシミュレーション
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        // Phase 2E: Real Prisma database via window.customerAPI
+        const result = await window.customerAPI.create(input);
 
-        // モック顧客データの作成
-        const newCustomer: Customer = {
-          customerId: Date.now(), // 仮のID生成
-          companyName: input.companyName,
-          contactPerson: input.contactPerson || null,
-          phone: input.phone || null,
-          email: input.email || null,
-          address: input.address || null,
-          notes: input.notes || null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
+        if (result.success && result.data) {
+          const newCustomer = result.data;
 
-        // 【修正】ファイルスコープのモックデータに追加（永続化）
-        mockCustomersData.push(newCustomer);
+          // Re-fetch to update list from database
+          await fetchCustomers();
 
-        // 顧客一覧に追加
-        setCustomers((prev) => [...prev, newCustomer]);
+          // 新規作成した顧客を選択状態に
+          setSelectedCustomer(newCustomer);
 
-        // 新規作成した顧客を選択状態に
-        setSelectedCustomer(newCustomer);
+          // ローディング完了
+          setLoading({ isLoading: false, error: null });
 
-        // ローディング完了
-        setLoading({ isLoading: false, error: null });
+          console.log(
+            `✅ 顧客作成成功: ${newCustomer.companyName} (ID: ${newCustomer.customerId})`
+          );
 
-        // 成功メッセージの表示 (50代向け：具体的でわかりやすく)
-        showSnackbar(
-          `「${newCustomer.companyName}」を顧客として登録しました`,
-          'success'
-        );
+          // 成功メッセージの表示 (50代向け：具体的でわかりやすく)
+          showSnackbar(
+            `「${newCustomer.companyName}」を顧客として登録しました`,
+            'success'
+          );
 
-        return newCustomer;
+          return newCustomer;
+        } else {
+          throw new Error(result.error || '顧客の作成に失敗しました');
+        }
       } catch (error) {
+        console.error('❌ 顧客作成エラー:', error);
+
         // エラーハンドリング（AppContextに委譲）
+        const errorMessage =
+          error instanceof Error ? error.message : '顧客の作成に失敗しました';
         const appError: AppError = {
           type: 'SERVER_ERROR',
-          message: '顧客の作成に失敗しました',
+          message: errorMessage,
           suggestion: 'もう一度お試しください',
           technical: error instanceof Error ? error.message : '不明なエラー',
         };
@@ -503,7 +507,7 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         return null;
       }
     },
-    [showSnackbar, handleError]
+    [showSnackbar, handleError, fetchCustomers]
   );
 
   /**
@@ -518,66 +522,52 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         // ローディング開始
         setLoading({ isLoading: true, error: null });
 
-        // 顧客の存在確認
-        const existingCustomer = customers.find(
-          (customer) => customer.customerId === customerId
-        );
-        if (!existingCustomer) {
-          const notFoundError: AppError = {
-            type: 'NOT_FOUND',
-            message: '顧客情報が見つかりませんでした',
-            suggestion: '顧客IDを確認してください',
-            technical: `Customer ID ${customerId} not found`,
-          };
+        console.log('✏️ DB: 顧客更新開始', customerId);
 
-          handleError(notFoundError);
-          return null;
-        }
-
-        // 【現段階】モックAPI呼び出し
-        await new Promise((resolve) => setTimeout(resolve, 600));
-
-        // 更新データの作成
-        const updatedCustomer: Customer = {
-          ...existingCustomer,
+        // Phase 2E: Real Prisma database via window.customerAPI
+        const result = await window.customerAPI.update({
+          customerId,
           ...input,
-          updatedAt: new Date(),
-        };
+        });
 
-        // 【修正】ファイルスコープのモックデータを更新（永続化）
-        const mockIndex = mockCustomersData.findIndex(
-          (c) => c.customerId === customerId
-        );
-        if (mockIndex !== -1) {
-          mockCustomersData[mockIndex] = updatedCustomer;
+        if (result.success && result.data) {
+          const updatedCustomer = result.data;
+
+          // Re-fetch to update list from database
+          await fetchCustomers();
+
+          // selectedCustomer の同期更新
+          if (selectedCustomer?.customerId === customerId) {
+            setSelectedCustomer(updatedCustomer);
+          }
+
+          // ローディング完了
+          setLoading({ isLoading: false, error: null });
+
+          console.log(
+            `✅ 顧客更新成功: ${updatedCustomer.companyName} (ID: ${customerId})`
+          );
+
+          // 成功メッセージの表示 (50代向け：具体的でわかりやすく)
+          showSnackbar(
+            `「${updatedCustomer.companyName}」の情報を更新しました`,
+            'success'
+          );
+
+          return updatedCustomer;
+        } else {
+          throw new Error(result.error || '顧客情報の更新に失敗しました');
         }
-
-        // customers 配列の更新
-        setCustomers((prev) =>
-          prev.map((customer) =>
-            customer.customerId === customerId ? updatedCustomer : customer
-          )
-        );
-
-        // selectedCustomer の同期更新
-        if (selectedCustomer?.customerId === customerId) {
-          setSelectedCustomer(updatedCustomer);
-        }
-
-        // ローディング完了
-        setLoading({ isLoading: false, error: null });
-
-        // 成功メッセージの表示 (50代向け：具体的でわかりやすく)
-        showSnackbar(
-          `「${updatedCustomer.companyName}」の情報を更新しました`,
-          'success'
-        );
-
-        return updatedCustomer;
       } catch (error) {
+        console.error('❌ 顧客更新エラー:', error);
+
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : '顧客情報の更新に失敗しました';
         const appError: AppError = {
           type: 'SERVER_ERROR',
-          message: '顧客情報の更新に失敗しました',
+          message: errorMessage,
           suggestion: '顧客IDを確認してください',
           technical: error instanceof Error ? error.message : '不明なエラー',
         };
@@ -591,7 +581,7 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         return null;
       }
     },
-    [customers, selectedCustomer, showSnackbar, handleError]
+    [selectedCustomer, showSnackbar, handleError, fetchCustomers]
   );
 
   /**
@@ -603,57 +593,44 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         // ローディング開始
         setLoading({ isLoading: true, error: null });
 
-        // 削除対象顧客の確認
+        // Get customer name for success message (before deletion)
         const existingCustomer = customers.find(
           (customer) => customer.customerId === customerId
         );
-        if (!existingCustomer) {
-          const notFoundError: AppError = {
-            type: 'NOT_FOUND',
-            message: '削除対象の顧客が見つかりません',
-            suggestion: '顧客IDを確認してください',
-            technical: `Customer ID ${customerId} not found for deletion`,
-          };
-          handleError(notFoundError);
-          return false;
+        const customerName = existingCustomer?.companyName || '顧客';
+
+        console.log('🗑️ DB: 顧客削除開始', customerId);
+
+        // Phase 2E: Real Prisma database via window.customerAPI
+        const result = await window.customerAPI.delete(customerId);
+
+        if (result.success) {
+          // Re-fetch to update list from database
+          await fetchCustomers();
+
+          // selectedCustomer が削除対象の場合は選択解除
+          if (selectedCustomer?.customerId === customerId) {
+            setSelectedCustomer(null);
+          }
+
+          setLoading({ isLoading: false, error: null });
+
+          console.log(`✅ 顧客削除成功: ${customerName} (ID: ${customerId})`);
+
+          showSnackbar(`「${customerName}」を削除しました`, 'success');
+
+          return true;
+        } else {
+          throw new Error(result.error || '顧客の削除に失敗しました');
         }
-
-        // 【現段階】モックAPI呼び出し
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // 【修正】ファイルスコープのモックデータから削除（永続化）
-        const mockIndex = mockCustomersData.findIndex(
-          (c) => c.customerId === customerId
-        );
-        if (mockIndex !== -1) {
-          mockCustomersData.splice(mockIndex, 1);
-          console.log(
-            `💾 モックデータから削除: ${existingCustomer.companyName} (残り${mockCustomersData.length}件)`
-          );
-        }
-
-        // customers 配列から削除
-        setCustomers((prev) =>
-          prev.filter((customer) => customer.customerId !== customerId)
-        );
-
-        // selectedCustomer が削除対象の場合は選択解除
-        if (selectedCustomer?.customerId === customerId) {
-          setSelectedCustomer(null);
-        }
-
-        setLoading({ isLoading: false, error: null });
-
-        showSnackbar(
-          `「${existingCustomer.companyName}」を削除しました`,
-          'success'
-        );
-
-        return true;
       } catch (error) {
+        console.error('❌ 顧客削除エラー:', error);
+
+        const errorMessage =
+          error instanceof Error ? error.message : '顧客の削除に失敗しました';
         const appError: AppError = {
           type: 'SERVER_ERROR',
-          message: '顧客の削除に失敗しました',
+          message: errorMessage,
           suggestion: '顧客IDを確認してください',
           technical: error instanceof Error ? error.message : '不明なエラー',
         };
@@ -667,7 +644,7 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         return false;
       }
     },
-    [customers, selectedCustomer, showSnackbar, handleError]
+    [customers, selectedCustomer, showSnackbar, handleError, fetchCustomers]
   );
 
   /**
