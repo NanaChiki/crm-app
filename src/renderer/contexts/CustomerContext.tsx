@@ -235,7 +235,7 @@ interface CustomerContextType {
 declare global {
   interface Window {
     customerAPI: {
-      fetch: (filters?: CustomerFilters) => Promise<{
+      fetch: (filters?: any) => Promise<{
         success: boolean;
         data?: Customer[];
         error?: string;
@@ -245,7 +245,7 @@ declare global {
         data?: Customer;
         error?: string;
       }>;
-      update: (input: UpdateCustomerInput) => Promise<{
+      update: (input: UpdateCustomerInput & { customerId: number }) => Promise<{
         success: boolean;
         data?: Customer;
         error?: string;
@@ -368,53 +368,59 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
    * 3. メモリ使用量の最小化
    * 4. React.memo() との相性向上
    */
-  const fetchCustomers = useCallback(async (filters?: CustomerFilters) => {
-    try {
-      // ローディング開始
-      setLoading({ isLoading: true, error: null });
+  const fetchCustomers = useCallback(
+    async (filters?: any) => {
+      try {
+        // ローディング開始
+        setLoading({ isLoading: true, error: null });
 
-      console.log('📋 DB: 顧客取得開始', filters);
+        console.log('📋 DB: 顧客取得開始', filters);
 
-      // Phase 2E: Real Prisma database via window.customerAPI
-      const result = await window.customerAPI.fetch(filters);
+        // Phase 2E: Real Prisma database via window.customerAPI
+        const result = await window.customerAPI.fetch(filters);
 
-      if (result.success && result.data) {
-        setCustomers(result.data);
-        console.log(`✅ ${result.data.length}件の顧客を取得しました`);
+        if (result.success && result.data) {
+          setCustomers(result.data);
+          console.log(`✅ ${result.data.length}件の顧客を取得しました`);
 
-        // 成功メッセージの表示 (50代向け：件数を明示)
-        showSnackbar(
-          `${result.data.length}件の顧客情報を読み込みました`,
-          'success',
-          4000
+          // 成功メッセージの表示 (50代向け：件数を明示)
+          showSnackbar(
+            `${result.data.length}件の顧客情報を読み込みました`,
+            'success',
+            4000
+          );
+
+          // ローディング終了
+          setLoading({ isLoading: false, error: null });
+        } else {
+          throw new Error(result.error || '顧客データの取得に失敗しました');
+        }
+      } catch (error) {
+        console.error('❌ 顧客取得エラー:', error);
+
+        // エラーハンドリング（AppContextに委譲）
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : '顧客データの取得に失敗しました';
+        const appError: AppError = {
+          type: 'SERVER_ERROR',
+          message: errorMessage,
+          suggestion: 'もう一度お試しください',
+          technical: error instanceof Error ? error.message : '不明なエラー',
+        };
+
+        setLoading({ isLoading: false, error: appError.message });
+
+        // AppContextのエラーハンドリングに委譲
+        handleError(
+          appError,
+          '顧客一覧を読み込めませんでした。もう一度お試しください。'
         );
-
-        // ローディング終了
-        setLoading({ isLoading: false, error: null });
-      } else {
-        throw new Error(result.error || '顧客データの取得に失敗しました');
       }
-    } catch (error) {
-      console.error('❌ 顧客取得エラー:', error);
-
-      // エラーハンドリング（AppContextに委譲）
-      const errorMessage = error instanceof Error ? error.message : '顧客データの取得に失敗しました';
-      const appError: AppError = {
-        type: 'SERVER_ERROR',
-        message: errorMessage,
-        suggestion: 'もう一度お試しください',
-        technical: error instanceof Error ? error.message : '不明なエラー',
-      };
-
-      setLoading({ isLoading: false, error: appError.message });
-
-      // AppContextのエラーハンドリングに委譲
-      handleError(
-        appError,
-        '顧客一覧を読み込めませんでした。もう一度お試しください。'
-      );
-    }
-  }, [showSnackbar, handleError]);
+    },
+    [showSnackbar, handleError]
+  );
 
   /**
    * 新規顧客作成の実装
@@ -465,7 +471,9 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
           // ローディング完了
           setLoading({ isLoading: false, error: null });
 
-          console.log(`✅ 顧客作成成功: ${newCustomer.companyName} (ID: ${newCustomer.customerId})`);
+          console.log(
+            `✅ 顧客作成成功: ${newCustomer.companyName} (ID: ${newCustomer.customerId})`
+          );
 
           // 成功メッセージの表示 (50代向け：具体的でわかりやすく)
           showSnackbar(
@@ -481,7 +489,8 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         console.error('❌ 顧客作成エラー:', error);
 
         // エラーハンドリング（AppContextに委譲）
-        const errorMessage = error instanceof Error ? error.message : '顧客の作成に失敗しました';
+        const errorMessage =
+          error instanceof Error ? error.message : '顧客の作成に失敗しました';
         const appError: AppError = {
           type: 'SERVER_ERROR',
           message: errorMessage,
@@ -516,7 +525,10 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         console.log('✏️ DB: 顧客更新開始', customerId);
 
         // Phase 2E: Real Prisma database via window.customerAPI
-        const result = await window.customerAPI.update({ customerId, ...input });
+        const result = await window.customerAPI.update({
+          customerId,
+          ...input,
+        });
 
         if (result.success && result.data) {
           const updatedCustomer = result.data;
@@ -532,7 +544,9 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
           // ローディング完了
           setLoading({ isLoading: false, error: null });
 
-          console.log(`✅ 顧客更新成功: ${updatedCustomer.companyName} (ID: ${customerId})`);
+          console.log(
+            `✅ 顧客更新成功: ${updatedCustomer.companyName} (ID: ${customerId})`
+          );
 
           // 成功メッセージの表示 (50代向け：具体的でわかりやすく)
           showSnackbar(
@@ -547,7 +561,10 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
       } catch (error) {
         console.error('❌ 顧客更新エラー:', error);
 
-        const errorMessage = error instanceof Error ? error.message : '顧客情報の更新に失敗しました';
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : '顧客情報の更新に失敗しました';
         const appError: AppError = {
           type: 'SERVER_ERROR',
           message: errorMessage,
@@ -600,10 +617,7 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
 
           console.log(`✅ 顧客削除成功: ${customerName} (ID: ${customerId})`);
 
-          showSnackbar(
-            `「${customerName}」を削除しました`,
-            'success'
-          );
+          showSnackbar(`「${customerName}」を削除しました`, 'success');
 
           return true;
         } else {
@@ -612,7 +626,8 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
       } catch (error) {
         console.error('❌ 顧客削除エラー:', error);
 
-        const errorMessage = error instanceof Error ? error.message : '顧客の削除に失敗しました';
+        const errorMessage =
+          error instanceof Error ? error.message : '顧客の削除に失敗しました';
         const appError: AppError = {
           type: 'SERVER_ERROR',
           message: errorMessage,
