@@ -110,15 +110,17 @@ const MESSAGES = {
 
 /**
  * 日付フォーマット（50代向け和暦表示）
+ * ISO文字列またはDate objectに対応
  */
-const formatDate = (date: Date): string => {
+const formatDate = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
     era: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     weekday: 'short',
-  }).format(date);
+  }).format(dateObj);
 };
 
 /**

@@ -57,7 +57,6 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { MaintenancePrediction } from '../components/maintenance/MaintenancePrediction';
 import { ServiceRecordList } from '../components/service/ServiceRecordList';
 import { Button } from '../components/ui/Button';
-import { NotFoundPage } from '../pages/NotFoundPage';
 
 // Custom Hooks
 import { useApp } from '../contexts/AppContext';
@@ -522,7 +521,8 @@ export const CustomerDetailPage: React.FC = () => {
   }
 
   if (!currentCustomer) {
-    return <NotFoundPage />;
+    navigate('/customers');
+    return;
   }
 
   // エラー状態

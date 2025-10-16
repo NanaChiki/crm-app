@@ -36,6 +36,26 @@ async function getPrisma(): Promise<PrismaClient> {
   return prismaInstance;
 }
 
+/**
+ * PrismaオブジェクトをIPC送信可能なプレーンオブジェクトに変換
+ * Decimal型、Date型などをシリアライズ可能な形式に変換
+ */
+function serializeForIPC(data: any): any {
+  return JSON.parse(
+    JSON.stringify(data, (key, value) => {
+      // Decimal型を数値文字列に変換
+      if (value && typeof value === 'object' && value.constructor?.name === 'Decimal') {
+        return value.toString();
+      }
+      // Date型をISO文字列に変換
+      if (value instanceof Date) {
+        return value.toISOString();
+      }
+      return value;
+    })
+  );
+}
+
 // ================================
 // 型定義
 // ================================
@@ -127,9 +147,10 @@ export async function fetchReminders(
 
     console.log(`✅ DB: ${reminders.length}件のリマインダーを取得`);
 
+    const serializedReminders = serializeForIPC(reminders);
     return {
       success: true,
-      data: reminders,
+      data: serializedReminders,
     };
   } catch (error: any) {
     console.error('❌ DB: リマインダー取得エラー:', error);
@@ -200,9 +221,10 @@ export async function createReminder(
 
     console.log('✅ DB: リマインダー作成成功', reminder.reminderId);
 
+    const serializedReminder = serializeForIPC(reminder);
     return {
       success: true,
-      data: reminder,
+      data: serializedReminder,
     };
   } catch (error: any) {
     console.error('❌ DB: リマインダー作成エラー:', error);
@@ -265,9 +287,10 @@ export async function updateReminder(
 
     console.log('✅ DB: リマインダー更新成功', reminder.reminderId);
 
+    const serializedReminder = serializeForIPC(reminder);
     return {
       success: true,
-      data: reminder,
+      data: serializedReminder,
     };
   } catch (error: any) {
     console.error('❌ DB: リマインダー更新エラー:', error);

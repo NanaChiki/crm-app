@@ -12,6 +12,7 @@ function fixRequirePaths(dir) {
       fixRequirePaths(fullPath);
     } else if (extname(file) === '.js') {
       let content = readFileSync(fullPath, 'utf-8');
+
       // Fix require statements: require('./something') -> require('./something.cjs')
       // But skip if already has an extension
       content = content.replace(/require\(['"](\.[^'"]+)['"]\)/g, (match, path) => {
@@ -23,6 +24,15 @@ function fixRequirePaths(dir) {
         const quote = match.includes('"') ? '"' : "'";
         return `require(${quote}${path}.cjs${quote})`;
       });
+
+      // Fix Electron imports - wrap in __importStar to handle Electron's module structure
+      if (content.includes('const electron_1 = require("electron");')) {
+        content = content.replace(
+          /const electron_1 = require\("electron"\);/g,
+          'const electron_1 = __importStar(require("electron"));'
+        );
+      }
+
       writeFileSync(fullPath, content, 'utf-8');
     }
   }

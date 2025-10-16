@@ -35,6 +35,26 @@ async function getPrisma(): Promise<PrismaClient> {
   return prismaInstance;
 }
 
+/**
+ * PrismaオブジェクトをIPC送信可能なプレーンオブジェクトに変換
+ * Decimal型、Date型などをシリアライズ可能な形式に変換
+ */
+function serializeForIPC(data: any): any {
+  return JSON.parse(
+    JSON.stringify(data, (key, value) => {
+      // Decimal型を数値文字列に変換
+      if (value && typeof value === 'object' && value.constructor?.name === 'Decimal') {
+        return value.toString();
+      }
+      // Date型をISO文字列に変換
+      if (value instanceof Date) {
+        return value.toISOString();
+      }
+      return value;
+    })
+  );
+}
+
 // ================================
 // 型定義
 // ================================
@@ -135,9 +155,10 @@ export async function fetchServiceRecords(
 
     console.log(`✅ ${serviceRecords.length}件のサービス履歴を取得しました`);
 
+    const serializedRecords = serializeForIPC(serviceRecords);
     return {
       success: true,
-      data: serviceRecords,
+      data: serializedRecords,
     };
   } catch (error: any) {
     console.error('❌ サービス履歴取得エラー:', error);
@@ -211,9 +232,10 @@ export async function createServiceRecord(
       `✅ サービス履歴作成成功: ${customer.companyName} (Record ID: ${serviceRecord.recordId})`
     );
 
+    const serializedRecord = serializeForIPC(serviceRecord);
     return {
       success: true,
-      data: serviceRecord,
+      data: serializedRecord,
     };
   } catch (error: any) {
     console.error('❌ サービス履歴作成エラー:', error);
@@ -298,9 +320,10 @@ export async function updateServiceRecord(
 
     console.log(`✅ サービス履歴更新成功 (Record ID: ${serviceRecord.recordId})`);
 
+    const serializedRecord = serializeForIPC(serviceRecord);
     return {
       success: true,
-      data: serviceRecord,
+      data: serializedRecord,
     };
   } catch (error: any) {
     console.error('❌ サービス履歴更新エラー:', error);

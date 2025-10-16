@@ -35,6 +35,26 @@ async function getPrisma(): Promise<PrismaClient> {
   return prismaInstance;
 }
 
+/**
+ * PrismaオブジェクトをIPC送信可能なプレーンオブジェクトに変換
+ * Decimal型、Date型などをシリアライズ可能な形式に変換
+ */
+function serializeForIPC(data: any): any {
+  return JSON.parse(
+    JSON.stringify(data, (key, value) => {
+      // Decimal型を数値文字列に変換
+      if (value && typeof value === 'object' && value.constructor?.name === 'Decimal') {
+        return value.toString();
+      }
+      // Date型をISO文字列に変換
+      if (value instanceof Date) {
+        return value.toISOString();
+      }
+      return value;
+    })
+  );
+}
+
 // ================================
 // 型定義
 // ================================
@@ -129,9 +149,12 @@ export async function fetchCustomers(
 
     console.log(`✅ ${customers.length}件の顧客を取得しました`);
 
+    // IPC送信用にシリアライズ
+    const serializedCustomers = serializeForIPC(customers);
+
     return {
       success: true,
-      data: customers,
+      data: serializedCustomers,
     };
   } catch (error: any) {
     console.error('❌ 顧客取得エラー:', error);
@@ -196,9 +219,12 @@ export async function createCustomer(
 
     console.log(`✅ 顧客作成成功: ${customer.companyName} (ID: ${customer.customerId})`);
 
+    // IPC送信用にシリアライズ
+    const serializedCustomer = serializeForIPC(customer);
+
     return {
       success: true,
-      data: customer,
+      data: serializedCustomer,
     };
   } catch (error: any) {
     console.error('❌ 顧客作成エラー:', error);
@@ -291,9 +317,12 @@ export async function updateCustomer(
 
     console.log(`✅ 顧客更新成功: ${customer.companyName} (ID: ${customer.customerId})`);
 
+    // IPC送信用にシリアライズ
+    const serializedCustomer = serializeForIPC(customer);
+
     return {
       success: true,
-      data: customer,
+      data: serializedCustomer,
     };
   } catch (error: any) {
     console.error('❌ 顧客更新エラー:', error);
