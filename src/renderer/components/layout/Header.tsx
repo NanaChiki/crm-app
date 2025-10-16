@@ -1,6 +1,5 @@
 import {
   Assessment as AssessmentIcon,
-  Dashboard as DashboardIcon,
   Home as HomeIcon,
   Notifications as NotificationsIcon,
   People as PeopleIcon,
@@ -78,15 +77,29 @@ const NavButton = styled(Button, {
     prop !== 'state' && // Router prop
     prop !== 'component', // React Router component prop
 })<NavButtonProps>(({ theme, isActive }) => ({
-  // Basic styles
+  // Basic styles - Always visible
   minHeight: '48px',
   minWidth: '120px',
   fontSize: '16px',
-  fontWeight: 600,
+  fontWeight: isActive ? 700 : 500, // Active = bold, inactive = medium
   textTransform: 'none',
   borderRadius: theme.spacing(1),
   padding: theme.spacing(1.5, 3),
   margin: theme.spacing(0, 0.5),
+
+  // Default state - Faint but visible for 50代 users
+  color: isActive
+    ? theme.palette.primary.contrastText
+    : 'rgba(255, 255, 255, 0.7)', // Faint white
+  backgroundColor: isActive ? theme.palette.primary.dark : 'transparent',
+
+  // Smooth transitions for better UX
+  transition: theme.transitions.create(
+    ['background-color', 'color', 'transform', 'font-weight'],
+    {
+      duration: theme.transitions.duration.short,
+    }
+  ),
 
   // Icon and letter spacing
   '& .MuiButton-startIcon': {
@@ -94,18 +107,20 @@ const NavButton = styled(Button, {
     fontSize: '20px',
   },
 
-  // Active state
-  ...(isActive && {
-    backgroundColor: theme.palette.primary.dark,
-    color: theme.palette.primary.contrastText,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
-  }),
+  // Hover state - Expand slightly and become bold
+  '&:hover': {
+    backgroundColor: isActive
+      ? theme.palette.primary.main
+      : 'rgba(255, 255, 255, 0.1)', // Subtle background on hover
+    color: theme.palette.primary.contrastText, // Full white on hover
+    fontWeight: 700, // Bold on hover
+    transform: 'scale(1.05)', // Slight expand for 50代 users to notice
+    cursor: 'pointer',
+  },
 
   // Focused state (accessibility)
   '&:focus': {
-    outline: `2px solid ${theme.palette.primary.main}`,
+    outline: `2px solid ${theme.palette.primary.contrastText}`,
     outlineOffset: '2px',
   },
 
@@ -264,21 +279,6 @@ export function Header() {
               </NavButton>
             );
           })}
-
-          {/* Demo Page Link (Development Only)*/}
-          <NavButton
-            startIcon={<DashboardIcon />}
-            isActive={location.pathname === '/ui-demo'}
-            aria-label="UIデモページへ移動"
-            aria-current={location.pathname === '/ui-demo' ? 'page' : undefined}
-            onClick={() => handleNavigate('/ui-demo')}
-            sx={{
-              // Remove on production
-              opacity: 0.8,
-              fontSize: { xs: '12px', md: '14px' },
-            }}>
-            <span className="nav-text">UIデモ</span>
-          </NavButton>
         </Box>
       </Toolbar>
     </StyledAppBar>
