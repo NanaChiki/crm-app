@@ -46,9 +46,9 @@ import {
 import React, { useCallback, useMemo, useState } from 'react';
 
 // Custom Components
+import { ReminderForm } from '../reminder/ReminderForm';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
-import { ReminderForm } from '../reminder/ReminderForm';
 
 // Custom Hooks
 import { useServiceRecords } from '../../hooks/useServiceRecords';
@@ -165,7 +165,8 @@ const MESSAGES = {
  */
 const calculateYearsElapsed = (serviceData: Date | string): number => {
   const now = new Date();
-  const dateObj = typeof serviceData === 'string' ? new Date(serviceData) : serviceData;
+  const dateObj =
+    typeof serviceData === 'string' ? new Date(serviceData) : serviceData;
   const diffMs = now.getTime() - dateObj.getTime();
   const years = diffMs / (1000 * 60 * 60 * 24 * 365.25);
   return Math.floor(years * 10) / 10; // 小数点第1位まで
@@ -200,7 +201,10 @@ const calculateNextRecommendedDate = (
   // nextDate.getFullYear() → gets current year (e.g., 2024)
   // + standardCycle → adds cycle years (e.g., + 10)
   // setFullYear(2024 + 10) → sets year to 2034
-  const dateObj = typeof lastServiceDate === 'string' ? new Date(lastServiceDate) : lastServiceDate;
+  const dateObj =
+    typeof lastServiceDate === 'string'
+      ? new Date(lastServiceDate)
+      : lastServiceDate;
   const nextDate = new Date(dateObj);
   nextDate.setFullYear(nextDate.getFullYear() + standardCycle);
   return nextDate;
@@ -281,8 +285,15 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
       const serviceType = record.serviceType || 'その他';
       const existingRecord = serviceMap.get(serviceType);
 
-      const recordDate = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
-      const existingDate = existingRecord ? (typeof existingRecord.serviceDate === 'string' ? new Date(existingRecord.serviceDate) : existingRecord.serviceDate) : null;
+      const recordDate =
+        typeof record.serviceDate === 'string'
+          ? new Date(record.serviceDate)
+          : record.serviceDate;
+      const existingDate = existingRecord
+        ? typeof existingRecord.serviceDate === 'string'
+          ? new Date(existingRecord.serviceDate)
+          : existingRecord.serviceDate
+        : null;
 
       if (!existingRecord || (existingDate && recordDate > existingDate)) {
         serviceMap.set(serviceType, record);
@@ -303,7 +314,10 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
         MAINTENANCE_CYCLES[serviceType as keyof typeof MAINTENANCE_CYCLES] ||
         MAINTENANCE_CYCLES['その他'];
 
-      const lastServiceDate = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+      const lastServiceDate =
+        typeof record.serviceDate === 'string'
+          ? new Date(record.serviceDate)
+          : record.serviceDate;
       const yearsElapsed = calculateYearsElapsed(lastServiceDate);
       const urgencyLevel = getMaintenanceUrgencyLevel(yearsElapsed, cycle);
       const nextRecommendedDate = calculateNextRecommendedDate(
@@ -360,7 +374,8 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
   // State
   // ================================
   const [isReminderFormOpen, setIsReminderFormOpen] = useState(false);
-  const [selectedPrediction, setSelectedPrediction] = useState<MaintenanceStatus | null>(null);
+  const [selectedPrediction, setSelectedPrediction] =
+    useState<MaintenanceStatus | null>(null);
 
   // ================================
   // イベントハンドラー
@@ -457,6 +472,9 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
         <Box
           sx={{
             p: responsiveSettings.cardPadding,
+            minHeight: { xs: 400, sm: 420, md: 450 }, // 統一された高さ
+            display: 'flex',
+            flexDirection: 'column',
           }}>
           {/* ヘッダー */}
           <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1, mb: 2 }}>
@@ -504,10 +522,10 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
                     prediction.urgencyLevel === 'overdue'
                       ? theme.palette.error.main
                       : prediction.urgencyLevel === 'high'
-                      ? theme.palette.error.light
-                      : prediction.urgencyLevel === 'medium'
-                      ? theme.palette.warning.main
-                      : theme.palette.success.main,
+                        ? theme.palette.error.light
+                        : prediction.urgencyLevel === 'medium'
+                          ? theme.palette.warning.main
+                          : theme.palette.success.main,
                   borderRadius: 6,
                 },
               }}
@@ -538,7 +556,12 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
 
             <Grid size={{ xs: 12, md: 6 }}>
               <Box
-                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  mb: 1,
+                }}>
                 <TrendingUpIcon fontSize="small" color="primary" />
                 <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                   次回推奨時期
@@ -585,7 +608,14 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
           {/* アクションボタン */}
           {(prediction.urgencyLevel === 'overdue' ||
             prediction.urgencyLevel === 'high') && (
-            <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Box
+              sx={{
+                mt: 3,
+                display: 'flex',
+                gap: 2,
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+              }}>
               <Button
                 variant="contained"
                 size="small"
@@ -676,14 +706,14 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
       {/* 緊急アラート */}
       {renderUrgentAlert()}
 
-      {/* メンテナンス予測カード一覧 */}
+      {/* メンテナンス予測カード一覧 - 2カラムレイアウト（50代向け見やすさ重視） */}
       {maintenancePredictions.length > 0 ? (
         <Grid
           container
-          spacing={2}
+          spacing={3}
           sx={{ display: 'flex', alignItems: 'stretch' }}>
           {maintenancePredictions.map((prediction) => (
-            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={prediction.serviceType}>
+            <Grid size={{ xs: 12, md: 6 }} key={prediction.serviceType}>
               {renderMaintenanceCard(prediction)}
             </Grid>
           ))}
