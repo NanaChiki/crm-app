@@ -39,6 +39,44 @@ import { useApp } from '../contexts/AppContext';
 import { useCustomer } from '../contexts/CustomerContext';
 
 // =============================================================================
+// 🔌 Window API Type Declaration for serviceRecordAPI
+// =============================================================================
+
+/**
+ * Window API for ServiceRecord operations via Electron IPC
+ *
+ * Similar to customerAPI, this provides IPC communication with Electron main process:
+ * - Main process handles Prisma operations
+ * - Preload script exposes serviceRecordAPI to renderer
+ * - This hook consumes the API for CRUD operations
+ */
+declare global {
+  interface Window {
+    serviceRecordAPI: {
+      fetch: (filters?: any) => Promise<{
+        success: boolean;
+        data?: ServiceRecord[];
+        error?: string;
+      }>;
+      create: (input: CreateServiceRecordInput) => Promise<{
+        success: boolean;
+        data?: ServiceRecord;
+        error?: string;
+      }>;
+      update: (input: UpdateServiceRecordInput & { recordId: number }) => Promise<{
+        success: boolean;
+        data?: ServiceRecord;
+        error?: string;
+      }>;
+      delete: (recordId: number) => Promise<{
+        success: boolean;
+        error?: string;
+      }>;
+    };
+  }
+}
+
+// =============================================================================
 // 🎯 Hook専用型定義 - ServiceRecords特化の型システム
 // =============================================================================
 
@@ -358,7 +396,7 @@ const COMMON_SERVICE_TYPES = [
 ] as const;
 
 // =============================================================================
-// 🗃️ ファイルスコープのモックデータ管理（CustomerContextと同様）
+// 🗃️ データ変更リスナー管理（複数インスタンス間の同期用）
 // =============================================================================
 
 /**
@@ -370,173 +408,11 @@ const dataChangeListeners: DataChangeListener[] = [];
 
 /**
  * データ変更通知
- * mockServiceRecordsDataが変更された時に全てのリスナーに通知
+ * データが変更された時に全てのリスナーに通知
  */
 const notifyDataChange = () => {
   dataChangeListeners.forEach((listener) => listener());
 };
-
-/**
- * モックサービス履歴データ（ファイルスコープで永続化）
- *
- * 【重要】この変数は関数の外側（ファイルスコープ）で定義することで、
- * 複数のuseServiceRecordsインスタンス間でデータを共有します。
- *
- * 【設計判断】
- * - CRUD操作の結果を永続化するため、ファイルスコープで管理
- * - 複数のuseServiceRecordsインスタンス間でデータを共有
- * - refreshServiceRecords実行時に最新データを取得可能
- * - データ変更時にリスナーに通知して全インスタンスを更新
- */
-const mockServiceRecordsData: ServiceRecordWithCustomer[] = [
-  {
-    recordId: 1,
-    customerId: 1,
-    serviceDate: new Date('2012-03-10'),
-    serviceType: '水回りリフォーム',
-    serviceDescription: 'キッチン・浴室リフォーム',
-    amount: 850000,
-    status: 'completed',
-    createdAt: new Date('2012-03-10'),
-    updatedAt: new Date('2012-03-10'),
-    customer: {
-      customerId: 1,
-      companyName: '佐藤リフォーム',
-      contactPerson: null,
-    },
-  },
-  {
-    recordId: 2,
-    customerId: 2,
-    serviceDate: new Date('2013-06-15'),
-    serviceType: '外壁塗装',
-    serviceDescription: '全面外壁塗装工事',
-    amount: 450000,
-    status: 'completed',
-    createdAt: new Date('2013-06-15'),
-    updatedAt: new Date('2013-06-15'),
-    customer: {
-      customerId: 2,
-      companyName: '田中建設',
-      contactPerson: '田中太郎',
-    },
-  },
-  {
-    recordId: 3,
-    customerId: 3,
-    serviceDate: new Date('2015-08-20'),
-    serviceType: '屋根修理',
-    serviceDescription: '屋根全面補修',
-    amount: 380000,
-    status: 'completed',
-    createdAt: new Date('2015-08-20'),
-    updatedAt: new Date('2015-08-20'),
-    customer: {
-      customerId: 3,
-      companyName: '山田工務店',
-      contactPerson: '山田花子',
-    },
-  },
-  {
-    recordId: 4,
-    customerId: 2,
-    serviceDate: new Date('2018-12-01'),
-    serviceType: '屋根修理',
-    serviceDescription: '北面外壁の塗装作業',
-    amount: 280000,
-    status: 'completed',
-    createdAt: new Date('2018-12-01'),
-    updatedAt: new Date('2018-12-01'),
-    customer: {
-      customerId: 2,
-      companyName: '田中建設',
-      contactPerson: '田中太郎',
-    },
-  },
-  {
-    recordId: 5,
-    customerId: 1,
-    serviceDate: new Date('2019-1-10'),
-    serviceType: '配管工事',
-    serviceDescription: 'キッチン水道管の交換工事',
-    amount: 45000,
-    status: 'completed',
-    createdAt: new Date('2019-1-10'),
-    updatedAt: new Date('2019-1-10'),
-    customer: {
-      customerId: 1,
-      companyName: '佐藤リフォーム',
-      contactPerson: null,
-    },
-  },
-  {
-    recordId: 6,
-    customerId: 3,
-    serviceDate: new Date('2019-1-15'),
-    serviceType: '定期点検',
-    serviceDescription: '年次点検。外壁・屋根・配管の状態確認',
-    amount: 120000,
-    status: 'completed',
-    createdAt: new Date('2019-1-15'),
-    updatedAt: new Date('2019-1-15'),
-    customer: {
-      customerId: 3,
-      companyName: '山田工務店',
-      contactPerson: '山田花子',
-    },
-  },
-  // {
-  //   recordId: 8,
-  //   customerId: 2,
-  //   serviceDate: new Date('2024-12-05'),
-  //   serviceType: '定期点検',
-  //   serviceDescription: '年次点検。外壁・屋根・配管の状態確認',
-  //   amount: null,
-  //   status: 'completed',
-  //   createdAt: new Date('2024-12-05'),
-  //   updatedAt: new Date('2024-12-05'),
-  //   customer: {
-  //     customerId: 2,
-  //     companyName: '田中建設',
-  //     contactPerson: '田中太郎',
-  //   },
-  // },
-  // {
-  //   recordId: 9,
-  //   customerId: 3,
-  //   serviceDate: new Date('2024-12-10'),
-  //   serviceType: '屋根修理',
-  //   serviceDescription: '台風による瓦の破損修理。瓦10枚交換',
-  //   amount: 85000,
-  //   status: 'completed',
-  //   createdAt: new Date('2024-12-10'),
-  //   updatedAt: new Date('2024-12-10'),
-  //   customer: {
-  //     customerId: 3,
-  //     companyName: '山田工務店',
-  //     contactPerson: '山田花子',
-  //   },
-  // },
-  // {
-  //   recordId: 10,
-  //   customerId: 2,
-  //   serviceDate: new Date('2024-12-15'),
-  //   serviceType: '外壁塗装',
-  //   serviceDescription: '南面外壁の塗装作業完了。使用塗料：シリコン系',
-  //   amount: 350000,
-  //   status: 'completed',
-  //   createdAt: new Date('2024-12-15'),
-  //   updatedAt: new Date('2024-12-15'),
-  //   customer: {
-  //     customerId: 2,
-  //     companyName: '田中建設',
-  //     contactPerson: '田中太郎',
-  //   },
-  // },
-];
-
-// 次のレコードID（自動採番用）
-let nextRecordId = mockServiceRecordsData.length + 1;
 
 // =============================================================================
 // 🚀 メインHook実装
@@ -603,9 +479,9 @@ export const useServiceRecords = (
    * サービス履歴データ取得
    *
    * 【実装方針】
-   * - 現段階では CustomerContext のモックデータを活用
-   * - 将来的にPrismaクライアント経由でのデータベース接続
+   * - Prismaクライアント経由でデータベースから取得
    * - 顧客情報と JOIN した ServiceRecordWithCustomer 型で返す
+   * - customerId指定時はフィルタリング
    *
    * 【50代配慮】
    * - ローディング中は明確にメッセージ表示
@@ -616,30 +492,55 @@ export const useServiceRecords = (
       setLoading(true);
       setError(null);
       try {
-        // TODO: 実際のPrisma呼び出しに置き換え
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        console.log('📋 DB: サービス履歴取得開始', { customerId });
 
-        // ファイルスコープのモックデータを参照
-        const allRecords = [...mockServiceRecordsData];
+        // Real Prisma database via window.serviceRecordAPI
+        const filters = customerId ? { customerId } : undefined;
+        const result = await window.serviceRecordAPI.fetch(filters);
 
-        // カスタマー指定がある場合はフィルタリング
-        const filteredData = customerId
-          ? allRecords.filter((record) => record.customerId === customerId)
-          : allRecords;
+        if (result.success && result.data) {
+          // ServiceRecord[] → ServiceRecordWithCustomer[] への変換
+          // 顧客情報を結合
+          const recordsWithCustomer: ServiceRecordWithCustomer[] = result.data.map(
+            (record) => {
+              const customer = customers.find(
+                (c) => c.customerId === record.customerId
+              );
+              return {
+                ...record,
+                customer: customer
+                  ? {
+                      customerId: customer.customerId,
+                      companyName: customer.companyName,
+                      contactPerson: customer.contactPerson || null,
+                    }
+                  : {
+                      customerId: record.customerId,
+                      companyName: '不明',
+                      contactPerson: null,
+                    },
+              };
+            }
+          );
 
-        setServiceRecords(filteredData);
-        setIsInitialized(true);
+          setServiceRecords(recordsWithCustomer);
+          setIsInitialized(true);
 
-        // サイレントモード時はスナックバーを表示しない（リスナー経由の更新時）
-        if (!silent) {
-          if (filteredData.length === 0) {
-            showSnackbar(MESSAGES.info.noRecords, 'info', 4000);
-          } else {
-            showSnackbar(MESSAGES.success.load, 'success');
+          console.log(`✅ ${recordsWithCustomer.length}件のサービス履歴を取得しました`);
+
+          // サイレントモード時はスナックバーを表示しない（リスナー経由の更新時）
+          if (!silent) {
+            if (recordsWithCustomer.length === 0) {
+              showSnackbar(MESSAGES.info.noRecords, 'info', 4000);
+            } else {
+              showSnackbar(MESSAGES.success.load, 'success');
+            }
           }
+        } else {
+          throw new Error(result.error || 'サービス履歴の取得に失敗しました');
         }
       } catch (error) {
-        console.log('Service records loading error:', error);
+        console.error('❌ サービス履歴取得エラー:', error);
 
         const errorMessage =
           error instanceof Error
@@ -660,7 +561,7 @@ export const useServiceRecords = (
         setLoading(false);
       }
     },
-    [customerId, showSnackbar, handleError]
+    [customerId, customers, showSnackbar, handleError]
   );
 
   /**
@@ -756,57 +657,30 @@ export const useServiceRecords = (
 
       setGlobalLoading(true);
       try {
-        // モック作成処理
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        console.log('📝 DB: サービス履歴作成開始', data);
 
-        // 顧客を取得
-        const customer = customers.find(
-          (c) => c.customerId === data.customerId
-        );
+        // Real Prisma database via window.serviceRecordAPI
+        const result = await window.serviceRecordAPI.create(data);
 
-        const newRecord: ServiceRecordWithCustomer = {
-          recordId: nextRecordId++, // 仮ID
-          customerId: data.customerId,
-          serviceDate: data.serviceDate,
-          serviceType: data.serviceType || null,
-          serviceDescription: data.serviceDescription || null,
-          amount: data.amount || null,
-          status: data.status || 'completed',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          customer: customer
-            ? {
-                customerId: customer.customerId,
-                companyName: customer.companyName,
-                contactPerson: customer.contactPerson || null,
-              }
-            : {
-                customerId: data.customerId,
-                companyName: '不明',
-                contactPerson: null,
-              },
-        };
+        if (result.success && result.data) {
+          const newRecord = result.data;
 
-        // ファイルスコープのモックデータに追加
-        mockServiceRecordsData.push(newRecord);
-        console.log(`💾 サービス履歴追加: recordId=${newRecord.recordId}`);
+          console.log(`✅ サービス履歴作成成功: recordId=${newRecord.recordId}`);
 
-        // 状態更新: customerIdフィルターが指定されている場合は
-        // 追加するレコードがそのcustomerIdと一致する場合のみ追加
-        if (!customerId || newRecord.customerId === customerId) {
-          setServiceRecords((prev) => [...prev, newRecord]);
+          // Refresh list to get latest data from database
+          await loadServiceRecords(true); // silent mode
+
+          // 全てのuseServiceRecordsインスタンスに変更を通知
+          notifyDataChange();
+
+          showSnackbar(MESSAGES.success.create, 'success');
+
+          return newRecord;
+        } else {
+          throw new Error(result.error || 'サービス履歴の作成に失敗しました');
         }
-
-        // 全てのuseServiceRecordsインスタンスに変更を通知
-        notifyDataChange();
-
-        showSnackbar(MESSAGES.success.create, 'success');
-
-        // ServiceRecord型として返す（customerプロパティを除外）
-        const { customer: _, ...serviceRecord } = newRecord;
-        return serviceRecord as ServiceRecord | null;
       } catch (error) {
-        console.error('Service record creation error:', error);
+        console.error('❌ サービス履歴作成エラー:', error);
         const errorMessage =
           error instanceof Error ? error.message : MESSAGES.error.create;
 
@@ -824,10 +698,10 @@ export const useServiceRecords = (
     },
     [
       validateServiceRecord,
-      customers,
       setGlobalLoading,
       showSnackbar,
       handleError,
+      loadServiceRecords,
     ]
   );
 
@@ -835,7 +709,7 @@ export const useServiceRecords = (
    * サービス履歴更新
    *
    * 【実装方針】
-   * - 楽観的更新 → Prisma操作 → エラー時ロールバック
+   * - Prisma経由でデータベース更新
    * - 部分更新に対応（Partial<T>）
    */
   const updateServiceRecord = useCallback(
@@ -845,47 +719,33 @@ export const useServiceRecords = (
     ): Promise<ServiceRecord | null> => {
       setGlobalLoading(true);
       try {
-        // TODO: 将来的にPrismaクライアント経由で更新
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        console.log('✏️ DB: サービス履歴更新開始', id);
 
-        //まず元のレコードを取得
-        const existingIndex = mockServiceRecordsData.findIndex(
-          (r) => r.recordId === id
-        );
-
-        if (existingIndex === -1) {
-          throw new Error('指定されたサービス履歴が見つかりません。');
-        }
-
-        const existingRecord = mockServiceRecordsData[existingIndex];
-        // 更新されたレコードを作成
-        const updatedRecord: ServiceRecordWithCustomer = {
-          ...existingRecord,
+        // Real Prisma database via window.serviceRecordAPI
+        const result = await window.serviceRecordAPI.update({
+          recordId: id,
           ...data,
-          updatedAt: new Date(),
-        };
+        });
 
-        // ファイルスコープのモックデータを更新
-        mockServiceRecordsData[existingIndex] = updatedRecord;
-        console.log(`💾 サービス履歴更新: recordId=${id}`);
+        if (result.success && result.data) {
+          const updatedRecord = result.data;
 
-        // 状態更新
-        setServiceRecords((prev) =>
-          prev.map((record) =>
-            record.recordId === id ? updatedRecord : record
-          )
-        );
+          console.log(`✅ サービス履歴更新成功: recordId=${id}`);
 
-        // 全てのuseServiceRecordsインスタンスに変更を通知
-        notifyDataChange();
+          // Refresh list to get latest data from database
+          await loadServiceRecords(true); // silent mode
 
-        showSnackbar(MESSAGES.success.update, 'success');
+          // 全てのuseServiceRecordsインスタンスに変更を通知
+          notifyDataChange();
 
-        // ServiceRecord型として返す（customerプロパティを除外）
-        const { customer, ...serviceRecord } = updatedRecord;
-        return serviceRecord as ServiceRecord | null;
+          showSnackbar(MESSAGES.success.update, 'success');
+
+          return updatedRecord;
+        } else {
+          throw new Error(result.error || 'サービス履歴の更新に失敗しました');
+        }
       } catch (error) {
-        console.error('Service record update error:', error);
+        console.error('❌ サービス履歴更新エラー:', error);
         const errorMessage =
           error instanceof Error ? error.message : MESSAGES.error.update;
         handleError({
@@ -899,7 +759,7 @@ export const useServiceRecords = (
         setGlobalLoading(false);
       }
     },
-    [setGlobalLoading, showSnackbar, handleError]
+    [setGlobalLoading, showSnackbar, handleError, loadServiceRecords]
   );
 
   /**
@@ -916,34 +776,31 @@ export const useServiceRecords = (
         // 削除確認
         const confirmed = window.confirm(MESSAGES.confirm.delete);
         if (!confirmed) {
+          setGlobalLoading(false);
           return false;
         }
 
-        // TODO: 将来的にPrismaクライアント経由で削除
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        console.log('🗑️ DB: サービス履歴削除開始', id);
 
-        const existingIndex = mockServiceRecordsData.findIndex(
-          (r) => r.recordId === id
-        );
-        if (existingIndex === -1) {
-          throw new Error('指定されたサービス履歴が見つかりません。');
+        // Real Prisma database via window.serviceRecordAPI
+        const result = await window.serviceRecordAPI.delete(id);
+
+        if (result.success) {
+          console.log(`✅ サービス履歴削除成功: recordId=${id}`);
+
+          // Refresh list to get latest data from database
+          await loadServiceRecords(true); // silent mode
+
+          // 全てのuseServiceRecordsインスタンスに変更を通知
+          notifyDataChange();
+
+          showSnackbar(MESSAGES.success.delete, 'success');
+          return true;
+        } else {
+          throw new Error(result.error || 'サービス履歴の削除に失敗しました');
         }
-        // ファイルスコープのモックデータから削除
-        mockServiceRecordsData.splice(existingIndex, 1);
-        console.log(`💾 サービス履歴削除: recordId=${id}`);
-
-        // 状態更新
-        setServiceRecords((prev) =>
-          prev.filter((record) => record.recordId !== id)
-        );
-
-        // 全てのuseServiceRecordsインスタンスに変更を通知
-        notifyDataChange();
-
-        showSnackbar(MESSAGES.success.delete, 'success');
-        return true;
       } catch (error) {
-        console.error('Service record deletion error:', error);
+        console.error('❌ サービス履歴削除エラー:', error);
         const errorMessage =
           error instanceof Error ? error.message : MESSAGES.error.delete;
         handleError({
@@ -956,7 +813,7 @@ export const useServiceRecords = (
         setGlobalLoading(false);
       }
     },
-    [setGlobalLoading, showSnackbar, handleError]
+    [setGlobalLoading, showSnackbar, handleError, loadServiceRecords]
   );
 
   // =============================

@@ -132,6 +132,35 @@ Menu.setApplicationMenu(
       submenu: [{ role: 'quit', label: '終了' }],
     },
     {
+      label: '表示',
+      submenu: [
+        {
+          label: '再読み込み',
+          accelerator: 'CmdOrCtrl+R',
+          click: () => {
+            const focusedWindow = BrowserWindow.getFocusedWindow();
+            if (focusedWindow) {
+              focusedWindow.reload();
+            }
+          },
+        },
+        {
+          label: '開発者ツール',
+          accelerator: 'CmdOrCtrl+Shift+I',
+          click: () => {
+            const focusedWindow = BrowserWindow.getFocusedWindow();
+            if (focusedWindow) {
+              focusedWindow.webContents.toggleDevTools();
+            }
+          },
+        },
+        { type: 'separator' },
+        { role: 'resetZoom', label: '実際のサイズ' },
+        { role: 'zoomIn', label: '拡大' },
+        { role: 'zoomOut', label: '縮小' },
+      ],
+    },
+    {
       label: 'ヘルプ',
       submenu: [
         {
