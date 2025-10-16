@@ -378,7 +378,17 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
       }
 
       try {
-        console.log('📧 リマインダーメール送信開始', reminderId);
+        console.log('📧 リマインダーメール送信開始', reminderId, reminder);
+
+        // 顧客情報の存在確認
+        if (!reminder.customer) {
+          showSnackbar(
+            '顧客情報が見つかりません。\nリマインダーを再度読み込んでください。',
+            'error'
+          );
+          console.error('❌ 顧客情報なし:', reminder);
+          return;
+        }
 
         if (!reminder.customer.email) {
           showSnackbar(
@@ -396,14 +406,22 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         );
 
         if (result.success) {
-          // 下書き中ステータスに変更
-          await window.reminderAPI.markAsDrafting(reminderId);
-          await fetchReminders();
+          // ステータスを「下書き作成中」に変更
+          const statusResult = await window.reminderAPI.markAsDrafting(reminderId);
 
-          showSnackbar(
-            'メールアプリで下書きを確認してください。\n送信後、手動で「送信済み」に変更できます。',
-            'info'
-          );
+          if (statusResult.success) {
+            // リマインダー一覧を再取得してステータスを反映
+            await fetchReminders();
+
+            showSnackbar(
+              'メールアプリで下書きを確認してください。\n送信後、「今すぐ送信」ボタンで送信済みに変更できます。',
+              'info',
+              8000 // 8秒表示
+            );
+            console.log('✅ メール下書き作成成功 & ステータス更新完了');
+          } else {
+            showSnackbar('下書きは作成されましたが、ステータスの更新に失敗しました', 'warning');
+          }
         } else {
           const guidance = getOutlookErrorGuidance(result.error || '');
           showSnackbar(guidance, 'error');

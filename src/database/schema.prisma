@@ -60,7 +60,7 @@ model Reminder {
     reminderDate DateTime @map("reminder_date")
 
     // 送信状態管理
-    status String    @default("scheduled") // scheduled, sent, cancelled
+    status String    @default("scheduled") // scheduled, drafting, sent, cancelled
     sentAt DateTime? @map("sent_at")
 
     // OutLook連携情報
