@@ -114,10 +114,10 @@ function Dashboard() {
     const currentYear = new Date().getFullYear();
 
     return serviceRecords.filter((record) => {
-      const date = new Date(record.serviceDate);
+      const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
 
       return (
-        date.getMonth() === currentMonth && date.getFullYear() === currentYear
+        dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear
       );
     });
   }, [serviceRecords]);
@@ -168,7 +168,7 @@ function Dashboard() {
     serviceRecords.forEach((record) => {
       const key = `${record.customerId}-${record.serviceType}`;
       const existing = customerServiceLastDate.get(key);
-      const serviceDate = new Date(record.serviceDate);
+      const serviceDate = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
 
       // 同じserviceTypeの最新日付を保存（最新実施日基準でメンテナンス判定）
       if (!existing || serviceDate > existing.lastServiceDate) {
@@ -229,8 +229,11 @@ function Dashboard() {
     return customers
       .slice()
       .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        (a, b) => {
+          const dateA = typeof b.createdAt === 'string' ? new Date(b.createdAt) : b.createdAt;
+          const dateB = typeof a.createdAt === 'string' ? new Date(a.createdAt) : a.createdAt;
+          return dateA.getTime() - dateB.getTime();
+        }
       )
       .slice(0, 10);
   }, [customers]);
@@ -250,8 +253,9 @@ function Dashboard() {
       .slice()
       .sort((a, b) => {
         // まずserviceDateで降順ソート
-        const dateCompare =
-          new Date(b.serviceDate).getTime() - new Date(a.serviceDate).getTime();
+        const dateA = typeof a.serviceDate === 'string' ? new Date(a.serviceDate) : a.serviceDate;
+        const dateB = typeof b.serviceDate === 'string' ? new Date(b.serviceDate) : b.serviceDate;
+        const dateCompare = dateB.getTime() - dateA.getTime();
 
         // serviceDateが同じ場合は、recordId（追加順）で降順ソート
         // recordIdが大きい = 後から追加された = 新しい
@@ -333,7 +337,7 @@ function Dashboard() {
                     variant="caption"
                     color="text.secondary"
                     sx={{ fontSize: { xs: 14, md: 16 } }}>
-                    {new Date(record.serviceDate).toLocaleDateString('ja-JP')}
+                    {(typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate).toLocaleDateString('ja-JP')}
                   </Typography>
                 </Box>
               );
@@ -485,7 +489,7 @@ function Dashboard() {
                   color="text.secondary"
                   sx={{ fontSize: { xs: 14, md: 16 } }}>
                   送信予定:{' '}
-                  {new Date(reminder.reminderDate).toLocaleDateString('ja-JP')}
+                  {(typeof reminder.reminderDate === 'string' ? new Date(reminder.reminderDate) : reminder.reminderDate).toLocaleDateString('ja-JP')}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                   <Button
@@ -559,7 +563,7 @@ function Dashboard() {
                   color="text.secondary"
                   sx={{ fontSize: { xs: 14, md: 16 } }}>
                   登録日:{' '}
-                  {new Date(customer.createdAt).toLocaleDateString('ja-JP')}
+                  {(typeof customer.createdAt === 'string' ? new Date(customer.createdAt) : customer.createdAt).toLocaleDateString('ja-JP')}
                 </Typography>
               </Box>
             ))}

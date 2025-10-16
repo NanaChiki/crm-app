@@ -90,13 +90,14 @@ const INFO_ROW_STYLES = {
  * 日付フォーマット（50代向けに分かりやすく）
  */
 const formatDate = (date: Date): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
     era: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     weekday: 'short',
-  }).format(date);
+  }).format(dateObj);
 };
 
 /**
@@ -119,7 +120,7 @@ const getCustomerStatus = (
   label: string;
   color: 'success' | 'warning' | 'error' | 'default';
 } => {
-  const lastUpdate = new Date(customer.updatedAt);
+  const lastUpdate = typeof customer.updatedAt === 'string' ? new Date(customer.updatedAt) : customer.updatedAt;
   const daysSinceUpdate = Math.floor(
     (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24)
   );

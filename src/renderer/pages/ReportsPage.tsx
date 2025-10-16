@@ -232,7 +232,8 @@ export const ReportsPage: React.FC = () => {
 
   const yearServiceRecords = useMemo(() => {
     return serviceRecords.filter((record) => {
-      const recordYear = new Date(record.serviceDate).getFullYear();
+      const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+      const recordYear = dateObj.getFullYear();
       return recordYear === selectedYear;
     });
   }, [serviceRecords, selectedYear]);
@@ -242,7 +243,8 @@ export const ReportsPage: React.FC = () => {
    */
   const lastYearServiceRecords = useMemo(() => {
     return serviceRecords.filter((record) => {
-      const recordYear = new Date(record.serviceDate).getFullYear();
+      const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+      const recordYear = dateObj.getFullYear();
       return recordYear === selectedYear - 1;
     });
   }, [serviceRecords, selectedYear]);
@@ -304,7 +306,8 @@ export const ReportsPage: React.FC = () => {
 
     return months.map((month) => {
       const monthRecords = yearServiceRecords.filter((record) => {
-        const recordMonth = new Date(record.serviceDate).getMonth() + 1;
+        const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+        const recordMonth = dateObj.getMonth() + 1;
         return recordMonth === month;
       });
 
@@ -346,7 +349,7 @@ export const ReportsPage: React.FC = () => {
       summary.totalRevenue += Number(record.amount) || 0;
       summary.serviceCount += 1;
 
-      const serviceDate = new Date(record.serviceDate);
+      const serviceDate = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
       if (!summary.lastServiceDate || serviceDate > summary.lastServiceDate) {
         summary.lastServiceDate = serviceDate;
       }
@@ -506,12 +509,15 @@ export const ReportsPage: React.FC = () => {
 
       yearServiceRecords
         .sort(
-          (a, b) =>
-            new Date(a.serviceDate).getTime() -
-            new Date(b.serviceDate).getTime()
+          (a, b) => {
+            const dateA = typeof a.serviceDate === 'string' ? new Date(a.serviceDate) : a.serviceDate;
+            const dateB = typeof b.serviceDate === 'string' ? new Date(b.serviceDate) : b.serviceDate;
+            return dateA.getTime() - dateB.getTime();
+          }
         )
         .forEach((record, index) => {
-          const date = new Date(record.serviceDate).toLocaleDateString('ja-JP');
+          const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+          const date = dateObj.toLocaleDateString('ja-JP');
           const customer = customers.find(
             (c) => c.customerId === record.customerId
           );

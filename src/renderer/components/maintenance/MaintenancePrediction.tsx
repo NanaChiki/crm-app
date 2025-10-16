@@ -163,9 +163,10 @@ const MESSAGES = {
 /**
  * 経過年数計算（50代向け分かりやすい計算）
  */
-const calculateYearsElapsed = (serviceData: Date): number => {
+const calculateYearsElapsed = (serviceData: Date | string): number => {
   const now = new Date();
-  const diffMs = now.getTime() - serviceData.getTime();
+  const dateObj = typeof serviceData === 'string' ? new Date(serviceData) : serviceData;
+  const diffMs = now.getTime() - dateObj.getTime();
   const years = diffMs / (1000 * 60 * 60 * 24 * 365.25);
   return Math.floor(years * 10) / 10; // 小数点第1位まで
 };
@@ -193,13 +194,14 @@ const getMaintenanceUrgencyLevel = (
  * 次回推奨日付計算
  */
 const calculateNextRecommendedDate = (
-  lastServiceDate: Date,
+  lastServiceDate: Date | string,
   standardCycle: number
 ): Date => {
   // nextDate.getFullYear() → gets current year (e.g., 2024)
   // + standardCycle → adds cycle years (e.g., + 10)
   // setFullYear(2024 + 10) → sets year to 2034
-  const nextDate = new Date(lastServiceDate);
+  const dateObj = typeof lastServiceDate === 'string' ? new Date(lastServiceDate) : lastServiceDate;
+  const nextDate = new Date(dateObj);
   nextDate.setFullYear(nextDate.getFullYear() + standardCycle);
   return nextDate;
 };
@@ -224,14 +226,15 @@ const calculateProgressPercentage = (
  * 日付フォーマット（50代向け和暦表示）
  * より詳細に統一
  */
-const formatDateForDisplay = (date: Date): string => {
+const formatDateForDisplay = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
     era: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     weekday: 'short',
-  }).format(date);
+  }).format(dateObj);
 };
 
 // ================================
@@ -278,10 +281,10 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
       const serviceType = record.serviceType || 'その他';
       const existingRecord = serviceMap.get(serviceType);
 
-      if (
-        !existingRecord ||
-        new Date(record.serviceDate) > new Date(existingRecord.serviceDate)
-      ) {
+      const recordDate = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+      const existingDate = existingRecord ? (typeof existingRecord.serviceDate === 'string' ? new Date(existingRecord.serviceDate) : existingRecord.serviceDate) : null;
+
+      if (!existingRecord || (existingDate && recordDate > existingDate)) {
         serviceMap.set(serviceType, record);
       }
     });
@@ -300,7 +303,7 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
         MAINTENANCE_CYCLES[serviceType as keyof typeof MAINTENANCE_CYCLES] ||
         MAINTENANCE_CYCLES['その他'];
 
-      const lastServiceDate = new Date(record.serviceDate);
+      const lastServiceDate = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
       const yearsElapsed = calculateYearsElapsed(lastServiceDate);
       const urgencyLevel = getMaintenanceUrgencyLevel(yearsElapsed, cycle);
       const nextRecommendedDate = calculateNextRecommendedDate(

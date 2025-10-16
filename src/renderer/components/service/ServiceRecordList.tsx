@@ -169,14 +169,15 @@ const MESSAGES = {
 /**
  * 日付フォーマット（50代向け和暦表示）
  */
-const formatDateShort = (date: Date): string => {
+const formatDateShort = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
     era: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     weekday: 'short',
-  }).format(date);
+  }).format(dateObj);
 };
 
 /**
@@ -198,7 +199,8 @@ const groupServicesByYear = (
 ): Record<number, ServiceRecordWithCustomer[]> => {
   return services.reduce(
     (groups, service) => {
-      const year = new Date(service.serviceDate).getFullYear();
+      const dateObj = typeof service.serviceDate === 'string' ? new Date(service.serviceDate) : service.serviceDate;
+      const year = dateObj.getFullYear();
       if (!groups[year]) {
         groups[year] = [];
       }
@@ -328,18 +330,20 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
     // 年度別フィルタ
     if (filterState.selectedYear !== 'all') {
       filtered = filtered.filter(
-        (record) =>
-          new Date(record.serviceDate).getFullYear() ===
-          filterState.selectedYear
+        (record) => {
+          const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+          return dateObj.getFullYear() === filterState.selectedYear;
+        }
       );
     }
 
     // 月フィルタ
     if (filterState.selectedMonth !== 'all') {
       filtered = filtered.filter(
-        (record) =>
-          new Date(record.serviceDate).getMonth() + 1 ===
-          filterState.selectedMonth
+        (record) => {
+          const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+          return dateObj.getMonth() + 1 === filterState.selectedMonth;
+        }
       );
     }
 
@@ -378,9 +382,10 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
   const filterOptions = useMemo(() => {
     const years = Array.from(
       new Set(
-        serviceRecords.map((record) =>
-          new Date(record.serviceDate).getFullYear()
-        )
+        serviceRecords.map((record) => {
+          const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+          return dateObj.getFullYear();
+        })
       )
     ).sort((a, b) => b - a);
 
@@ -437,8 +442,9 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
    * サービス履歴編集ダイアログを開く
    */
   const handleEditService = useCallback((record: ServiceRecordWithCustomer) => {
+    const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
     setServiceFormData({
-      serviceDate: new Date(record.serviceDate).toISOString().split('T')[0],
+      serviceDate: dateObj.toISOString().split('T')[0],
       serviceType: record.serviceType || '',
       serviceDescription: record.serviceDescription || '',
       amount: record.amount ? String(record.amount) : '',
@@ -741,9 +747,11 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
               <Stack spacing={2} sx={{ p: isMobile ? 1 : 2 }}>
                 {yearServices
                   .sort(
-                    (a, b) =>
-                      new Date(b.serviceDate).getTime() -
-                      new Date(a.serviceDate).getTime()
+                    (a, b) => {
+                      const dateA = typeof a.serviceDate === 'string' ? new Date(a.serviceDate) : a.serviceDate;
+                      const dateB = typeof b.serviceDate === 'string' ? new Date(b.serviceDate) : b.serviceDate;
+                      return dateB.getTime() - dateA.getTime();
+                    }
                   )
                   .map((service) => (
                     <Card key={service.recordId} cardsize="small">
@@ -776,7 +784,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                                 <Typography
                                   variant="caption"
                                   color="text.secondary">
-                                  {new Date(service.serviceDate).getFullYear()}
+                                  {(typeof service.serviceDate === 'string' ? new Date(service.serviceDate) : service.serviceDate).getFullYear()}
                                   年
                                 </Typography>
                               )}
