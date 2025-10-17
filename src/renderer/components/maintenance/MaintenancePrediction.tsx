@@ -53,6 +53,9 @@ import { Card } from '../ui/Card';
 // Custom Hooks
 import { useServiceRecords } from '../../hooks/useServiceRecords';
 
+// Design System
+import { CARD_MIN_HEIGHT, GRID_LAYOUT } from '../../constants/uiDesignSystem';
+
 // Types
 import { ServiceRecordWithCustomer } from '../../../types';
 
@@ -472,7 +475,7 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
         <Box
           sx={{
             p: responsiveSettings.cardPadding,
-            minHeight: { xs: 400, sm: 420, md: 450 }, // 統一された高さ
+            minHeight: CARD_MIN_HEIGHT.maintenance, // Design System統一
             display: 'flex',
             flexDirection: 'column',
           }}>
@@ -713,7 +716,7 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
           spacing={3}
           sx={{ display: 'flex', alignItems: 'stretch' }}>
           {maintenancePredictions.map((prediction) => (
-            <Grid size={{ xs: 12, md: 6 }} key={prediction.serviceType}>
+            <Grid size={GRID_LAYOUT.maintenancePrediction} key={prediction.serviceType}>
               {renderMaintenanceCard(prediction)}
             </Grid>
           ))}
