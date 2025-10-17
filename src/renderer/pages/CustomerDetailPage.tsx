@@ -66,6 +66,9 @@ import { useServiceRecords } from '../hooks/useServiceRecords';
 // Types
 import { Customer } from '../../types';
 
+// Design System
+import { FONT_SIZES, SPACING, BUTTON_SIZE } from '../constants/uiDesignSystem';
+
 // ================================
 // 型定義・定数
 // ================================
@@ -239,11 +242,11 @@ export const CustomerDetailPage: React.FC = () => {
     () => ({
       containerMaxWidth: 'xl' as const,
       tabSize: isMobile ? 'large' : 'medium',
-      tabMinHeight: isMobile ? 56 : 48,
-      fontSize: isMobile ? '16px' : '14px',
-      spacing: isMobile ? 2 : 3,
+      tabMinHeight: isMobile ? 56 : BUTTON_SIZE.minHeight.desktop,
+      fontSize: isMobile ? FONT_SIZES.body.mobile : FONT_SIZES.label.desktop,
+      spacing: isMobile ? SPACING.gap.medium : SPACING.page.desktop,
       tabOrientation: isMobile ? 'horizontal' : 'horizontal',
-      tabSpacing: isMobile ? 1 : 2,
+      tabSpacing: isMobile ? SPACING.gap.small : SPACING.gap.medium,
     }),
     [isMobile, isTablet]
   );
@@ -407,8 +410,8 @@ export const CustomerDetailPage: React.FC = () => {
         startIcon={<ArrowBackIcon />}
         size={isMobile ? 'large' : 'medium'}
         sx={{
-          minHeight: 44,
-          fontSize: isMobile ? '16px' : '14px',
+          minHeight: BUTTON_SIZE.minHeight.tablet,
+          fontSize: isMobile ? FONT_SIZES.body.mobile : FONT_SIZES.label.desktop,
         }}>
         {MESSAGES.action.backToList}
       </Button>,
@@ -430,7 +433,7 @@ export const CustomerDetailPage: React.FC = () => {
         <Typography
           variant="h6"
           color="text.secondary"
-          sx={{ fontSize: '18px' }}>
+          sx={{ fontSize: FONT_SIZES.subtitle.desktop }}>
           {MESSAGES.info.loading}
         </Typography>
       </Box>

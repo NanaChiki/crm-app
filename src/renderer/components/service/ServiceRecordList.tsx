@@ -55,6 +55,9 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { useServiceRecords } from '../../hooks/useServiceRecords';
 
+// Design System Constants
+import { FONT_SIZES, SPACING, BUTTON_SIZE } from '../../constants/uiDesignSystem';
+
 // Components
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
@@ -404,9 +407,9 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
   const responsiveSettings = useMemo(
     () => ({
       buttonSize: isMobile ? 'large' : 'medium',
-      fontSize: isMobile ? '20px' : '22px',
-      contentPadding: isMobile ? 2 : 3,
-      cardSpacing: isMobile ? 2 : 3,
+      fontSize: isMobile ? FONT_SIZES.cardTitle.mobile : FONT_SIZES.cardTitle.desktop,
+      contentPadding: isMobile ? SPACING.page.mobile : SPACING.page.desktop,
+      cardSpacing: isMobile ? SPACING.card.mobile : SPACING.card.desktop,
     }),
     [isMobile]
   );
@@ -561,8 +564,8 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
    */
   const renderFilterControls = () => (
     <Card cardsize="small">
-      <Box sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+      <Box sx={{ p: SPACING.card.desktop }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.medium }}>
           <FilterListIcon color="action" />
           <Typography
             variant="h6"
@@ -575,13 +578,13 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
               variant="outlined"
               onClick={handleClearFilters}
               startIcon={<ClearIcon />}
-              sx={{ ml: 1 }}>
+              sx={{ ml: SPACING.gap.small }}>
               クリア
             </Button>
           )}
         </Box>
 
-        <Grid container spacing={2}>
+        <Grid container spacing={SPACING.gap.medium}>
           {/* 年度別フィルタ */}
           <Grid size={{ xs: 12, sm: 4 }}>
             <FormControl fullWidth size="small">
@@ -655,7 +658,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
         </Grid>
 
         {hasActiveFilters && (
-          <Alert severity="info" sx={{ mt: 2 }}>
+          <Alert severity="info" sx={{ mt: SPACING.gap.medium }}>
             <Typography variant="body2">
               {MESSAGES.info.filterActive} ({filteredRecords.length}
               件の履歴を表示)
@@ -672,10 +675,10 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
   const renderEmptyState = () => (
     <Card>
       <Box sx={{ textAlign: 'center', p: 6 }}>
-        <WarningIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+        <WarningIcon sx={{ fontSize: 80, color: 'text.secondary', mb: SPACING.gap.medium }} />
         <Typography
           variant="h6"
-          sx={{ mb: 2, fontSize: responsiveSettings.fontSize }}>
+          sx={{ mb: SPACING.gap.medium, fontSize: responsiveSettings.fontSize }}>
           {MESSAGES.info.noServices}
         </Typography>
         <Button
@@ -697,7 +700,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
       {Object.entries(filteredServicesByYear)
         .sort(([a], [b]) => Number(b) - Number(a)) // 新しい年度順
         .map(([year, yearServices]) => (
-          <Accordion key={year} defaultExpanded sx={{ mb: 2 }}>
+          <Accordion key={year} defaultExpanded sx={{ mb: SPACING.gap.medium }}>
             <AccordionSummary
               expandIcon={
                 <ExpandMoreIcon sx={{ fontSize: 32, color: 'white' }} />
@@ -722,14 +725,14 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                   display: 'flex',
                   justifyContent: 'space-between',
                   width: '100%',
-                  pr: 2,
+                  pr: SPACING.gap.medium,
                   alignItems: 'center',
                 }}>
                 <Typography
                   variant="h6"
                   sx={{
                     fontWeight: 'bold',
-                    fontSize: isMobile ? '18px' : '20px',
+                    fontSize: isMobile ? FONT_SIZES.cardTitle.mobile : FONT_SIZES.cardTitle.desktop,
                   }}>
                   📅 {year}年度 ({yearServices.length}件)
                 </Typography>
@@ -737,14 +740,14 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                   variant="h6"
                   sx={{
                     fontWeight: 'bold',
-                    fontSize: isMobile ? '16px' : '18px',
+                    fontSize: isMobile ? FONT_SIZES.body.mobile : FONT_SIZES.cardTitle.mobile,
                   }}>
                   {formatAmount(filteredYearlyTotals[Number(year)] || 0)}
                 </Typography>
               </Box>
             </AccordionSummary>
             <AccordionDetails>
-              <Stack spacing={2} sx={{ p: isMobile ? 1 : 2 }}>
+              <Stack spacing={SPACING.gap.medium} sx={{ p: isMobile ? SPACING.gap.small : SPACING.gap.medium }}>
                 {yearServices
                   .sort(
                     (a, b) => {
@@ -757,10 +760,10 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                     <Card key={service.recordId} cardsize="small">
                       <Grid
                         container
-                        spacing={2}
+                        spacing={SPACING.gap.medium}
                         alignItems="center"
                         sx={{
-                          p: 2,
+                          p: SPACING.card.desktop,
                         }}>
                         {/* 日付 */}
                         <Grid size={{ xs: 12 }}>
@@ -768,7 +771,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                             sx={{
                               display: 'flex',
                               alignItems: 'center',
-                              gap: 1,
+                              gap: SPACING.gap.small,
                               justifyContent: isMobile
                                 ? 'center'
                                 : 'flex-start',
@@ -805,7 +808,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                                 sx={{
                                   display: 'flex',
                                   alignItems: 'center',
-                                  gap: 0.5,
+                                  gap: SPACING.gap.small,
                                 }}>
                                 <span>
                                   {SERVICE_TYPE_ICONS[
@@ -857,13 +860,13 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                         <Grid size={{ xs: 12 }}>
                           <Stack
                             direction="row"
-                            spacing={1}
+                            spacing={SPACING.gap.small}
                             justifyContent={isMobile ? 'center' : 'flex-end'}>
                             <Button
                               size="small"
                               variant="outlined"
                               onClick={() => handleEditService(service)}
-                              sx={{ minWidth: 44, minHeight: 44, p: 1 }}>
+                              sx={{ minWidth: BUTTON_SIZE.minHeight.tablet, minHeight: BUTTON_SIZE.minHeight.tablet, p: SPACING.gap.small }}>
                               <EditIcon fontSize="small" />
                             </Button>
                             <Button
@@ -873,7 +876,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                               onClick={() =>
                                 handleDeleteService(service.recordId)
                               }
-                              sx={{ minWidth: 44, minHeight: 44, p: 1 }}>
+                              sx={{ minWidth: BUTTON_SIZE.minHeight.tablet, minHeight: BUTTON_SIZE.minHeight.tablet, p: SPACING.gap.small }}>
                               <DeleteIcon fontSize="small" />
                             </Button>
                           </Stack>
@@ -904,7 +907,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
       title={
         dialogState.mode === 'add' ? 'サービス履歴追加' : 'サービス履歴編集'
       }>
-      <Stack spacing={3} sx={{ p: 2, pb: 0 }}>
+      <Stack spacing={SPACING.gap.large} sx={{ p: SPACING.card.desktop, pb: 0 }}>
         {/* サービス実施日 */}
         <Input
           label="サービス実施日"
@@ -932,7 +935,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
             }>
             {COMMON_SERVICE_TYPES.map((type) => (
               <MenuItem key={type} value={type}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small }}>
                   <span> {SERVICE_TYPE_ICONS[type]} </span>
                   {type}
                 </Box>
@@ -972,7 +975,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
           placeholder="0"
         />
         {/* 操作ボタン */}
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+        <Box sx={{ display: 'flex', gap: SPACING.gap.medium, justifyContent: 'flex-end' }}>
           <Button variant="outlined" onClick={handleCloseDialog}>
             キャンセル
           </Button>
@@ -996,14 +999,14 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
   return (
     <Box sx={{ p: responsiveSettings.contentPadding }}>
       {/* ヘッダー */}
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: SPACING.section.desktop }}>
         <Box
           sx={{
             display: 'flex',
             flexDirection: isMobile ? 'column' : 'row',
             justifyContent: 'space-between',
             alignItems: isMobile ? 'stretch' : 'center',
-            gap: 2,
+            gap: SPACING.gap.medium,
           }}>
           <Typography
             variant="h5"
@@ -1020,8 +1023,8 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
             startIcon={<AddIcon />}
             size={responsiveSettings.buttonSize as any}
             sx={{
-              minHeight: 48,
-              fontSize: isMobile ? '16px' : '14px',
+              minHeight: BUTTON_SIZE.minHeight.desktop,
+              fontSize: isMobile ? FONT_SIZES.body.desktop : FONT_SIZES.label.desktop,
               width: isMobile ? '100%' : 'auto',
             }}>
             サービス履歴を追加
@@ -1031,7 +1034,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
 
       {/* フィルター */}
       {serviceRecords.length > 0 && (
-        <Box sx={{ mb: 3 }}>{renderFilterControls()}</Box>
+        <Box sx={{ mb: SPACING.section.desktop }}>{renderFilterControls()}</Box>
       )}
 
       {/* メインコンテンツ */}
@@ -1041,9 +1044,9 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
         <Card>
           <Box sx={{ textAlign: 'center', p: 4 }}>
             <FilterListIcon
-              sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }}
+              sx={{ fontSize: 60, color: 'text.secondary', mb: SPACING.gap.medium }}
             />
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: SPACING.gap.medium }}>
               フィルター条件に一致する履歴がありません
             </Typography>
             <Button
@@ -1072,20 +1075,20 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
             maxHeight: isMobile ? '55vh' : 'auto',
           },
         }}>
-        <Box sx={{ textAlign: 'center', p: 2 }}>
+        <Box sx={{ textAlign: 'center', p: SPACING.card.desktop }}>
           <Typography
             variant="h6"
-            sx={{ mb: 2, color: theme.palette.error.main, fontWeight: 'bold' }}>
+            sx={{ mb: SPACING.gap.medium, color: theme.palette.error.main, fontWeight: 'bold' }}>
             ⚠️ 削除の確認
           </Typography>
-          <Typography variant="body1" sx={{ mb: 3 }}>
+          <Typography variant="body1" sx={{ mb: SPACING.gap.large }}>
             {MESSAGES.confirm.delete}
           </Typography>
           <Stack
             direction={isMobile ? 'column' : 'row'}
-            spacing={2}
+            spacing={SPACING.gap.medium}
             justifyContent="center"
-            sx={{ gap: isMobile ? 2 : 0 }}>
+            sx={{ gap: isMobile ? SPACING.gap.medium : 0 }}>
             <Button
               variant="outlined"
               sx={{ order: isMobile ? 2 : 1 }}

@@ -58,6 +58,9 @@ import { Modal } from '../components/ui/Modal';
 import { useApp } from '../contexts/AppContext';
 import { useReminder } from '../contexts/ReminderContext';
 
+// Design System
+import { FONT_SIZES, SPACING, BUTTON_SIZE, ICON_SIZE } from '../constants/uiDesignSystem';
+
 // Types
 import type { ReminderStatus, ReminderWithCustomer } from '../../types';
 
@@ -307,19 +310,19 @@ export const ReminderListPage: React.FC = () => {
 
     return (
       <Card key={reminder.reminderId}>
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: SPACING.card.desktop }}>
           {/* ヘッダー部分 */}
           <Box
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'flex-start',
-              mb: 2,
+              mb: SPACING.gap.medium,
             }}>
             <Box sx={{ flex: 1 }}>
               <Typography
                 variant="h6"
-                sx={{ mb: 1, fontSize: { xs: 18, md: 20 } }}>
+                sx={{ mb: 1, fontSize: { xs: FONT_SIZES.cardTitle.mobile, md: FONT_SIZES.cardTitle.desktop } }}>
                 {reminder.title}
               </Typography>
               <Box
@@ -343,12 +346,12 @@ export const ReminderListPage: React.FC = () => {
               icon={statusConfig.icon}
               label={statusConfig.label}
               color={statusConfig.color}
-              sx={{ fontSize: 14, fontWeight: 'bold' }}
+              sx={{ fontSize: FONT_SIZES.label.desktop, fontWeight: 'bold' }}
             />
           </Box>
 
           {/* メッセージ（折りたたみ対応） */}
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: SPACING.gap.medium }}>
             <Typography
               variant="body2"
               color="text.secondary"
@@ -368,7 +371,7 @@ export const ReminderListPage: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  mt: 1,
+                  mt: SPACING.gap.small,
                 }}>
                 <IconButton
                   size="small"
@@ -394,7 +397,7 @@ export const ReminderListPage: React.FC = () => {
           </Box>
 
           {/* 送信予定日 */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.medium }}>
             <ScheduleIcon fontSize="small" color="action" />
             <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
               送信予定日:{' '}
@@ -418,12 +421,12 @@ export const ReminderListPage: React.FC = () => {
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ mb: 2, display: 'block' }}>
+            sx={{ mb: SPACING.gap.medium, display: 'block' }}>
             {reminder.createdBy === 'system' ? '🤖 自動生成' : '✍️ 手動作成'}
           </Typography>
 
           {/* アクションボタン */}
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: SPACING.gap.small, flexWrap: 'wrap' }}>
             {/* 送信予定: 下書き作成ボタン */}
             {isScheduled && (
               <Button
@@ -432,7 +435,7 @@ export const ReminderListPage: React.FC = () => {
                 color="warning"
                 startIcon={<DraftsIcon />}
                 onClick={() => handleCreateDraft(reminder.reminderId)}
-                sx={{ minWidth: 140 }}>
+                sx={{ minWidth: BUTTON_SIZE.minWidth.desktop }}>
                 下書き作成
               </Button>
             )}
@@ -443,7 +446,7 @@ export const ReminderListPage: React.FC = () => {
                 size="small"
                 startIcon={<EditIcon />}
                 onClick={() => handleEdit(reminder)}
-                sx={{ minWidth: 100 }}>
+                sx={{ minWidth: BUTTON_SIZE.minWidth.mobile }}>
                 編集
               </Button>
             )}
@@ -455,7 +458,7 @@ export const ReminderListPage: React.FC = () => {
                 color="warning"
                 startIcon={<CancelIcon />}
                 onClick={() => handleCancelReminder(reminder.reminderId)}
-                sx={{ minWidth: 100 }}>
+                sx={{ minWidth: BUTTON_SIZE.minWidth.mobile }}>
                 キャンセル
               </Button>
             )}
@@ -468,7 +471,7 @@ export const ReminderListPage: React.FC = () => {
                 color="success"
                 startIcon={<SendIcon />}
                 onClick={() => handleSendNow(reminder.reminderId)}
-                sx={{ minWidth: 140 }}>
+                sx={{ minWidth: BUTTON_SIZE.minWidth.desktop }}>
                 今すぐ送信
               </Button>
             )}
@@ -480,7 +483,7 @@ export const ReminderListPage: React.FC = () => {
                 color="primary"
                 startIcon={<ScheduleIcon />}
                 onClick={() => handleReschedule(reminder.reminderId)}
-                sx={{ minWidth: 140 }}>
+                sx={{ minWidth: BUTTON_SIZE.minWidth.desktop }}>
                 再スケジュール
               </Button>
             )}
@@ -491,7 +494,7 @@ export const ReminderListPage: React.FC = () => {
               color="error"
               startIcon={<DeleteIcon />}
               onClick={() => handleDeleteClick(reminder.reminderId)}
-              sx={{ minWidth: 100 }}>
+              sx={{ minWidth: BUTTON_SIZE.minWidth.mobile }}>
               削除
             </Button>
           </Box>
@@ -505,12 +508,12 @@ export const ReminderListPage: React.FC = () => {
   // ================================
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <Container maxWidth="xl" sx={{ py: SPACING.page.desktop }}>
       {/* ページヘッダー */}
       <PageHeader title={MESSAGES.pageTitle} subtitle={MESSAGES.pageSubtitle} />
 
       {/* ステータスタブ（スクロール対応） */}
-      <Box sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
+      <Box sx={{ mb: SPACING.section.desktop, borderBottom: 1, borderColor: 'divider' }}>
         <Tabs
           value={selectedTab}
           onChange={handleTabChange}
@@ -530,10 +533,10 @@ export const ReminderListPage: React.FC = () => {
               icon={config.icon}
               iconPosition="start"
               sx={{
-                minHeight: 48,
-                fontSize: { xs: 14, md: 16 },
+                minHeight: BUTTON_SIZE.minHeight.desktop,
+                fontSize: { xs: FONT_SIZES.label.mobile, md: FONT_SIZES.body.desktop },
                 fontWeight: 'bold',
-                minWidth: { xs: 120, md: 'auto' },
+                minWidth: { xs: BUTTON_SIZE.minWidth.desktop, md: 'auto' },
               }}
             />
           ))}
@@ -544,7 +547,7 @@ export const ReminderListPage: React.FC = () => {
       {loading ? (
         <Alert severity="info">読み込み中...</Alert>
       ) : filteredReminders.length > 0 ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: SPACING.gap.medium }}>
           {filteredReminders.map(renderReminderCard)}
         </Box>
       ) : (
@@ -558,12 +561,12 @@ export const ReminderListPage: React.FC = () => {
         onClick={handleCreateNew}
         sx={{
           position: 'fixed',
-          bottom: 24,
-          right: 24,
+          bottom: SPACING.gap.large * 8,
+          right: SPACING.gap.large * 8,
           width: 64,
           height: 64,
         }}>
-        <AddIcon sx={{ fontSize: 32 }} />
+        <AddIcon sx={{ fontSize: ICON_SIZE.large }} />
       </Fab>
 
       {/* リマインダーフォームモーダル */}
@@ -583,7 +586,7 @@ export const ReminderListPage: React.FC = () => {
         <Box>
           <Typography>{MESSAGES.deleteConfirm}</Typography>
           <Box
-            sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
+            sx={{ display: 'flex', justifyContent: 'flex-end', gap: SPACING.gap.small, mt: SPACING.section.desktop }}>
             <Button onClick={() => setDeleteConfirmOpen(false)}>
               キャンセル
             </Button>
