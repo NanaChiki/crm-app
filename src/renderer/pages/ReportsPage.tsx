@@ -65,6 +65,9 @@ import { useApp } from '../contexts/AppContext';
 import { useCustomer } from '../contexts/CustomerContext';
 import { useServiceRecords } from '../hooks/useServiceRecords';
 
+// Design System Constants
+import { FONT_SIZES, SPACING, BUTTON_SIZE, GRID_LAYOUT, CARD_MIN_HEIGHT } from '../constants/uiDesignSystem';
+
 // ================================
 // 型定義
 // ================================
@@ -167,11 +170,11 @@ const MESSAGES = {
 
 const RESPONSIVE_SETTINGS = {
   mobile: {
-    fontSize: 18,
+    fontSize: parseInt(FONT_SIZES.body.mobile),
     chartHeight: 250,
   },
   desktop: {
-    fontSize: 16,
+    fontSize: parseInt(FONT_SIZES.body.desktop),
     chartHeight: 300,
   },
 };
@@ -665,7 +668,7 @@ export const ReportsPage: React.FC = () => {
       ]}
       actions={
         <Box
-          sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}
+          sx={{ display: 'flex', gap: SPACING.gap.medium, flexWrap: 'wrap' }}
           className="no-print">
           <Button
             variant="outlined"
@@ -744,7 +747,7 @@ export const ReportsPage: React.FC = () => {
   // ================================
 
   const renderYearSelector = () => (
-    <Box sx={{ mb: 3 }}>
+    <Box sx={{ mb: SPACING.gap.large }}>
       <FormControl sx={{ minWidth: 200 }}>
         <InputLabel>{MESSAGES.labels.selectYear}</InputLabel>
         <Select
@@ -754,7 +757,7 @@ export const ReportsPage: React.FC = () => {
           sx={{
             fontSize: responsiveSettings.fontSize,
             '& .MuiSelect-select': {
-              minHeight: 44,
+              minHeight: BUTTON_SIZE.minHeight.tablet,
             },
           }}>
           {getYearOptions().map((year) => (
@@ -775,22 +778,22 @@ export const ReportsPage: React.FC = () => {
       <Typography
         variant="h6"
         sx={{
-          mb: 3,
-          fontSize: responsiveSettings.fontSize + 2,
+          mb: SPACING.gap.large,
+          fontSize: FONT_SIZES.cardTitle.desktop,
           fontWeight: 'bold',
           display: 'flex',
           alignItems: 'center',
-          gap: 1,
+          gap: SPACING.gap.small,
         }}>
         <AssessmentIcon />
         {MESSAGES.sections.yearSummary}
       </Typography>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={SPACING.gap.large}>
         {/* 総売上 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: SPACING.gap.small }}>
               {MESSAGES.labels.totalRevenue}
             </Typography>
             <Typography
@@ -798,7 +801,7 @@ export const ReportsPage: React.FC = () => {
               sx={{
                 fontWeight: 'bold',
                 color: COLORS.primary,
-                fontSize: { xs: 28, md: 32 },
+                fontSize: { xs: FONT_SIZES.pageTitle.mobile, md: FONT_SIZES.pageTitle.desktop },
               }}>
               {formatCurrency(yearSummary.totalRevenue)}
             </Typography>
@@ -814,7 +817,7 @@ export const ReportsPage: React.FC = () => {
                 label={formatPercentage(yearComparison.changePercentage)}
                 color={yearComparison.isIncrease ? 'success' : 'error'}
                 size="small"
-                sx={{ mt: 1 }}
+                sx={{ mt: SPACING.gap.small }}
               />
             )}
           </Box>
@@ -823,7 +826,7 @@ export const ReportsPage: React.FC = () => {
         {/* 総件数 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: SPACING.gap.small }}>
               {MESSAGES.labels.totalCount}
             </Typography>
             <Typography
@@ -831,7 +834,7 @@ export const ReportsPage: React.FC = () => {
               sx={{
                 fontWeight: 'bold',
                 color: COLORS.success,
-                fontSize: { xs: 28, md: 32 },
+                fontSize: { xs: FONT_SIZES.pageTitle.mobile, md: FONT_SIZES.pageTitle.desktop },
               }}>
               {yearSummary.totalCount}件
             </Typography>
@@ -841,7 +844,7 @@ export const ReportsPage: React.FC = () => {
         {/* 平均単価 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: SPACING.gap.small }}>
               {MESSAGES.labels.averageRevenue}
             </Typography>
             <Typography
@@ -849,7 +852,7 @@ export const ReportsPage: React.FC = () => {
               sx={{
                 fontWeight: 'bold',
                 color: COLORS.warning,
-                fontSize: { xs: 28, md: 32 },
+                fontSize: { xs: FONT_SIZES.pageTitle.mobile, md: FONT_SIZES.pageTitle.desktop },
               }}>
               {formatCurrency(Math.round(yearSummary.averageRevenue))}
             </Typography>
@@ -859,7 +862,7 @@ export const ReportsPage: React.FC = () => {
         {/* 顧客数 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: SPACING.gap.small }}>
               {MESSAGES.labels.customerCount}
             </Typography>
             <Typography
@@ -867,7 +870,7 @@ export const ReportsPage: React.FC = () => {
               sx={{
                 fontWeight: 'bold',
                 color: COLORS.info,
-                fontSize: { xs: 28, md: 32 },
+                fontSize: { xs: FONT_SIZES.pageTitle.mobile, md: FONT_SIZES.pageTitle.desktop },
               }}>
               {yearSummary.customerCount}社
             </Typography>
@@ -884,12 +887,12 @@ export const ReportsPage: React.FC = () => {
       <Typography
         variant="h6"
         sx={{
-          mb: 3,
-          fontSize: responsiveSettings.fontSize + 2,
+          mb: SPACING.gap.large,
+          fontSize: FONT_SIZES.cardTitle.desktop,
           fontWeight: 'bold',
           display: 'flex',
           alignItems: 'center',
-          gap: 1,
+          gap: SPACING.gap.small,
         }}>
         <CalendarIcon />
         {MESSAGES.sections.monthlyTrend}
@@ -898,16 +901,16 @@ export const ReportsPage: React.FC = () => {
       <ResponsiveContainer width="100%" height={responsiveSettings.chartHeight}>
         <BarChart data={monthlyData}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="monthLabel" style={{ fontSize: 14 }} />
+          <XAxis dataKey="monthLabel" style={{ fontSize: parseInt(FONT_SIZES.label.desktop) }} />
           <YAxis
             tickFormatter={(value) => `¥${(value / 10000).toFixed(0)}万`}
-            style={{ fontSize: 14 }}
+            style={{ fontSize: parseInt(FONT_SIZES.label.desktop) }}
           />
           <Tooltip
             formatter={(value: number) => formatCurrency(value)}
-            contentStyle={{ fontSize: 14 }}
+            contentStyle={{ fontSize: parseInt(FONT_SIZES.label.desktop) }}
           />
-          <Legend wrapperStyle={{ fontSize: 14 }} />
+          <Legend wrapperStyle={{ fontSize: parseInt(FONT_SIZES.label.desktop) }} />
           <Bar dataKey="revenue" name="売上" fill={COLORS.primary} />
         </BarChart>
       </ResponsiveContainer>
@@ -922,12 +925,12 @@ export const ReportsPage: React.FC = () => {
       <Typography
         variant="h6"
         sx={{
-          mb: 3,
-          fontSize: responsiveSettings.fontSize + 2,
+          mb: SPACING.gap.large,
+          fontSize: FONT_SIZES.cardTitle.desktop,
           fontWeight: 'bold',
           display: 'flex',
           alignItems: 'center',
-          gap: 1,
+          gap: SPACING.gap.small,
         }}>
         <PeopleIcon />
         {MESSAGES.sections.customerRanking}
@@ -937,20 +940,20 @@ export const ReportsPage: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: 16 }}>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
                 順位
               </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: 16 }}>
+              <TableCell sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
                 会社名
               </TableCell>
               <TableCell
                 align="right"
-                sx={{ fontWeight: 'bold', fontSize: 16 }}>
+                sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
                 売上
               </TableCell>
               <TableCell
                 align="right"
-                sx={{ fontWeight: 'bold', fontSize: 16 }}>
+                sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
                 件数
               </TableCell>
             </TableRow>
@@ -958,22 +961,22 @@ export const ReportsPage: React.FC = () => {
           <TableBody>
             {customerSummaries.map((summary, index) => (
               <TableRow key={summary.customerId} hover>
-                <TableCell sx={{ fontSize: 16 }}>
+                <TableCell sx={{ fontSize: FONT_SIZES.body.desktop }}>
                   <Chip
                     label={index + 1}
                     color={index < 3 ? 'primary' : 'default'}
                     sx={{ fontWeight: 'bold' }}
                   />
                 </TableCell>
-                <TableCell sx={{ fontSize: 16 }}>
+                <TableCell sx={{ fontSize: FONT_SIZES.body.desktop }}>
                   {summary.companyName}
                 </TableCell>
                 <TableCell
                   align="right"
-                  sx={{ fontSize: 16, fontWeight: 'bold' }}>
+                  sx={{ fontSize: FONT_SIZES.body.desktop, fontWeight: 'bold' }}>
                   {formatCurrency(summary.totalRevenue)}
                 </TableCell>
-                <TableCell align="right" sx={{ fontSize: 16 }}>
+                <TableCell align="right" sx={{ fontSize: FONT_SIZES.body.desktop }}>
                   {summary.serviceCount}件
                 </TableCell>
               </TableRow>
@@ -998,18 +1001,18 @@ export const ReportsPage: React.FC = () => {
       <Typography
         variant="h6"
         sx={{
-          mb: 3,
-          fontSize: responsiveSettings.fontSize + 2,
+          mb: SPACING.gap.large,
+          fontSize: FONT_SIZES.cardTitle.desktop,
           fontWeight: 'bold',
           display: 'flex',
           alignItems: 'center',
-          gap: 1,
+          gap: SPACING.gap.small,
         }}>
         <MoneyIcon />
         {MESSAGES.sections.serviceTypeAnalysis}
       </Typography>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={SPACING.gap.large}>
         {/* 円グラフ */}
         <Grid size={{ xs: 12, md: 6 }}>
           <ResponsiveContainer width="100%" height={300}>
@@ -1057,11 +1060,11 @@ export const ReportsPage: React.FC = () => {
                   <TableRow key={summary.serviceType}>
                     <TableCell>
                       <Box
-                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small }}>
                         <Box
                           sx={{
-                            width: 16,
-                            height: 16,
+                            width: parseInt(FONT_SIZES.body.desktop),
+                            height: parseInt(FONT_SIZES.body.desktop),
                             borderRadius: '50%',
                             backgroundColor:
                               COLORS.chartColors[
@@ -1092,7 +1095,7 @@ export const ReportsPage: React.FC = () => {
   // レンダリング: データなし表示
   // ================================
   const renderNoData = () => (
-    <Alert severity="info" sx={{ fontSize: responsiveSettings.fontSize }}>
+    <Alert severity="info" sx={{ fontSize: FONT_SIZES.body.desktop }}>
       {MESSAGES.info.noData}
     </Alert>
   );
@@ -1101,7 +1104,7 @@ export const ReportsPage: React.FC = () => {
   // メインレンダー
   // ================================
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <Container maxWidth="xl" sx={{ py: SPACING.page.desktop }}>
       {/* ページヘッダー */}
       {renderPageHeader()}
 
@@ -1110,7 +1113,7 @@ export const ReportsPage: React.FC = () => {
 
       {/* データがある場合のレポート表示 */}
       {yearServiceRecords.length > 0 ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: SPACING.gap.large }}>
           {/* 年度サマリー */}
           {renderYearSummary()}
 

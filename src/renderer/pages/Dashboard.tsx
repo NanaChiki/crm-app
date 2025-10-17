@@ -58,6 +58,9 @@ import { useCustomer } from '../contexts/CustomerContext';
 import { useReminder } from '../contexts/ReminderContext';
 import { useServiceRecords } from '../hooks/useServiceRecords';
 
+// Design System
+import { FONT_SIZES, SPACING, BUTTON_SIZE, GRID_LAYOUT } from '../constants/uiDesignSystem';
+
 // Types
 import { Customer } from '../../types';
 
@@ -316,7 +319,7 @@ function Dashboard() {
                     sx={{
                       fontWeight: 'bold',
                       mb: 1,
-                      fontSize: { xs: 18, md: 20 },
+                      fontSize: FONT_SIZES.cardTitle.desktop,
                     }}>
                     {customer?.companyName || '不明'}
                   </Typography>
@@ -324,7 +327,7 @@ function Dashboard() {
                     variant="body2"
                     color="text.secondary"
                     sx={{
-                      fontSize: { xs: 16, md: 18 },
+                      fontSize: FONT_SIZES.body.desktop,
                       fontWeight: 'bold',
                       mb: 0.5,
                     }}>
@@ -336,7 +339,7 @@ function Dashboard() {
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    sx={{ fontSize: { xs: 14, md: 16 } }}>
+                    sx={{ fontSize: FONT_SIZES.label.desktop }}>
                     {(typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate).toLocaleDateString('ja-JP')}
                   </Typography>
                 </Box>
@@ -349,8 +352,8 @@ function Dashboard() {
               onClick={() => navigate('/customers')}
               sx={{
                 mt: 3,
-                fontSize: { xs: 16, md: 18 },
-                minHeight: 48,
+                fontSize: FONT_SIZES.body.desktop,
+                minHeight: BUTTON_SIZE.minHeight.desktop,
               }}>
               全てのサービス履歴を見る
             </Button>
@@ -360,7 +363,7 @@ function Dashboard() {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ fontSize: { xs: 16, md: 18 }, textAlign: 'center', py: 8 }}>
+          sx={{ fontSize: FONT_SIZES.body.desktop, textAlign: 'center', py: 8 }}>
           サービス履歴がありません
         </Typography>
       )}
@@ -405,7 +408,7 @@ function Dashboard() {
                       alert.urgency === 'high' ? '🔴 要対応' : '🟡 推奨時期'
                     }
                     color={alert.urgency === 'high' ? 'error' : 'warning'}
-                    sx={{ fontWeight: 'bold', fontSize: { xs: 14, md: 16 } }}
+                    sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.label.desktop }}
                   />
                 </Box>
                 <Typography
@@ -413,14 +416,14 @@ function Dashboard() {
                   sx={{
                     fontWeight: 'bold',
                     mb: 1,
-                    fontSize: { xs: 18, md: 20 },
+                    fontSize: FONT_SIZES.cardTitle.desktop,
                   }}>
                   {alert.customer.companyName || '不明'}
                 </Typography>
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ fontSize: { xs: 16, md: 18 } }}>
+                  sx={{ fontSize: FONT_SIZES.body.desktop }}>
                   {alert.lastServiceType || 'サービス'}から{alert.yearsSince}
                   年経過
                 </Typography>
@@ -432,7 +435,7 @@ function Dashboard() {
             <Button
               variant="outlined"
               onClick={() => navigate('/customers')}
-              sx={{ mt: 3, fontSize: { xs: 16, md: 18 }, minHeight: 48 }}>
+              sx={{ mt: 3, fontSize: FONT_SIZES.body.desktop, minHeight: BUTTON_SIZE.minHeight.desktop }}>
               全ての顧客を見る
             </Button>
           </Box>
@@ -441,7 +444,7 @@ function Dashboard() {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ fontSize: { xs: 16, md: 18 }, textAlign: 'center', py: 8 }}>
+          sx={{ fontSize: FONT_SIZES.body.desktop, textAlign: 'center', py: 8 }}>
           メンテナンス推奨顧客がありません
         </Typography>
       )}
@@ -474,20 +477,20 @@ function Dashboard() {
                   sx={{
                     fontWeight: 'bold',
                     mb: 0.5,
-                    fontSize: { xs: 18, md: 20 },
+                    fontSize: FONT_SIZES.cardTitle.desktop,
                   }}>
                   {reminder.title}
                 </Typography>
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ fontSize: { xs: 16, md: 18 } }}>
+                  sx={{ fontSize: FONT_SIZES.body.desktop }}>
                   {reminder.customer.companyName}
                 </Typography>
                 <Typography
                   variant="caption"
                   color="text.secondary"
-                  sx={{ fontSize: { xs: 14, md: 16 } }}>
+                  sx={{ fontSize: FONT_SIZES.label.desktop }}>
                   送信予定:{' '}
                   {(typeof reminder.reminderDate === 'string' ? new Date(reminder.reminderDate) : reminder.reminderDate).toLocaleDateString('ja-JP')}
                 </Typography>
@@ -496,7 +499,7 @@ function Dashboard() {
                     size="small"
                     variant="contained"
                     onClick={() => navigate('/reminders')}
-                    sx={{ fontSize: { xs: 14, md: 16 } }}>
+                    sx={{ fontSize: FONT_SIZES.label.desktop }}>
                     詳細
                   </Button>
                 </Box>
@@ -508,7 +511,7 @@ function Dashboard() {
             <Button
               variant="outlined"
               onClick={() => navigate('/reminders')}
-              sx={{ mt: 2, fontSize: { xs: 16, md: 18 }, minHeight: 48 }}>
+              sx={{ mt: 2, fontSize: FONT_SIZES.body.desktop, minHeight: BUTTON_SIZE.minHeight.desktop }}>
               すべてのリマインダーを見る
             </Button>
           </Box>
@@ -517,7 +520,7 @@ function Dashboard() {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ fontSize: { xs: 16, md: 18 }, textAlign: 'center', py: 8 }}>
+          sx={{ fontSize: FONT_SIZES.body.desktop, textAlign: 'center', py: 8 }}>
           今週のリマインダーはありません
         </Typography>
       )}
@@ -548,20 +551,20 @@ function Dashboard() {
                   sx={{
                     fontWeight: 'bold',
                     mb: 1,
-                    fontSize: { xs: 18, md: 20 },
+                    fontSize: FONT_SIZES.cardTitle.desktop,
                   }}>
                   {customer.companyName || '不明'}
                 </Typography>
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ fontSize: { xs: 16, md: 18 }, mb: 0.5 }}>
+                  sx={{ fontSize: FONT_SIZES.body.desktop, mb: 0.5 }}>
                   {customer.contactPerson || '担当者未登録'}
                 </Typography>
                 <Typography
                   variant="caption"
                   color="text.secondary"
-                  sx={{ fontSize: { xs: 14, md: 16 } }}>
+                  sx={{ fontSize: FONT_SIZES.label.desktop }}>
                   登録日:{' '}
                   {(typeof customer.createdAt === 'string' ? new Date(customer.createdAt) : customer.createdAt).toLocaleDateString('ja-JP')}
                 </Typography>
@@ -573,7 +576,7 @@ function Dashboard() {
             <Button
               variant="contained"
               onClick={() => navigate('/customers')}
-              sx={{ mt: 3, fontSize: { xs: 16, md: 18 }, minHeight: 48 }}>
+              sx={{ mt: 3, fontSize: FONT_SIZES.body.desktop, minHeight: BUTTON_SIZE.minHeight.desktop }}>
               顧客一覧へ
             </Button>
           </Box>
@@ -582,7 +585,7 @@ function Dashboard() {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ fontSize: { xs: 16, md: 18 }, textAlign: 'center', py: 8 }}>
+          sx={{ fontSize: FONT_SIZES.body.desktop, textAlign: 'center', py: 8 }}>
           登録済みの顧客がありません
         </Typography>
       )}
@@ -602,14 +605,14 @@ function Dashboard() {
 
       {/* エラー表示 */}
       {(loading.error || serviceError) && (
-        <Alert severity="error" sx={{ mb: 3, fontSize: 16 }}>
+        <Alert severity="error" sx={{ mb: 3, fontSize: FONT_SIZES.body.desktop }}>
           データの読み込みに失敗しました。ページを再読み込みしてください。
         </Alert>
       )}
 
       {loading.isLoading ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography variant="h6" sx={{ fontSize: 18 }}>
+          <Typography variant="h6" sx={{ fontSize: FONT_SIZES.body.desktop }}>
             読み込み中...
           </Typography>
         </Box>
@@ -619,10 +622,10 @@ function Dashboard() {
           <Box sx={{ mb: 6 }}>
             <Typography
               variant="h6"
-              sx={{ mb: 2, fontWeight: 'bold', fontSize: { xs: 20, md: 24 } }}>
+              sx={{ mb: 2, fontWeight: 'bold', fontSize: FONT_SIZES.pageTitle.desktop }}>
               ⚡ よく使う機能
             </Typography>
-            <Grid container spacing={2}>
+            <Grid container spacing={SPACING.gap.medium}>
               <Grid size={{ xs: 12, md: 4 }}>
                 <Button
                   variant="contained"
@@ -631,8 +634,8 @@ function Dashboard() {
                   startIcon={<AddIcon fontSize="large" />}
                   onClick={() => navigate('/customers/new')}
                   sx={{
-                    minHeight: { xs: 48, md: 56 },
-                    fontSize: 16,
+                    minHeight: BUTTON_SIZE.minHeight.desktop,
+                    fontSize: FONT_SIZES.body.desktop,
                     fontWeight: 'bold',
                   }}>
                   新規顧客登録
@@ -647,8 +650,8 @@ function Dashboard() {
                   startIcon={<PeopleIcon fontSize="large" />}
                   onClick={() => navigate('/customers')}
                   sx={{
-                    minHeight: { xs: 48, md: 56 },
-                    fontSize: 16,
+                    minHeight: BUTTON_SIZE.minHeight.desktop,
+                    fontSize: FONT_SIZES.body.desktop,
                     fontWeight: 'bold',
                   }}>
                   顧客一覧へ
@@ -663,8 +666,8 @@ function Dashboard() {
                   startIcon={<AssessmentIcon fontSize="large" />}
                   onClick={() => navigate('/reports')}
                   sx={{
-                    minHeight: { xs: 48, md: 56 },
-                    fontSize: 16,
+                    minHeight: BUTTON_SIZE.minHeight.desktop,
+                    fontSize: FONT_SIZES.body.desktop,
                     fontWeight: 'bold',
                   }}>
                   集計レポートへ
@@ -676,7 +679,7 @@ function Dashboard() {
           <Box sx={{ mb: 6 }}>
             <Typography
               variant="h6"
-              sx={{ mb: 2, fontWeight: 'bold', fontSize: { xs: 20, md: 24 } }}>
+              sx={{ mb: 2, fontWeight: 'bold', fontSize: FONT_SIZES.pageTitle.desktop }}>
               📊 今月の事業サマリー
             </Typography>
             <Grid container spacing={3}>
@@ -697,7 +700,7 @@ function Dashboard() {
                       color="text.secondary"
                       sx={{
                         mb: 1,
-                        fontSize: { xs: 20, md: 22 },
+                        fontSize: FONT_SIZES.cardTitle.desktop,
                         fontWeight: 'bold',
                       }}>
                       総顧客数
@@ -732,7 +735,7 @@ function Dashboard() {
                       color="text.secondary"
                       sx={{
                         mb: 1,
-                        fontSize: { xs: 20, md: 22 },
+                        fontSize: FONT_SIZES.cardTitle.desktop,
                         fontWeight: 'bold',
                       }}>
                       今月のサービス件数
@@ -764,7 +767,7 @@ function Dashboard() {
                       color="text.secondary"
                       sx={{
                         mb: 1,
-                        fontSize: { xs: 20, md: 22 },
+                        fontSize: FONT_SIZES.cardTitle.desktop,
                         fontWeight: 'bold',
                       }}>
                       今月の売上
@@ -796,7 +799,7 @@ function Dashboard() {
                       color="text.secondary"
                       sx={{
                         mb: 1,
-                        fontSize: { xs: 20, md: 22 },
+                        fontSize: FONT_SIZES.cardTitle.desktop,
                         fontWeight: 'bold',
                       }}>
                       要対応顧客数
@@ -829,8 +832,8 @@ function Dashboard() {
                   borderBottom: 1,
                   borderColor: 'divider',
                   '& .MuiTab-root': {
-                    minHeight: { xs: 56, md: 64 },
-                    fontSize: { xs: 18, md: 20 },
+                    minHeight: BUTTON_SIZE.minHeight.desktop,
+                    fontSize: FONT_SIZES.cardTitle.desktop,
                     fontWeight: 'bold',
                     textTransform: 'none',
                     padding: { xs: '12px 16px', md: '12px 24px' },
@@ -848,7 +851,7 @@ function Dashboard() {
                       <HistoryIcon />
                       <Typography
                         sx={{
-                          fontSize: { xs: 16, md: 18 },
+                          fontSize: FONT_SIZES.body.desktop,
                           fontWeight: 'bold',
                         }}>
                         最近のサービス ({recentServices.length})
@@ -868,7 +871,7 @@ function Dashboard() {
                       <BuildIcon />
                       <Typography
                         sx={{
-                          fontSize: { xs: 16, md: 18 },
+                          fontSize: FONT_SIZES.body.desktop,
                           fontWeight: 'bold',
                         }}>
                         メンテナンス推奨 ({maintenanceAlerts.length})
@@ -896,7 +899,7 @@ function Dashboard() {
                       )}
                       <Typography
                         sx={{
-                          fontSize: { xs: 16, md: 18 },
+                          fontSize: FONT_SIZES.body.desktop,
                           fontWeight: 'bold',
                         }}>
                         今週のリマインダー
@@ -916,7 +919,7 @@ function Dashboard() {
                       <PersonAddIcon />
                       <Typography
                         sx={{
-                          fontSize: { xs: 16, md: 18 },
+                          fontSize: FONT_SIZES.body.desktop,
                           fontWeight: 'bold',
                         }}>
                         最近の顧客 ({recentCustomers.length})

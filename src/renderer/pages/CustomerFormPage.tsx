@@ -65,6 +65,9 @@ import { Input } from '../components/ui/Input';
 import { useApp } from '../contexts/AppContext';
 import { useCustomerForm } from '../hooks/useCustomerForm';
 
+// Design System
+import { FONT_SIZES, SPACING, BUTTON_SIZE } from '../constants/uiDesignSystem';
+
 // ================================
 // 定数定義
 // ================================
@@ -78,14 +81,14 @@ import { useCustomerForm } from '../hooks/useCustomerForm';
  */
 const RESPONSIVE_SETTINGS = {
   mobile: {
-    fontSize: 18,
-    inputHeight: 48,
-    buttonHeight: 50,
+    fontSize: parseInt(FONT_SIZES.body.mobile),
+    inputHeight: BUTTON_SIZE.minHeight.mobile,
+    buttonHeight: BUTTON_SIZE.minHeight.mobile,
   },
   desktop: {
-    fontSize: 16,
-    inputHeight: 44,
-    buttonHeight: 48,
+    fontSize: parseInt(FONT_SIZES.body.desktop),
+    inputHeight: BUTTON_SIZE.minHeight.desktop,
+    buttonHeight: BUTTON_SIZE.minHeight.desktop,
   },
 };
 
@@ -270,12 +273,12 @@ export const CustomerFormPage: React.FC = () => {
   const renderPageHeader = () => (
     <Box>
       {/* 戻るボタン */}
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: SPACING.gap.medium }}>
         <Button
           variant="outlined"
           onClick={handleCancel}
           startIcon={<ArrowBackIcon />}
-          sx={{ minHeight: 44 }}>
+          sx={{ minHeight: BUTTON_SIZE.minHeight.desktop }}>
           {MESSAGES.buttons.back}
         </Button>
       </Box>
@@ -290,7 +293,7 @@ export const CustomerFormPage: React.FC = () => {
   // ================================
 
   const renderRequiredFieldsNote = () => (
-    <Alert severity="info" sx={{ mb: 3 }}>
+    <Alert severity="info" sx={{ mb: SPACING.gap.large }}>
       <Typography
         variant="body2"
         sx={{ fontSize: responsiveSettings.fontSize }}>
@@ -304,11 +307,11 @@ export const CustomerFormPage: React.FC = () => {
   // ================================
 
   const renderFormFields = () => (
-    <Grid container spacing={3}>
+    <Grid container spacing={SPACING.gap.large}>
       {/* 会社名（必須） */}
       <Grid size={{ xs: 12, md: 6 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
             <BusinessIcon color="primary" />
             <Typography
               variant="subtitle1"
@@ -336,7 +339,7 @@ export const CustomerFormPage: React.FC = () => {
       {/* 担当者名 */}
       <Grid size={{ xs: 12, md: 6 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
             <PersonIcon color="primary" />
             <Typography
               variant="subtitle1"
@@ -363,7 +366,7 @@ export const CustomerFormPage: React.FC = () => {
       {/* 電話番号 */}
       <Grid size={{ xs: 12, md: 6 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
             <PhoneIcon color="primary" />
             <Typography
               variant="subtitle1"
@@ -391,7 +394,7 @@ export const CustomerFormPage: React.FC = () => {
       {/* メールアドレス */}
       <Grid size={{ xs: 12, md: 6 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
             <EmailIcon color="primary" />
             <Typography
               variant="subtitle1"
@@ -419,7 +422,7 @@ export const CustomerFormPage: React.FC = () => {
       {/* 住所 */}
       <Grid size={{ xs: 12 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
             <LocationOnIcon color="primary" />
             <Typography
               variant="subtitle1"
@@ -446,7 +449,7 @@ export const CustomerFormPage: React.FC = () => {
       {/* 備考 */}
       <Grid size={{ xs: 12 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
             <NotesIcon color="primary" />
             <Typography
               variant="subtitle1"
@@ -482,10 +485,10 @@ export const CustomerFormPage: React.FC = () => {
     <Box
       sx={{
         display: 'flex',
-        gap: 2,
+        gap: SPACING.gap.medium,
         justifyContent: 'center',
         flexDirection: isMobile ? 'column' : 'row',
-        mt: 4,
+        mt: SPACING.section.desktop,
       }}>
       {/* キャンセルボタン */}
       <Button
@@ -524,7 +527,7 @@ export const CustomerFormPage: React.FC = () => {
   // ================================
 
   return (
-    <Container maxWidth="md" sx={{ py: 3 }}>
+    <Container maxWidth="md" sx={{ py: SPACING.page.desktop }}>
       {/* ページヘッダー */}
       {renderPageHeader()}
 

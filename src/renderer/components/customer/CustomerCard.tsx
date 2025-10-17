@@ -41,6 +41,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 import { Customer } from '../../../types';
+import { CARD_MIN_HEIGHT, FONT_SIZES, ANIMATION, ICON_SIZE } from '../../constants/uiDesignSystem';
 
 // ================================
 // 型定義
@@ -52,16 +53,15 @@ interface CustomerCardProps {
 }
 
 // ================================
-// スタイル定数
+// スタイル定数（Design System統一）
 // ================================
 const CARD_STYLES = {
-  // minHeight: 280,
-  minHeight: { xs: 220, sm: 240, md: 280 }, // スマホ: 220, タブレット: 240, デスクトップ: 280
-  transition: 'all 0.2s ease-in-out',
+  minHeight: CARD_MIN_HEIGHT.customer, // Design Systemから統一
+  transition: `all ${ANIMATION.duration.normal} ${ANIMATION.easing}`,
   cursor: 'pointer',
-  borderRadius: 3, // 12px相当、統一
+  borderRadius: 3, // 12px相当
   '&:hover, &:focus': {
-    transform: 'translateY(-2px)',
+    transform: `translateY(-2px) scale(${ANIMATION.hoverScale})`,
     boxShadow: 3,
   },
   '&:active': {
@@ -79,7 +79,7 @@ const INFO_ROW_STYLES = {
   alignItems: 'center',
   gap: 1,
   mb: 1.5,
-  fontSize: '16px',
+  fontSize: FONT_SIZES.body.desktop, // Design Systemから統一
 };
 
 // ================================
@@ -197,6 +197,7 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
           variant="h6"
           component="h3"
           sx={{
+            fontSize: FONT_SIZES.cardTitle.desktop, // Design System統一
             fontWeight: 'bold',
             color: theme.palette.primary.dark,
             lineHeight: 1.3,

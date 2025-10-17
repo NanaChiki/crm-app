@@ -64,6 +64,9 @@ import { CustomerCard } from '../components/customer/CustomerCard';
 import CustomerSearchBar from '../components/customer/CustomerSearchBar';
 import PageHeader from '../components/layout/PageHeader';
 
+// Design System
+import { GRID_LAYOUT, SPACING } from '../constants/uiDesignSystem';
+
 // Types, 型定義・定数
 import { Customer, SortOrder } from '../../types';
 
@@ -77,9 +80,9 @@ const SORT_OPTIONS: SortOrder[] = [
   { field: 'createdAt', direction: 'desc', label: '登録日（新しい順）' },
 ];
 
-// レスポンシブ設定
+// レスポンシブ設定（Design System統一）
 const RESPONSIVE_COLUMNS = {
-  size: { xs: 12, sm: 12, md: 6, lg: 4, xl: 4 },
+  size: GRID_LAYOUT.customerList,
 };
 
 // ================================
