@@ -194,7 +194,7 @@ interface UseServiceRecordsReturn {
   /**
    * データ再読み込み
    */
-  refreshServiceRecords: () => Promise<void>;
+  refreshServiceRecords: (silent?: boolean) => Promise<void>;
 
   // =============================
   // 🔍 フィルタリング・ソート機能
@@ -571,15 +571,22 @@ export const useServiceRecords = (
    * - 「最新情報に更新」として分かりやすく説明
    * - 更新中の状態を明確に表示
    */
-  const refreshServiceRecords = useCallback(async (): Promise<void> => {
-    console.log('🔄 サービス履歴を更新中');
-    showSnackbar('最新情報に更新しています...', 'info', 2000);
+  const refreshServiceRecords = useCallback(
+    async (silent: boolean = false): Promise<void> => {
+      console.log('🔄 サービス履歴を更新中');
 
-    // isInitializedをリセットして再読み込みを許可
-    setIsInitialized(false);
+      // サイレントモードでない場合のみメッセージ表示
+      if (!silent) {
+        showSnackbar('最新情報に更新しています...', 'info', 2000);
+      }
 
-    await loadServiceRecords();
-  }, [loadServiceRecords, showSnackbar]);
+      // isInitializedをリセットして再読み込みを許可
+      setIsInitialized(false);
+
+      await loadServiceRecords();
+    },
+    [loadServiceRecords, showSnackbar]
+  );
 
   // =============================
   // 🛠️ CRUD操作実装
