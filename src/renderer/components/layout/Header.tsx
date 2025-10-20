@@ -3,6 +3,7 @@ import {
   Home as HomeIcon,
   Notifications as NotificationsIcon,
   People as PeopleIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import {
   AppBar,
@@ -194,6 +195,12 @@ const navigationItems = [
     label: '集計レポート',
     icon: <AssessmentIcon />,
     ariaLabel: '集計レポートページへ移動',
+  },
+  {
+    path: '/settings',
+    label: '設定',
+    icon: <SettingsIcon />,
+    ariaLabel: '設定ページへ移動',
   },
 ] as const;
 

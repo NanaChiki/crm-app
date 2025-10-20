@@ -33,6 +33,7 @@ import Dashboard from '../pages/Dashboard';
 import NotFoundPage from '../pages/NotFoundPage';
 import ReminderListPage from '../pages/ReminderListPage';
 import ReportsPage from '../pages/ReportsPage';
+import SettingsPage from '../pages/SettingsPage';
 // ================================
 // 未実装ページ用プレースホルダー
 // ================================
@@ -140,6 +141,12 @@ export const AppRouter: React.FC = () => {
           ================================ */}
       {/* リマインダー管理ページ - Phase 2B完成 */}
       <Route path="/reminders" element={<ReminderListPage />} />
+
+      {/* ================================
+          設定（Phase 3A）
+          ================================ */}
+      {/* 設定ページ - Phase 3A完成 */}
+      <Route path="/settings" element={<SettingsPage />} />
 
       {/* ================================
           エラーページ

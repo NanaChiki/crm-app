@@ -1,10 +1,13 @@
-import { app, BrowserWindow, Menu, ipcMain } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron';
 import * as path from 'path';
+import * as fs from 'fs/promises';
+import * as os from 'os';
 import {
   sendOutlookEmail,
   createOutlookEvent,
   getFriendlyErrorMessage,
 } from './outlook';
+import { generateCustomersCSV } from './csv/exportCustomers';
 import {
   fetchReminders,
   createReminder,
@@ -495,3 +498,72 @@ ipcMain.handle('service:delete', async (_event: any, recordId: number) => {
 });
 
 console.log('✅ サービス履歴IPC ハンドラー登録完了');
+
+// =============================
+// CSV エクスポート IPC ハンドラー
+// =============================
+
+/**
+ * 顧客データCSVエクスポート
+ *
+ * 【50代配慮】
+ * - デスクトップをデフォルト保存先に
+ * - 日付入りのファイル名で分かりやすく
+ * - BOM付きUTF-8でExcel対応
+ * - 保存先パスを成功メッセージに含める
+ */
+ipcMain.handle('csv:export-customers', async () => {
+  try {
+    console.log('📤 CSV エクスポート開始');
+
+    // CSV文字列を生成
+    const csvContent = await generateCustomersCSV();
+
+    // 現在の日付を取得してファイル名に使用
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    const defaultFileName = `顧客データ_${dateStr}.csv`;
+
+    // ファイル保存ダイアログ表示
+    const result = await dialog.showSaveDialog({
+      title: '顧客データをCSVファイルに保存',
+      defaultPath: path.join(os.homedir(), 'Desktop', defaultFileName),
+      filters: [
+        { name: 'CSVファイル', extensions: ['csv'] },
+        { name: 'すべてのファイル', extensions: ['*'] },
+      ],
+    });
+
+    // キャンセルされた場合
+    if (result.canceled || !result.filePath) {
+      console.log('ℹ️ ファイル保存がキャンセルされました');
+      return {
+        success: false,
+        canceled: true,
+      };
+    }
+
+    // BOM付きUTF-8で保存（Excelで文字化けしない）
+    const bom = '\uFEFF';
+    await fs.writeFile(result.filePath, bom + csvContent, 'utf-8');
+
+    console.log(`✅ CSVファイル保存完了: ${result.filePath}`);
+
+    return {
+      success: true,
+      filePath: result.filePath,
+      message: `顧客データを保存しました:\n${result.filePath}`,
+    };
+  } catch (error: any) {
+    console.error('❌ CSV エクスポートエラー:', error);
+    return {
+      success: false,
+      error: error.message || 'ファイルの保存に失敗しました',
+    };
+  }
+});
+
+console.log('✅ CSV エクスポート IPC ハンドラー登録完了');
