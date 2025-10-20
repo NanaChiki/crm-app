@@ -66,7 +66,7 @@ import { useCustomer } from '../contexts/CustomerContext';
 import { useServiceRecords } from '../hooks/useServiceRecords';
 
 // Design System Constants
-import { FONT_SIZES, SPACING, BUTTON_SIZE, GRID_LAYOUT, CARD_MIN_HEIGHT } from '../constants/uiDesignSystem';
+import { BUTTON_SIZE, FONT_SIZES, SPACING } from '../constants/uiDesignSystem';
 
 // ================================
 // 型定義
@@ -217,9 +217,10 @@ export const ReportsPage: React.FC = () => {
   });
 
   // データ更新用のリフレッシュボタンを追加
-  const handleRefreshData = useCallback(() => {
-    refreshServiceRecords();
-    showSnackbar('データを更新しました', 'success');
+  const handleRefreshData = useCallback(async () => {
+    // サイレントモード（silent=true）で更新してメッセージ重複を防ぐ
+    await refreshServiceRecords(true);
+    showSnackbar('データを更新しました。', 'success');
   }, [refreshServiceRecords, showSnackbar]);
 
   const currentYear = new Date().getFullYear();
@@ -235,7 +236,10 @@ export const ReportsPage: React.FC = () => {
 
   const yearServiceRecords = useMemo(() => {
     return serviceRecords.filter((record) => {
-      const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+      const dateObj =
+        typeof record.serviceDate === 'string'
+          ? new Date(record.serviceDate)
+          : record.serviceDate;
       const recordYear = dateObj.getFullYear();
       return recordYear === selectedYear;
     });
@@ -246,7 +250,10 @@ export const ReportsPage: React.FC = () => {
    */
   const lastYearServiceRecords = useMemo(() => {
     return serviceRecords.filter((record) => {
-      const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+      const dateObj =
+        typeof record.serviceDate === 'string'
+          ? new Date(record.serviceDate)
+          : record.serviceDate;
       const recordYear = dateObj.getFullYear();
       return recordYear === selectedYear - 1;
     });
@@ -309,7 +316,10 @@ export const ReportsPage: React.FC = () => {
 
     return months.map((month) => {
       const monthRecords = yearServiceRecords.filter((record) => {
-        const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+        const dateObj =
+          typeof record.serviceDate === 'string'
+            ? new Date(record.serviceDate)
+            : record.serviceDate;
         const recordMonth = dateObj.getMonth() + 1;
         return recordMonth === month;
       });
@@ -352,7 +362,10 @@ export const ReportsPage: React.FC = () => {
       summary.totalRevenue += Number(record.amount) || 0;
       summary.serviceCount += 1;
 
-      const serviceDate = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+      const serviceDate =
+        typeof record.serviceDate === 'string'
+          ? new Date(record.serviceDate)
+          : record.serviceDate;
       if (!summary.lastServiceDate || serviceDate > summary.lastServiceDate) {
         summary.lastServiceDate = serviceDate;
       }
@@ -511,15 +524,22 @@ export const ReportsPage: React.FC = () => {
       csv += `No,日付,顧客名,サービス種別,サービス内容,金額,ステータス\n`;
 
       yearServiceRecords
-        .sort(
-          (a, b) => {
-            const dateA = typeof a.serviceDate === 'string' ? new Date(a.serviceDate) : a.serviceDate;
-            const dateB = typeof b.serviceDate === 'string' ? new Date(b.serviceDate) : b.serviceDate;
-            return dateA.getTime() - dateB.getTime();
-          }
-        )
+        .sort((a, b) => {
+          const dateA =
+            typeof a.serviceDate === 'string'
+              ? new Date(a.serviceDate)
+              : a.serviceDate;
+          const dateB =
+            typeof b.serviceDate === 'string'
+              ? new Date(b.serviceDate)
+              : b.serviceDate;
+          return dateA.getTime() - dateB.getTime();
+        })
         .forEach((record, index) => {
-          const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+          const dateObj =
+            typeof record.serviceDate === 'string'
+              ? new Date(record.serviceDate)
+              : record.serviceDate;
           const date = dateObj.toLocaleDateString('ja-JP');
           const customer = customers.find(
             (c) => c.customerId === record.customerId
@@ -555,10 +575,10 @@ export const ReportsPage: React.FC = () => {
       }.csv`;
       link.click();
 
-      showSnackbar('確定申告用CSVファイルをダウンロードしました', 'success');
+      showSnackbar('確定申告用CSVファイルをダウンロードしました。', 'success');
     } catch (error) {
       console.error('CSV出力エラー:', error);
-      showSnackbar('CSV出力に失敗しました', 'error');
+      showSnackbar('CSV出力に失敗しました。', 'error');
     }
   }, [
     selectedYear,
@@ -793,7 +813,10 @@ export const ReportsPage: React.FC = () => {
         {/* 総売上 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: SPACING.gap.small }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: SPACING.gap.small }}>
               {MESSAGES.labels.totalRevenue}
             </Typography>
             <Typography
@@ -801,7 +824,10 @@ export const ReportsPage: React.FC = () => {
               sx={{
                 fontWeight: 'bold',
                 color: COLORS.primary,
-                fontSize: { xs: FONT_SIZES.pageTitle.mobile, md: FONT_SIZES.pageTitle.desktop },
+                fontSize: {
+                  xs: FONT_SIZES.pageTitle.mobile,
+                  md: FONT_SIZES.pageTitle.desktop,
+                },
               }}>
               {formatCurrency(yearSummary.totalRevenue)}
             </Typography>
@@ -826,7 +852,10 @@ export const ReportsPage: React.FC = () => {
         {/* 総件数 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: SPACING.gap.small }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: SPACING.gap.small }}>
               {MESSAGES.labels.totalCount}
             </Typography>
             <Typography
@@ -834,7 +863,10 @@ export const ReportsPage: React.FC = () => {
               sx={{
                 fontWeight: 'bold',
                 color: COLORS.success,
-                fontSize: { xs: FONT_SIZES.pageTitle.mobile, md: FONT_SIZES.pageTitle.desktop },
+                fontSize: {
+                  xs: FONT_SIZES.pageTitle.mobile,
+                  md: FONT_SIZES.pageTitle.desktop,
+                },
               }}>
               {yearSummary.totalCount}件
             </Typography>
@@ -844,7 +876,10 @@ export const ReportsPage: React.FC = () => {
         {/* 平均単価 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: SPACING.gap.small }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: SPACING.gap.small }}>
               {MESSAGES.labels.averageRevenue}
             </Typography>
             <Typography
@@ -852,7 +887,10 @@ export const ReportsPage: React.FC = () => {
               sx={{
                 fontWeight: 'bold',
                 color: COLORS.warning,
-                fontSize: { xs: FONT_SIZES.pageTitle.mobile, md: FONT_SIZES.pageTitle.desktop },
+                fontSize: {
+                  xs: FONT_SIZES.pageTitle.mobile,
+                  md: FONT_SIZES.pageTitle.desktop,
+                },
               }}>
               {formatCurrency(Math.round(yearSummary.averageRevenue))}
             </Typography>
@@ -862,7 +900,10 @@ export const ReportsPage: React.FC = () => {
         {/* 顧客数 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: SPACING.gap.small }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: SPACING.gap.small }}>
               {MESSAGES.labels.customerCount}
             </Typography>
             <Typography
@@ -870,7 +911,10 @@ export const ReportsPage: React.FC = () => {
               sx={{
                 fontWeight: 'bold',
                 color: COLORS.info,
-                fontSize: { xs: FONT_SIZES.pageTitle.mobile, md: FONT_SIZES.pageTitle.desktop },
+                fontSize: {
+                  xs: FONT_SIZES.pageTitle.mobile,
+                  md: FONT_SIZES.pageTitle.desktop,
+                },
               }}>
               {yearSummary.customerCount}社
             </Typography>
@@ -901,7 +945,10 @@ export const ReportsPage: React.FC = () => {
       <ResponsiveContainer width="100%" height={responsiveSettings.chartHeight}>
         <BarChart data={monthlyData}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="monthLabel" style={{ fontSize: parseInt(FONT_SIZES.label.desktop) }} />
+          <XAxis
+            dataKey="monthLabel"
+            style={{ fontSize: parseInt(FONT_SIZES.label.desktop) }}
+          />
           <YAxis
             tickFormatter={(value) => `¥${(value / 10000).toFixed(0)}万`}
             style={{ fontSize: parseInt(FONT_SIZES.label.desktop) }}
@@ -910,7 +957,9 @@ export const ReportsPage: React.FC = () => {
             formatter={(value: number) => formatCurrency(value)}
             contentStyle={{ fontSize: parseInt(FONT_SIZES.label.desktop) }}
           />
-          <Legend wrapperStyle={{ fontSize: parseInt(FONT_SIZES.label.desktop) }} />
+          <Legend
+            wrapperStyle={{ fontSize: parseInt(FONT_SIZES.label.desktop) }}
+          />
           <Bar dataKey="revenue" name="売上" fill={COLORS.primary} />
         </BarChart>
       </ResponsiveContainer>
@@ -940,10 +989,12 @@ export const ReportsPage: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
+              <TableCell
+                sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
                 順位
               </TableCell>
-              <TableCell sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
+              <TableCell
+                sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
                 会社名
               </TableCell>
               <TableCell
@@ -973,10 +1024,15 @@ export const ReportsPage: React.FC = () => {
                 </TableCell>
                 <TableCell
                   align="right"
-                  sx={{ fontSize: FONT_SIZES.body.desktop, fontWeight: 'bold' }}>
+                  sx={{
+                    fontSize: FONT_SIZES.body.desktop,
+                    fontWeight: 'bold',
+                  }}>
                   {formatCurrency(summary.totalRevenue)}
                 </TableCell>
-                <TableCell align="right" sx={{ fontSize: FONT_SIZES.body.desktop }}>
+                <TableCell
+                  align="right"
+                  sx={{ fontSize: FONT_SIZES.body.desktop }}>
                   {summary.serviceCount}件
                 </TableCell>
               </TableRow>
@@ -1060,7 +1116,11 @@ export const ReportsPage: React.FC = () => {
                   <TableRow key={summary.serviceType}>
                     <TableCell>
                       <Box
-                        sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small }}>
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: SPACING.gap.small,
+                        }}>
                         <Box
                           sx={{
                             width: parseInt(FONT_SIZES.body.desktop),
@@ -1113,7 +1173,12 @@ export const ReportsPage: React.FC = () => {
 
       {/* データがある場合のレポート表示 */}
       {yearServiceRecords.length > 0 ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: SPACING.gap.large }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: SPACING.gap.large,
+          }}>
           {/* 年度サマリー */}
           {renderYearSummary()}
 
