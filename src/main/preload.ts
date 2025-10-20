@@ -136,3 +136,16 @@ contextBridge.exposeInMainWorld('serviceRecordAPI', {
 });
 
 console.log('✅ サービス履歴API公開完了');
+
+// ================================
+// CSV API公開
+// ================================
+
+contextBridge.exposeInMainWorld('csvAPI', {
+  /**
+   * 顧客データCSVエクスポート
+   */
+  exportCustomers: () => ipcRenderer.invoke('csv:export-customers'),
+});
+
+console.log('✅ CSV API公開完了');

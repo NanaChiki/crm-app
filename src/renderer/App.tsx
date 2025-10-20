@@ -9,6 +9,7 @@ import { theme } from './styles/theme';
 // 🆕 Context Providers のインポート
 // =============================
 import { AppProvider, useApp } from './contexts/AppContext';
+import { CSVProvider } from './contexts/CSVContext';
 import { CustomerProvider } from './contexts/CustomerContext';
 import { ReminderProvider } from './contexts/ReminderContext';
 
@@ -46,14 +47,16 @@ function AppContent() {
     <>
       <CustomerProvider>
         <ReminderProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <BrowserRouter>
-              <MainLayout>
-                <AppRouter />
-              </MainLayout>
-            </BrowserRouter>
-          </ThemeProvider>
+          <CSVProvider>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <BrowserRouter>
+                <MainLayout>
+                  <AppRouter />
+                </MainLayout>
+              </BrowserRouter>
+            </ThemeProvider>
+          </CSVProvider>
         </ReminderProvider>
       </CustomerProvider>
 
