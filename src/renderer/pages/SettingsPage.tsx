@@ -49,7 +49,7 @@ export default function SettingsPage() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [currentTab, setCurrentTab] = useState(0);
-  const { loading, exportCustomersCSV } = useCSV();
+  const { loading, exportCustomersCSV, exportServiceRecordsCSV } = useCSV();
 
   /**
    * タブ変更ハンドラー
@@ -63,6 +63,13 @@ export default function SettingsPage() {
    */
   const handleExportCustomers = async () => {
     await exportCustomersCSV();
+  };
+
+  /**
+   * サービス履歴CSVエクスポートハンドラー
+   */
+  const handleExportServiceRecords = async () => {
+    await exportServiceRecordsCSV();
   };
 
   return (
@@ -163,6 +170,44 @@ export default function SettingsPage() {
               </Button>
             </Box>
 
+            {/* サービス履歴CSVエクスポート */}
+            <Box sx={{ mb: SPACING.section.desktop }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: FONT_SIZES.body.desktop,
+                  mb: SPACING.gap.medium,
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                }}>
+                CRMのサービス履歴をジョブカン請求書作成用のCSVファイルに出力します。
+                <br />
+                出力したCSVファイルをジョブカンで参照、またはインポートできます。
+              </Typography>
+
+              <Button
+                variant="contained"
+                size="large"
+                color="secondary"
+                startIcon={
+                  loading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <DownloadIcon />
+                  )
+                }
+                onClick={handleExportServiceRecords}
+                disabled={loading}
+                sx={{
+                  fontSize: FONT_SIZES.body.desktop,
+                  py: 2,
+                  px: 4,
+                  minHeight: BUTTON_SIZE.minHeight.desktop,
+                }}>
+                {loading ? 'エクスポート中...' : 'サービス履歴をCSV出力'}
+              </Button>
+            </Box>
+
             {/* 使い方の説明 */}
             <Box
               sx={{
@@ -181,11 +226,23 @@ export default function SettingsPage() {
                 }}>
                 <strong>使い方:</strong>
                 <br />
+                <br />
+                <strong>📋 顧客データ:</strong>
+                <br />
                 1. 「顧客データをCSV出力」ボタンをクリック
                 <br />
                 2. 保存先を選択（デスクトップがおすすめ）
                 <br />
                 3. ジョブカンで「顧客インポート」から出力したCSVを読み込み
+                <br />
+                <br />
+                <strong>📊 サービス履歴:</strong>
+                <br />
+                1. 「サービス履歴をCSV出力」ボタンをクリック
+                <br />
+                2. 保存先を選択（デスクトップがおすすめ）
+                <br />
+                3. ジョブカンで請求書作成時に参照、またはインポート
               </Typography>
             </Box>
           </Box>

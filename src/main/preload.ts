@@ -146,6 +146,11 @@ contextBridge.exposeInMainWorld('csvAPI', {
    * 顧客データCSVエクスポート
    */
   exportCustomers: () => ipcRenderer.invoke('csv:export-customers'),
+
+  /**
+   * サービス履歴CSVエクスポート（ジョブカン請求書用）
+   */
+  exportServiceRecords: () => ipcRenderer.invoke('csv:export-service-records'),
 });
 
 console.log('✅ CSV API公開完了');

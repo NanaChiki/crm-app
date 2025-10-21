@@ -8,6 +8,7 @@ import {
   getFriendlyErrorMessage,
 } from './outlook';
 import { generateCustomersCSV } from './csv/exportCustomers';
+import { generateServiceRecordsCSV } from './csv/exportServiceRecords';
 import {
   fetchReminders,
   createReminder,
@@ -559,6 +560,63 @@ ipcMain.handle('csv:export-customers', async () => {
     };
   } catch (error: any) {
     console.error('❌ CSV エクスポートエラー:', error);
+    return {
+      success: false,
+      error: error.message || 'ファイルの保存に失敗しました',
+    };
+  }
+});
+
+/**
+ * サービス履歴CSVエクスポート（ジョブカン請求書用）
+ */
+ipcMain.handle('csv:export-service-records', async () => {
+  try {
+    console.log('📤 サービス履歴CSVエクスポート開始');
+
+    // CSV文字列を生成
+    const csvContent = await generateServiceRecordsCSV();
+
+    // 現在の日付を取得してファイル名に使用
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    const defaultFileName = `サービス履歴_${dateStr}.csv`;
+
+    // ファイル保存ダイアログ表示
+    const result = await dialog.showSaveDialog({
+      title: 'サービス履歴をCSVファイルに保存',
+      defaultPath: path.join(os.homedir(), 'Desktop', defaultFileName),
+      filters: [
+        { name: 'CSVファイル', extensions: ['csv'] },
+        { name: 'すべてのファイル', extensions: ['*'] },
+      ],
+    });
+
+    // キャンセルされた場合
+    if (result.canceled || !result.filePath) {
+      console.log('ℹ️ ファイル保存がキャンセルされました');
+      return {
+        success: false,
+        canceled: true,
+      };
+    }
+
+    // BOM付きUTF-8で保存（Excelで文字化けしない）
+    const bom = '\uFEFF';
+    await fs.writeFile(result.filePath, bom + csvContent, 'utf-8');
+
+    console.log(`✅ サービス履歴CSVファイル保存完了: ${result.filePath}`);
+
+    return {
+      success: true,
+      filePath: result.filePath,
+      message: `サービス履歴を保存しました:\n${result.filePath}`,
+    };
+  } catch (error: any) {
+    console.error('❌ サービス履歴CSVエクスポートエラー:', error);
     return {
       success: false,
       error: error.message || 'ファイルの保存に失敗しました',
