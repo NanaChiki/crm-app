@@ -175,8 +175,8 @@ export default function SettingsPage() {
               <Typography
                 variant="body2"
                 sx={{
-                  fontSize: FONT_SIZES.label.desktop,
-                  color: 'info.dark',
+                  fontSize: FONT_SIZES.body.desktop,
+                  color: 'text.primary',
                   lineHeight: 1.8,
                 }}>
                 <strong>使い方:</strong>
