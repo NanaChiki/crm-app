@@ -154,3 +154,21 @@ contextBridge.exposeInMainWorld('csvAPI', {
 });
 
 console.log('✅ CSV API公開完了');
+
+// ================================
+// バックアップAPI公開
+// ================================
+
+contextBridge.exposeInMainWorld('backupAPI', {
+  /**
+   * バックアップ作成
+   */
+  createBackup: () => ipcRenderer.invoke('backup:create'),
+
+  /**
+   * バックアップから復元
+   */
+  restoreBackup: () => ipcRenderer.invoke('backup:restore'),
+});
+
+console.log('✅ バックアップAPI公開完了');

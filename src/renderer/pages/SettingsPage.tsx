@@ -29,13 +29,16 @@ import React, { useState } from 'react';
 // Icons
 import BackupIcon from '@mui/icons-material/Backup';
 import DownloadIcon from '@mui/icons-material/Download';
+import RestoreIcon from '@mui/icons-material/Restore';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 // Components
+import { DataStatistics } from '../components/backup/DataStatistics';
 import PageHeader from '../components/layout/PageHeader';
 import { Button } from '../components/ui/Button';
 
 // Contexts
+import { useBackup } from '../contexts/BackupContext';
 import { useCSV } from '../contexts/CSVContext';
 
 // Design System
@@ -50,6 +53,7 @@ export default function SettingsPage() {
 
   const [currentTab, setCurrentTab] = useState(0);
   const { loading, exportCustomersCSV, exportServiceRecordsCSV } = useCSV();
+  const { loading: backupLoading, createBackup, restoreBackup } = useBackup();
 
   /**
    * タブ変更ハンドラー
@@ -248,7 +252,7 @@ export default function SettingsPage() {
           </Box>
         )}
 
-        {/* タブ2: バックアップ（Phase 3B で実装予定） */}
+        {/* タブ2: バックアップ */}
         {currentTab === 1 && (
           <Box
             sx={{ p: { xs: SPACING.card.mobile, md: SPACING.card.desktop } }}>
@@ -262,14 +266,115 @@ export default function SettingsPage() {
               }}>
               データバックアップ
             </Typography>
-            <Typography
-              variant="body1"
+
+            {/* データ統計情報 */}
+            <Box sx={{ mb: SPACING.section.desktop }}>
+              <DataStatistics />
+            </Box>
+
+            {/* バックアップ作成 */}
+            <Box sx={{ mb: SPACING.section.desktop }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: FONT_SIZES.body.desktop,
+                  mb: SPACING.gap.medium,
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                }}>
+                すべてのデータをZIPファイルにバックアップします。
+                <br />
+                定期的にバックアップを作成することをおすすめします。
+              </Typography>
+
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={
+                  backupLoading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <BackupIcon />
+                  )
+                }
+                onClick={createBackup}
+                disabled={backupLoading}
+                sx={{
+                  fontSize: FONT_SIZES.body.desktop,
+                  py: 2,
+                  px: 4,
+                  minHeight: BUTTON_SIZE.minHeight.desktop,
+                }}>
+                {backupLoading ? '作成中...' : 'バックアップを作成'}
+              </Button>
+            </Box>
+
+            {/* バックアップから復元 */}
+            <Box sx={{ mb: SPACING.section.desktop }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: FONT_SIZES.body.desktop,
+                  mb: SPACING.gap.medium,
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                }}>
+                バックアップファイルからデータを復元します。
+                <br />
+                現在のデータは削除されますのでご注意ください。
+              </Typography>
+
+              <Button
+                variant="contained"
+                size="large"
+                color="warning"
+                startIcon={
+                  backupLoading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <RestoreIcon />
+                  )
+                }
+                onClick={restoreBackup}
+                disabled={backupLoading}
+                sx={{
+                  fontSize: FONT_SIZES.body.desktop,
+                  py: 2,
+                  px: 4,
+                  minHeight: BUTTON_SIZE.minHeight.desktop,
+                }}>
+                {backupLoading ? '復元中...' : 'バックアップから復元'}
+              </Button>
+            </Box>
+
+            {/* 注意事項 */}
+            <Box
               sx={{
-                fontSize: FONT_SIZES.body.desktop,
-                color: 'text.secondary',
+                p: SPACING.card.desktop,
+                bgcolor: 'warning.light',
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'warning.main',
               }}>
-              この機能は次回のアップデートで実装予定です。
-            </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: FONT_SIZES.body.desktop,
+                  color: 'text.dark',
+                  lineHeight: 1.8,
+                }}>
+                <strong>⚠️ 重要な注意事項:</strong>
+                <br />
+                <br />
+                • バックアップファイルは安全な場所に保管してください
+                <br />
+                •
+                定期的（週1回程度）にバックアップを作成することをおすすめします
+                <br />
+                • 復元前に自動で現在のデータがバックアップされます
+                <br />• 復元後はアプリを再起動してください
+              </Typography>
+            </Box>
           </Box>
         )}
 
