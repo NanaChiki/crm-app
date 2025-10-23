@@ -18,14 +18,14 @@ import {
   ArrowBack as ArrowBackIcon,
   Home as HomeIcon,
   Search as SearchIcon,
-} from '@mui/icons-material';
-import { Box, Container, Stack, Typography } from '@mui/material';
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+} from "@mui/icons-material";
+import { Box, Container, Stack, Typography } from "@mui/material";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 // Custom Components
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
 
 /**
  * NotFoundPage - 404エラーページコンポーネント
@@ -50,12 +50,12 @@ export const NotFoundPage: React.FC = () => {
 
   // ホームページへ戻る
   const handleGoHome = () => {
-    navigate('/');
+    navigate("/");
   };
 
   // 顧客一覧ページへ移動
   const handleGoCustomers = () => {
-    navigate('/customers');
+    navigate("/customers");
   };
 
   // ブラウザの戻るボタン機能
@@ -66,12 +66,12 @@ export const NotFoundPage: React.FC = () => {
   return (
     <Container maxWidth="md" sx={{ py: 8 }}>
       <Card>
-        <Box sx={{ textAlign: 'center', p: 4 }}>
+        <Box sx={{ textAlign: "center", p: 4 }}>
           {/* エラーアイコン */}
           <SearchIcon
             sx={{
               fontSize: 120,
-              color: 'warning.main',
+              color: "warning.main",
               mb: 3,
             }}
           />
@@ -80,11 +80,12 @@ export const NotFoundPage: React.FC = () => {
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '48px', md: '64px' },
-              fontWeight: 'bold',
-              color: 'text.secondary',
+              fontSize: { xs: "48px", md: "64px" },
+              fontWeight: "bold",
+              color: "text.secondary",
               mb: 2,
-            }}>
+            }}
+          >
             404
           </Typography>
 
@@ -92,10 +93,11 @@ export const NotFoundPage: React.FC = () => {
           <Typography
             variant="h4"
             sx={{
-              fontSize: { xs: '20px', md: '24px' },
-              fontWeight: 'bold',
+              fontSize: { xs: "20px", md: "24px" },
+              fontWeight: "bold",
               mb: 2,
-            }}>
+            }}
+          >
             お探しのページが見つかりません
           </Typography>
 
@@ -104,10 +106,11 @@ export const NotFoundPage: React.FC = () => {
             variant="body1"
             color="text.secondary"
             sx={{
-              fontSize: { xs: '16px', md: '18px' },
+              fontSize: { xs: "16px", md: "18px" },
               mb: 4,
               lineHeight: 1.8,
-            }}>
+            }}
+          >
             申し訳ございません。
             <br />
             アクセスしようとしたページは存在しないか、
@@ -116,17 +119,19 @@ export const NotFoundPage: React.FC = () => {
 
           {/* アクションボタン群 */}
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
+            direction={{ xs: "column", sm: "row" }}
             spacing={2}
             justifyContent="center"
-            sx={{ mb: 3 }}>
+            sx={{ mb: 3 }}
+          >
             {/* ホームに戻るボタン */}
             <Button
               variant="contained"
               size="large"
               startIcon={<HomeIcon />}
               onClick={handleGoHome}
-              sx={{ minWidth: 200 }}>
+              sx={{ minWidth: 200 }}
+            >
               ホームに戻る
             </Button>
 
@@ -136,7 +141,8 @@ export const NotFoundPage: React.FC = () => {
               size="large"
               startIcon={<SearchIcon />}
               onClick={handleGoCustomers}
-              sx={{ minWidth: 200 }}>
+              sx={{ minWidth: 200 }}
+            >
               顧客一覧を見る
             </Button>
           </Stack>
@@ -148,16 +154,17 @@ export const NotFoundPage: React.FC = () => {
             startIcon={<ArrowBackIcon />}
             onClick={handleGoBack}
             sx={{
-              color: 'text.secondary',
-              '&:hover': {
-                backgroundColor: 'action.hover',
+              color: "text.secondary",
+              "&:hover": {
+                backgroundColor: "action.hover",
               },
-            }}>
+            }}
+          >
             前のページに戻る
           </Button>
 
           {/* 補足説明 */}
-          <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider' }}>
+          <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: "divider" }}>
             <Typography variant="caption" color="text.secondary">
               問題が解決しない場合は、URLが正しいかご確認ください。
             </Typography>

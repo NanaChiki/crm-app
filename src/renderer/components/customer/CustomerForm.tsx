@@ -37,7 +37,7 @@ import {
   Phone as PhoneIcon,
   Save as SaveIcon,
   TrendingUp as TrendingUpIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -47,23 +47,23 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from '@mui/material';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+} from "@mui/material";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 // // Custom Hooks & Contexts
-import { useApp } from '../../contexts/AppContext';
-import { useCustomer } from '../../contexts/CustomerContext';
-import { useCustomerForm } from '../../hooks/useCustomerForm';
+import { useApp } from "../../contexts/AppContext";
+import { useCustomer } from "../../contexts/CustomerContext";
+import { useCustomerForm } from "../../hooks/useCustomerForm";
 
 // // Components
-import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
-import { Input } from '../ui/Input';
-import { Modal } from '../ui/Modal';
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
+import { Input } from "../ui/Input";
+import { Modal } from "../ui/Modal";
 
 // Types
-import { Customer } from '../../../types';
-import { useServiceRecords } from '../../hooks/useServiceRecords';
+import { Customer } from "../../../types";
+import { useServiceRecords } from "../../hooks/useServiceRecords";
 
 // ================================
 // 型定義・定数
@@ -85,22 +85,22 @@ interface EditState {
 // ================================
 const MESSAGES = {
   success: {
-    save: '顧客情報を保存しました。',
-    delete: '顧客情報を削除しました。',
+    save: "顧客情報を保存しました。",
+    delete: "顧客情報を削除しました。",
   },
   error: {
-    save: '保存に失敗しました。もう一度お試しください。',
-    delete: '削除に失敗しました。もう一度お試しください。',
-    required: '必須項目を入力してください。',
+    save: "保存に失敗しました。もう一度お試しください。",
+    delete: "削除に失敗しました。もう一度お試しください。",
+    required: "必須項目を入力してください。",
   },
   confirm: {
     delete:
-      'この顧客情報を削除してもよろしいですか？\n関連するサービス履歴もすべて削除されます。',
-    unsavedChanges: '変更内容が保存されていません。編集を中止しますか？',
+      "この顧客情報を削除してもよろしいですか？\n関連するサービス履歴もすべて削除されます。",
+    unsavedChanges: "変更内容が保存されていません。編集を中止しますか？",
   },
   info: {
-    editMode: '編集モードです。変更後は必ず保存してください。',
-    viewMode: '表示モードです。編集する場合は編集ボタンを押してください。',
+    editMode: "編集モードです。変更後は必ず保存してください。",
+    viewMode: "表示モードです。編集する場合は編集ボタンを押してください。",
   },
 } as const;
 
@@ -113,13 +113,13 @@ const MESSAGES = {
  * ISO文字列またはDate objectに対応
  */
 const formatDate = (date: Date | string): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
-    era: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'short',
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
+    era: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
   }).format(dateObj);
 };
 
@@ -127,9 +127,9 @@ const formatDate = (date: Date | string): string => {
  * 金額フォーマット（50代向けわかりやすい表示 - ）
  */
 const formatAmount = (amount: number): string => {
-  return new Intl.NumberFormat('ja-JP', {
-    style: 'currency',
-    currency: 'JPY',
+  return new Intl.NumberFormat("ja-JP", {
+    style: "currency",
+    currency: "JPY",
     minimumFractionDigits: 0,
   }).format(amount);
 };
@@ -142,7 +142,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
   onUnsavedChanges,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   // ================================
   // 状態管理
@@ -175,7 +175,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
     handleSubmit,
     resetForm,
   } = useCustomerForm({
-    mode: 'edit',
+    mode: "edit",
     initialCustomer: customer,
   });
 
@@ -191,7 +191,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
     const totalServices = serviceRecords.length;
     const totalAmount = serviceRecords.reduce(
       (sum, service) => sum + (service.amount ? Number(service.amount) : 0),
-      0
+      0,
     );
 
     const lastServiceDate =
@@ -211,12 +211,12 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
    */
   const responsiveSettings = useMemo(
     () => ({
-      buttonSize: isMobile ? 'large' : 'medium',
-      fontSize: isMobile ? '20px' : '22px',
+      buttonSize: isMobile ? "large" : "medium",
+      fontSize: isMobile ? "20px" : "22px",
       contentPadding: isMobile ? 2 : 3,
       cardSpacing: isMobile ? 2 : 3,
     }),
-    [isMobile]
+    [isMobile],
   );
 
   // ================================
@@ -258,9 +258,9 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
     setEditState((prev) => ({ ...prev, isEditing: !prev.isEditing }));
 
     if (!editState.isEditing && !hasChanges) {
-      showSnackbar(MESSAGES.info.editMode, 'info');
+      showSnackbar(MESSAGES.info.editMode, "info");
     } else {
-      showSnackbar(MESSAGES.info.viewMode, 'info');
+      showSnackbar(MESSAGES.info.viewMode, "info");
     }
   }, [editState.isEditing, hasChanges, resetForm, showSnackbar]);
 
@@ -271,9 +271,9 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
     try {
       await handleSubmit();
       setEditState((prev) => ({ ...prev, isEditing: false }));
-      showSnackbar(MESSAGES.success.save, 'success');
+      showSnackbar(MESSAGES.success.save, "success");
     } catch (error) {
-      showSnackbar(MESSAGES.error.save, 'error');
+      showSnackbar(MESSAGES.error.save, "error");
     }
   }, [handleSubmit, showSnackbar]);
 
@@ -288,10 +288,10 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
 
     try {
       await deleteCustomer(customer?.customerId);
-      showSnackbar(MESSAGES.success.delete, 'success');
+      showSnackbar(MESSAGES.success.delete, "success");
       // 削除成功時は親コンポーネント（ページ）がナビゲーション処理を行う
     } catch (error) {
-      showSnackbar(MESSAGES.error.delete, 'error');
+      showSnackbar(MESSAGES.error.delete, "error");
     }
     setEditState((prev) => ({ ...prev, showDeleteDialog: false }));
   }, [deleteCustomer, customer?.customerId, showSnackbar]);
@@ -308,9 +308,10 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
       direction="row"
       spacing={isMobile ? 1 : 2}
       sx={{
-        width: isMobile ? '100%' : 'auto',
-        alignItems: 'stretch',
-      }}>
+        width: isMobile ? "100%" : "auto",
+        alignItems: "stretch",
+      }}
+    >
       {editState.isEditing ? (
         <>
           <Button
@@ -321,25 +322,27 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
             disabled={isSubmitting || !isValid}
             startIcon={<SaveIcon />}
             sx={{
-              minHeight: '48px',
-              fontSize: isMobile ? '16px' : '14px',
-              fontWeight: 'bold',
+              minHeight: "48px",
+              fontSize: isMobile ? "16px" : "14px",
+              fontWeight: "bold",
               px: isMobile ? 2 : 2,
-              flex: isMobile ? 1 : 'none',
-            }}>
-            {isSubmitting ? '保存中...' : '保存'}
+              flex: isMobile ? 1 : "none",
+            }}
+          >
+            {isSubmitting ? "保存中..." : "保存"}
           </Button>
           <Button
             variant="outlined"
             onClick={handleEditToggle}
             disabled={isSubmitting}
             sx={{
-              minHeight: '48px',
-              fontSize: isMobile ? '16px' : '14px',
-              fontWeight: 'bold',
+              minHeight: "48px",
+              fontSize: isMobile ? "16px" : "14px",
+              fontWeight: "bold",
               px: isMobile ? 2 : 2,
-              flex: isMobile ? 1 : 'none',
-            }}>
+              flex: isMobile ? 1 : "none",
+            }}
+          >
             キャンセル
           </Button>
         </>
@@ -350,12 +353,13 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
             onClick={handleEditToggle}
             startIcon={<EditIcon />}
             sx={{
-              minHeight: '48px',
-              fontSize: isMobile ? '16px' : '14px',
-              fontWeight: 'bold',
+              minHeight: "48px",
+              fontSize: isMobile ? "16px" : "14px",
+              fontWeight: "bold",
               px: isMobile ? 2 : 2,
-              flex: isMobile ? 1 : 'none',
-            }}>
+              flex: isMobile ? 1 : "none",
+            }}
+          >
             編集
           </Button>
           <Button
@@ -366,12 +370,13 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
             }
             startIcon={<DeleteIcon />}
             sx={{
-              minHeight: '48px',
-              fontSize: isMobile ? '16px' : '14px',
-              fontWeight: 'bold',
+              minHeight: "48px",
+              fontSize: isMobile ? "16px" : "14px",
+              fontWeight: "bold",
               px: isMobile ? 2 : 2,
-              flex: isMobile ? 1 : 'none',
-            }}>
+              flex: isMobile ? 1 : "none",
+            }}
+          >
             削除
           </Button>
         </>
@@ -387,12 +392,12 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
     label: string,
     fieldName: keyof typeof formData,
     isRequired: boolean = false,
-    type: 'text' | 'email' | 'tel' | 'multiline' = 'text',
+    type: "text" | "email" | "tel" | "multiline" = "text",
     placeholder: string,
-    rows?: number
+    rows?: number,
   ) => (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
         {icon}
         <Typography variant="h6" sx={{ fontSize: responsiveSettings.fontSize }}>
           {label}
@@ -403,10 +408,10 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
       {editState.isEditing ? (
         <Input
           fullWidth
-          type={type === 'multiline' ? 'text' : type}
-          multiline={type === 'multiline'}
-          rows={rows || (type === 'multiline' ? 3 : 1)}
-          value={String(formData[fieldName] || '')}
+          type={type === "multiline" ? "text" : type}
+          multiline={type === "multiline"}
+          rows={rows || (type === "multiline" ? 3 : 1)}
+          value={String(formData[fieldName] || "")}
           onChange={(e) => handleChange(fieldName, e.target.value)}
           error={!!errors[fieldName]}
           helperText={errors[fieldName]}
@@ -415,21 +420,22 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
         />
       ) : (
         <Typography
-          variant={fieldName === 'companyName' ? 'h4' : 'body1'}
+          variant={fieldName === "companyName" ? "h4" : "body1"}
           sx={{
-            fontSize: fieldName === 'companyName' ? '24px' : '18px',
-            fontWeight: fieldName === 'companyName' ? 'bold' : 'normal',
+            fontSize: fieldName === "companyName" ? "24px" : "18px",
+            fontWeight: fieldName === "companyName" ? "bold" : "normal",
             color:
-              fieldName === 'companyName'
+              fieldName === "companyName"
                 ? theme.palette.primary.dark
-                : 'text.primary',
+                : "text.primary",
             fontFamily:
-              fieldName === 'phone' || fieldName === 'email'
-                ? 'monospace'
-                : 'inherit',
-            whiteSpace: type === 'multiline' ? 'pre-wrap' : 'normal',
-          }}>
-          {String(customer[fieldName as keyof Customer] || '未設定')}
+              fieldName === "phone" || fieldName === "email"
+                ? "monospace"
+                : "inherit",
+            whiteSpace: type === "multiline" ? "pre-wrap" : "normal",
+          }}
+        >
+          {String(customer[fieldName as keyof Customer] || "未設定")}
         </Typography>
       )}
     </Box>
@@ -445,64 +451,70 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
         sx={{
           mb: 3,
           fontSize: responsiveSettings.fontSize,
-          fontWeight: 'bold',
-        }}>
+          fontWeight: "bold",
+        }}
+      >
         📊 顧客情報サマリー
       </Typography>
       <Grid
         container
         spacing={isMobile ? 2 : 3}
-        sx={{ display: 'flex', alignItems: 'stretch' }}>
+        sx={{ display: "flex", alignItems: "stretch" }}
+      >
         {/* 登録日 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <Card
             cardsize="small"
             sx={{
-              height: '100%',
-              minHeight: '180px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-            }}>
+              height: "100%",
+              minHeight: "180px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
             <Box
               sx={{
-                textAlign: 'center',
+                textAlign: "center",
                 p: isMobile ? 2.5 : 3,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-                height: '100%',
-              }}>
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+                height: "100%",
+              }}
+            >
               <CalendarIcon
                 sx={{
                   fontSize: isMobile ? 38 : 42,
                   color: theme.palette.primary.main,
                   mb: 1.5,
-                  display: 'block',
-                  mx: 'auto',
+                  display: "block",
+                  mx: "auto",
                 }}
               />
               <Typography
                 variant="subtitle2"
                 sx={{
                   mb: 1.5,
-                  fontSize: isMobile ? '16px' : '15px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                }}>
+                  fontSize: isMobile ? "16px" : "15px",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
                 登録日
               </Typography>
               <Typography
                 variant="body2"
                 color="text.secondary"
                 sx={{
-                  fontSize: isMobile ? '14px' : '13px',
+                  fontSize: isMobile ? "14px" : "13px",
                   lineHeight: 1.4,
-                  textAlign: 'center',
-                }}>
+                  textAlign: "center",
+                }}
+              >
                 {formatDate(customer.createdAt)}
               </Typography>
             </Box>
@@ -514,51 +526,55 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           <Card
             cardsize="small"
             sx={{
-              height: '100%',
-              minHeight: '180px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-            }}>
+              height: "100%",
+              minHeight: "180px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
             <Box
               sx={{
-                textAlign: 'center',
+                textAlign: "center",
                 p: isMobile ? 2.5 : 3,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-                height: '100%',
-              }}>
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+                height: "100%",
+              }}
+            >
               <CalendarIcon
                 sx={{
                   fontSize: isMobile ? 38 : 42,
                   color: theme.palette.success.main,
                   mb: 1.5,
-                  display: 'block',
-                  mx: 'auto',
+                  display: "block",
+                  mx: "auto",
                 }}
               />
               <Typography
                 variant="subtitle2"
                 sx={{
                   mb: 1.5,
-                  fontSize: isMobile ? '16px' : '15px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                }}>
+                  fontSize: isMobile ? "16px" : "15px",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
                 サービス回数
               </Typography>
               <Typography
                 variant="h5"
                 color="primary"
                 sx={{
-                  fontWeight: 'bold',
-                  fontSize: isMobile ? '22px' : '20px',
-                  textAlign: 'center',
-                }}>
+                  fontWeight: "bold",
+                  fontSize: isMobile ? "22px" : "20px",
+                  textAlign: "center",
+                }}
+              >
                 {customerStats.totalServices}回
               </Typography>
             </Box>
@@ -570,51 +586,55 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           <Card
             cardsize="small"
             sx={{
-              height: '100%',
-              minHeight: '180px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-            }}>
+              height: "100%",
+              minHeight: "180px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
             <Box
               sx={{
-                textAlign: 'center',
+                textAlign: "center",
                 p: isMobile ? 2.5 : 3,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-                height: '100%',
-              }}>
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+                height: "100%",
+              }}
+            >
               <AccountBalanceIcon
                 sx={{
                   fontSize: isMobile ? 38 : 42,
                   color: theme.palette.warning.main,
                   mb: 1.5,
-                  display: 'block',
-                  mx: 'auto',
+                  display: "block",
+                  mx: "auto",
                 }}
               />
               <Typography
                 variant="subtitle2"
                 sx={{
                   mb: 1.5,
-                  fontSize: isMobile ? '16px' : '15px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                }}>
+                  fontSize: isMobile ? "16px" : "15px",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
                 累計売上
               </Typography>
               <Typography
                 variant="h5"
                 color="primary"
                 sx={{
-                  fontWeight: 'bold',
-                  fontSize: isMobile ? '20px' : '18px',
-                  textAlign: 'center',
-                }}>
+                  fontWeight: "bold",
+                  fontSize: isMobile ? "20px" : "18px",
+                  textAlign: "center",
+                }}
+              >
                 {formatAmount(customerStats.totalAmount)}
               </Typography>
             </Box>
@@ -626,54 +646,58 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           <Card
             cardsize="small"
             sx={{
-              height: '100%',
-              minHeight: '180px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-            }}>
+              height: "100%",
+              minHeight: "180px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
             <Box
               sx={{
-                textAlign: 'center',
+                textAlign: "center",
                 p: isMobile ? 2.5 : 3,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-                height: '100%',
-              }}>
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+                height: "100%",
+              }}
+            >
               <TrendingUpIcon
                 sx={{
                   fontSize: isMobile ? 38 : 42,
                   color: theme.palette.info.main,
                   mb: 1.5,
-                  display: 'block',
-                  mx: 'auto',
+                  display: "block",
+                  mx: "auto",
                 }}
               />
               <Typography
                 variant="subtitle2"
                 sx={{
                   mb: 1.5,
-                  fontSize: isMobile ? '16px' : '15px',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                }}>
+                  fontSize: isMobile ? "16px" : "15px",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
                 最終サービス日
               </Typography>
               <Typography
                 variant="body2"
                 color="text.secondary"
                 sx={{
-                  fontSize: isMobile ? '14px' : '13px',
+                  fontSize: isMobile ? "14px" : "13px",
                   lineHeight: 1.4,
-                  textAlign: 'center',
-                }}>
+                  textAlign: "center",
+                }}
+              >
                 {customerStats.lastServiceDate
                   ? formatDate(new Date(customerStats.lastServiceDate))
-                  : 'サービス未実施'}
+                  : "サービス未実施"}
               </Typography>
             </Box>
           </Card>
@@ -691,21 +715,23 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
       {/* ヘッダー（50代向けモバイル対応） */}
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          justifyContent: 'space-between',
-          alignItems: isMobile ? 'stretch' : 'center',
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          justifyContent: "space-between",
+          alignItems: isMobile ? "stretch" : "center",
           gap: isMobile ? 2 : 0,
           mb: 3,
-        }}>
+        }}
+      >
         <Typography
           variant="h5"
           sx={{
-            fontSize: isMobile ? '20px' : '24px',
-            fontWeight: 'bold',
-            textAlign: isMobile ? 'center' : 'left',
+            fontSize: isMobile ? "20px" : "24px",
+            fontWeight: "bold",
+            textAlign: isMobile ? "center" : "left",
             mb: isMobile ? 0 : 0,
-          }}>
+          }}
+        >
           顧客基本情報
         </Typography>
         {renderActionButtons()}
@@ -721,7 +747,7 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
       {/* バリデーションエラー表示 */}
       {editState.isEditing && Object.keys(errors).length > 0 && (
         <Alert severity="error" sx={{ mb: 3 }}>
-          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
             {MESSAGES.error.required}
           </Typography>
         </Alert>
@@ -729,16 +755,16 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
 
       {/* 顧客情報フォーム */}
       <Card>
-        <Grid container spacing={4} sx={{ cursor: 'pointer', p: 2 }}>
+        <Grid container spacing={4} sx={{ cursor: "pointer", p: 2 }}>
           {/* 会社名 */}
           <Grid size={{ xs: 12, md: 6 }}>
             {renderField(
               <BusinessIcon color="primary" />,
-              '会社名',
-              'companyName',
+              "会社名",
+              "companyName",
               true,
-              'text',
-              '例：田中株式会社'
+              "text",
+              "例：田中株式会社",
             )}
           </Grid>
 
@@ -746,11 +772,11 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           <Grid size={{ xs: 12, md: 6 }}>
             {renderField(
               <PersonIcon color="primary" />,
-              '担当者名',
-              'contactPerson',
+              "担当者名",
+              "contactPerson",
               false,
-              'text',
-              '例：田中太郎'
+              "text",
+              "例：田中太郎",
             )}
           </Grid>
 
@@ -758,11 +784,11 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           <Grid size={{ xs: 12, md: 6 }}>
             {renderField(
               <PhoneIcon color="primary" />,
-              '電話番号',
-              'phone',
+              "電話番号",
+              "phone",
               false,
-              'tel',
-              '例：03-1234-5678'
+              "tel",
+              "例：03-1234-5678",
             )}
           </Grid>
 
@@ -770,11 +796,11 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           <Grid size={{ xs: 12, md: 6 }}>
             {renderField(
               <EmailIcon color="primary" />,
-              'メールアドレス',
-              'email',
+              "メールアドレス",
+              "email",
               false,
-              'email',
-              '例：tanaka@example.com'
+              "email",
+              "例：tanaka@example.com",
             )}
           </Grid>
 
@@ -782,12 +808,12 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           <Grid size={{ xs: 12, md: 6 }}>
             {renderField(
               <LocationOnIcon color="primary" />,
-              '住所',
-              'address',
+              "住所",
+              "address",
               false,
-              'multiline',
-              '例：東京都渋谷区〇〇1-2-3',
-              2
+              "multiline",
+              "例：東京都渋谷区〇〇1-2-3",
+              2,
             )}
           </Grid>
 
@@ -795,12 +821,12 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
           <Grid size={{ xs: 12 }}>
             {renderField(
               <NotesIcon color="primary" />,
-              '備考',
-              'notes',
+              "備考",
+              "notes",
               false,
-              'multiline',
-              '特記事項やメモをご記入ください',
-              3
+              "multiline",
+              "特記事項やメモをご記入ください",
+              3,
             )}
           </Grid>
         </Grid>
@@ -818,36 +844,40 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
         title="顧客削除の確認"
         modalsize="small"
         sx={{
-          '& .MuiDialog-paper': {
-            maxHeight: isMobile ? '55vh' : 'auto',
+          "& .MuiDialog-paper": {
+            maxHeight: isMobile ? "55vh" : "auto",
           },
-        }}>
-        <Box sx={{ textAlign: 'center', p: 2 }}>
+        }}
+      >
+        <Box sx={{ textAlign: "center", p: 2 }}>
           <Typography
             variant="h6"
             sx={{
               mb: 2,
               color: theme.palette.error.main,
-              fontWeight: 'bold',
-            }}>
+              fontWeight: "bold",
+            }}
+          >
             ⚠️ 重要な操作です
           </Typography>
           <Typography variant="body1" sx={{ mb: 3 }}>
             {MESSAGES.confirm.delete}
           </Typography>
           <Stack
-            direction={isMobile ? 'column' : 'row'}
+            direction={isMobile ? "column" : "row"}
             spacing={2}
             justifyContent="center"
             sx={{
               gap: isMobile ? 2 : 0,
-            }}>
+            }}
+          >
             <Button
               variant="outlined"
               onClick={() =>
                 setEditState((prev) => ({ ...prev, showDeleteDialog: false }))
               }
-              sx={{ order: isMobile ? 2 : 1 }}>
+              sx={{ order: isMobile ? 2 : 1 }}
+            >
               キャンセル
             </Button>
             <Button
@@ -855,7 +885,8 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
               color="error"
               onClick={handleDelete}
               startIcon={<DeleteIcon />}
-              sx={{ order: isMobile ? 1 : 2 }}>
+              sx={{ order: isMobile ? 1 : 2 }}
+            >
               削除する
             </Button>
           </Stack>

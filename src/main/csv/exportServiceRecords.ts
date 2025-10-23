@@ -7,9 +7,12 @@
  * - ジョブカン互換フォーマット
  */
 
-import type { ServiceRecord, Customer, PrismaClient } from '@prisma/client';
-import { PrismaClient as PrismaClientClass } from '@prisma/client';
-import Papa from 'papaparse';
+import {
+  PrismaClient,
+  type Customer,
+  type ServiceRecord,
+} from "@prisma/client";
+import Papa from "papaparse";
 
 // Prisma Client インスタンス（シングルトン）
 let prismaInstance: PrismaClient | null = null;
@@ -19,8 +22,8 @@ let prismaInstance: PrismaClient | null = null;
  */
 function getPrismaClient(): PrismaClient {
   if (!prismaInstance) {
-    prismaInstance = new PrismaClientClass();
-    console.log('✅ Prisma Client初期化完了 (exportServiceRecords)');
+    prismaInstance = new PrismaClient();
+    console.log("✅ Prisma Client初期化完了 (exportServiceRecords)");
   }
   return prismaInstance;
 }
@@ -50,16 +53,16 @@ type ServiceRecordWithCustomer = ServiceRecord & {
  * @returns YYYY-MM-DD形式の文字列
  */
 function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = typeof date === "string" ? new Date(date) : date;
 
   if (isNaN(d.getTime())) {
-    console.error('❌ 無効な日付:', date);
-    return '';
+    console.error("❌ 無効な日付:", date);
+    return "";
   }
 
   const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 }
@@ -70,23 +73,25 @@ function formatDate(date: Date | string): string {
  * @returns 数値文字列（例: "500000"）
  */
 function formatAmount(amount: any): string {
-  if (!amount) return '0';
+  if (!amount) {
+    return "0";
+  }
 
   // Decimal型の場合
-  if (typeof amount === 'object' && 'toNumber' in amount) {
+  if (typeof amount === "object" && "toNumber" in amount) {
     return String(Math.round(amount.toNumber()));
   }
 
   // 数値の場合
-  if (typeof amount === 'number') {
+  if (typeof amount === "number") {
     return String(Math.round(amount));
   }
 
   // 文字列の場合
   const parsed = parseFloat(String(amount));
   if (isNaN(parsed)) {
-    console.error('❌ 無効な金額:', amount);
-    return '0';
+    console.error("❌ 無効な金額:", amount);
+    return "0";
   }
 
   return String(Math.round(parsed));
@@ -100,7 +105,7 @@ function formatAmount(amount: any): string {
  */
 export async function generateServiceRecordsCSV(): Promise<string> {
   try {
-    console.log('📤 サービス履歴CSV生成開始');
+    console.log("📤 サービス履歴CSV生成開始");
 
     const prisma = getPrismaClient();
 
@@ -110,7 +115,7 @@ export async function generateServiceRecordsCSV(): Promise<string> {
         customer: true,
       },
       orderBy: {
-        serviceDate: 'desc',
+        serviceDate: "desc",
       },
     });
 
@@ -118,36 +123,38 @@ export async function generateServiceRecordsCSV(): Promise<string> {
 
     // サービス履歴が0件の場合
     if (serviceRecords.length === 0) {
-      throw new Error('出力するサービス履歴がありません');
+      throw new Error("出力するサービス履歴がありません");
     }
 
     // ジョブカン形式にマッピング
-    const csvData: JobkanServiceRecordRow[] = serviceRecords.map((record: ServiceRecordWithCustomer) => ({
-      日付: formatDate(record.serviceDate),
-      顧客名: record.customer?.companyName || '不明',
-      サービス種別: record.serviceType || '',
-      サービス内容: record.serviceDescription || '',
-      金額: formatAmount(record.amount),
-      備考: '', // ServiceRecordスキーマにnotesフィールドがないため空文字
-    }));
+    const csvData: JobkanServiceRecordRow[] = serviceRecords.map(
+      (record: ServiceRecordWithCustomer) => ({
+        日付: formatDate(record.serviceDate),
+        顧客名: record.customer?.companyName || "不明",
+        サービス種別: record.serviceType || "",
+        サービス内容: record.serviceDescription || "",
+        金額: formatAmount(record.amount),
+        備考: "", // ServiceRecordスキーマにnotesフィールドがないため空文字
+      }),
+    );
 
-    console.log('📋 CSVデータマッピング完了');
+    console.log("📋 CSVデータマッピング完了");
 
     // CSV文字列に変換
     const csv = Papa.unparse(csvData, {
       header: true,
-      newline: '\r\n', // Windows互換の改行コード
+      newline: "\r\n", // Windows互換の改行コード
     });
 
-    console.log('✅ CSV生成完了');
+    console.log("✅ CSV生成完了");
     return csv;
   } catch (error) {
-    console.error('❌ CSV生成エラー:', error);
+    console.error("❌ CSV生成エラー:", error);
 
     if (error instanceof Error) {
       throw error;
     }
 
-    throw new Error('サービス履歴のCSV生成に失敗しました');
+    throw new Error("サービス履歴のCSV生成に失敗しました");
   }
 }

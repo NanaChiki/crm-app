@@ -9,9 +9,8 @@
  * - 分かりやすいヘッダー行
  */
 
-import type { Customer, PrismaClient } from '@prisma/client';
-import { PrismaClient as PrismaClientClass } from '@prisma/client';
-import Papa from 'papaparse';
+import { PrismaClient, type Customer } from "@prisma/client";
+import Papa from "papaparse";
 
 // Prisma Client インスタンス（シングルトン）
 let prismaInstance: PrismaClient | null = null;
@@ -21,8 +20,8 @@ let prismaInstance: PrismaClient | null = null;
  */
 function getPrismaClient(): PrismaClient {
   if (!prismaInstance) {
-    prismaInstance = new PrismaClientClass();
-    console.log('✅ Prisma Client初期化完了 (exportCustomers)');
+    prismaInstance = new PrismaClient();
+    console.log("✅ Prisma Client初期化完了 (exportCustomers)");
   }
   return prismaInstance;
 }
@@ -47,14 +46,14 @@ interface JobkanCustomerRow {
  */
 export async function generateCustomersCSV(): Promise<string> {
   try {
-    console.log('📤 顧客データCSV生成開始');
+    console.log("📤 顧客データCSV生成開始");
 
     const prisma = getPrismaClient();
 
     // 全顧客データを取得（会社名昇順）
     const customers = await prisma.customer.findMany({
       orderBy: {
-        companyName: 'asc',
+        companyName: "asc",
       },
     });
 
@@ -62,36 +61,36 @@ export async function generateCustomersCSV(): Promise<string> {
 
     // 顧客データが0件の場合
     if (customers.length === 0) {
-      throw new Error('出力する顧客データがありません');
+      throw new Error("出力する顧客データがありません");
     }
 
     // ジョブカン形式にマッピング
     const csvData: JobkanCustomerRow[] = customers.map(
       (customer: Customer) => ({
-        会社名: customer.companyName || '',
-        担当者: customer.contactPerson || '',
-        電話番号: customer.phone || '',
-        メールアドレス: customer.email || '',
-        住所: customer.address || '',
-        備考: customer.notes || '',
-      })
+        会社名: customer.companyName || "",
+        担当者: customer.contactPerson || "",
+        電話番号: customer.phone || "",
+        メールアドレス: customer.email || "",
+        住所: customer.address || "",
+        備考: customer.notes || "",
+      }),
     );
 
     // CSV文字列に変換
     const csv = Papa.unparse(csvData, {
       header: true,
-      newline: '\r\n', // Windows互換の改行コード
+      newline: "\r\n", // Windows互換の改行コード
     });
 
-    console.log('✅ CSV生成完了');
+    console.log("✅ CSV生成完了");
     return csv;
   } catch (error) {
-    console.error('❌ CSV生成エラー:', error);
+    console.error("❌ CSV生成エラー:", error);
 
     // エラーメッセージを50代向けに変換
     if (error instanceof Error) {
       throw error;
     }
-    throw new Error('顧客データのCSV生成に失敗しました');
+    throw new Error("顧客データのCSV生成に失敗しました");
   }
 }

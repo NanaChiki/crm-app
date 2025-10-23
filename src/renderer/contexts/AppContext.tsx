@@ -34,8 +34,8 @@ import React, {
   useCallback,
   useContext,
   useState,
-} from 'react';
-import { AppError, SnackbarMessage } from '../../types';
+} from "react";
+import { AppError, SnackbarMessage } from "../../types";
 
 // =============================================================================
 // 🎯 Context型定義 - TypeScript型安全性の確保
@@ -108,8 +108,8 @@ export interface AppContextType {
    */
   showSnackbar: (
     message: string,
-    severity: SnackbarMessage['severity'],
-    duration?: number
+    severity: SnackbarMessage["severity"],
+    duration?: number,
   ) => void;
 
   /**
@@ -203,13 +203,6 @@ export function AppProvider({ children }: AppProviderProps) {
    * */
   const setGlobalLoading = useCallback((loading: boolean) => {
     setGlobalLoadingState(loading);
-
-    // 50代向け配慮：ローディング開始時の安心メッセージ
-    if (loading) {
-      console.log('🔄 処理中です。しばらくお待ちください...');
-    } else {
-      console.log('🔄 処理が完了しました。');
-    }
   }, []);
 
   /**
@@ -223,11 +216,11 @@ export function AppProvider({ children }: AppProviderProps) {
   const showSnackbar = useCallback(
     (
       message: string,
-      severity: SnackbarMessage['severity'],
-      duration: number = 5000
+      severity: SnackbarMessage["severity"],
+      duration: number = 5000,
     ) => {
       // メッセージ内容の検証
-      const displayMessage = message.trim() || '操作が完了しました';
+      const displayMessage = message.trim() || "操作が完了しました";
 
       const newMessage: SnackbarMessage = {
         message: displayMessage,
@@ -243,11 +236,8 @@ export function AppProvider({ children }: AppProviderProps) {
           setSnackbarMessage(null);
         }, duration);
       }
-
-      // デバッグログ（開発時の確認用）
-      console.log(`📢 [${severity.toUpperCase()}] ${displayMessage}`);
     },
-    []
+    [],
   );
 
   /**
@@ -271,43 +261,43 @@ export function AppProvider({ children }: AppProviderProps) {
 
       // エラータイプ別の50代向けメッセージ変換 (Union型を使用)
       switch (error.type) {
-        case 'NETWORK_ERROR':
+        case "NETWORK_ERROR":
           userFriendlyMessage =
-            'インターネット接続を確認してください。少し時間をおいてからもう一度お試しください。';
+            "インターネット接続を確認してください。少し時間をおいてからもう一度お試しください。";
           break;
 
-        case 'VALIDATION_ERROR':
+        case "VALIDATION_ERROR":
           userFriendlyMessage =
-            '入力内容を確認してください。必要な項目が不足している可能性があります。';
+            "入力内容を確認してください。必要な項目が不足している可能性があります。";
           break;
 
-        case 'NOT_FOUND':
+        case "NOT_FOUND":
           userFriendlyMessage =
-            '情報が見つかりませんでした。すでに削除されている可能性があります。';
+            "情報が見つかりませんでした。すでに削除されている可能性があります。";
           break;
 
-        case 'PERMISSION_DENIED':
+        case "PERMISSION_DENIED":
           userFriendlyMessage =
-            'この操作を実行する権限がありません。管理者にお問い合わせください。';
+            "この操作を実行する権限がありません。管理者にお問い合わせください。";
           break;
 
-        case 'SERVER_ERROR':
+        case "SERVER_ERROR":
           userFriendlyMessage =
-            'サーバーでエラーが発生しました。しばらく時間をおいてからもう一度お試しください。';
+            "サーバーでエラーが発生しました。しばらく時間をおいてからもう一度お試しください。";
           break;
 
         default:
           // フォールバックメッセージまたはデフォルト
           userFriendlyMessage =
-            fallbackMessage || 'エラーが発生しました。もう一度お試しください。';
+            fallbackMessage || "エラーが発生しました。もう一度お試しください。";
       }
 
       // エラー情報をスナックバーに表示
-      showSnackbar(userFriendlyMessage, 'error', 8000); // エラーは8秒表示（通常より長め）
+      showSnackbar(userFriendlyMessage, "error", 8000); // エラーは8秒表示（通常より長め）
 
       // デバッグ情報（本番環境では非表示）
-      if (process.env.NODE_ENV === 'development') {
-        console.error('🚨 AppError Details:', {
+      if (process.env.NODE_ENV === "development") {
+        console.error("🚨 AppError Details:", {
           type: error.type,
           message: error.message,
           details: error.technical,
@@ -315,7 +305,7 @@ export function AppProvider({ children }: AppProviderProps) {
         });
       }
     },
-    [showSnackbar]
+    [showSnackbar],
   );
 
   // =============================
@@ -349,7 +339,7 @@ export function AppProvider({ children }: AppProviderProps) {
       showSnackbar,
       hideSnackbar,
       handleError,
-    ]
+    ],
   );
 
   return (
@@ -408,11 +398,11 @@ export function useApp(): AppContextType {
    */
   if (context === null) {
     throw new Error(
-      '🚨 useApp() はAppProvider内でのみ使用できます。\n\n' +
-        '解決方法:\n' +
-        '1. コンポーネントがAppProviderでラップされているか確認してください\n' +
-        '2. App.tsxでAppProviderが正しく設定されているか確認してください\n\n' +
-        '詳細はドキュメントを参照してください。'
+      "🚨 useApp() はAppProvider内でのみ使用できます。\n\n" +
+        "解決方法:\n" +
+        "1. コンポーネントがAppProviderでラップされているか確認してください\n" +
+        "2. App.tsxでAppProviderが正しく設定されているか確認してください\n\n" +
+        "詳細はドキュメントを参照してください。",
     );
   }
   return context;

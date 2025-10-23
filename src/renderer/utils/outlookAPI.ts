@@ -18,7 +18,7 @@
  */
 
 // Types
-import type { OutlookEmailData, OutlookEventData } from '../../types';
+import type { OutlookEmailData, OutlookEventData } from "../../types";
 
 // ================================
 // 型定義
@@ -61,27 +61,29 @@ declare global {
 export async function sendReminderEmail(
   to: string,
   subject: string,
-  body: string
+  body: string,
 ): Promise<OutlookAPIResult> {
   try {
-    console.log('📧 リマインダーメール送信:', { to, subject });
-
-    // window.outlookAPIの存在確認（デバッグ用）
+    // window.outlookAPIの存在確認
     if (!window.outlookAPI) {
-      console.error('❌ window.outlookAPIが未定義です。preload.jsが正しく読み込まれていません。');
+      console.error(
+        "❌ window.outlookAPIが未定義です。preload.jsが正しく読み込まれていません。",
+      );
       return {
         success: false,
-        message: 'メール送信機能の初期化に失敗しました。\nアプリを再起動してください。',
-        error: 'OUTLOOK_API_NOT_FOUND',
+        message:
+          "メール送信機能の初期化に失敗しました。\nアプリを再起動してください。",
+        error: "OUTLOOK_API_NOT_FOUND",
       };
     }
 
     // メールアドレスの簡易バリデーション
-    if (!to || !to.includes('@')) {
+    if (!to || !to.includes("@")) {
       return {
         success: false,
-        message: 'メールアドレスが登録されていません。\n顧客情報を確認してください。',
-        error: 'INVALID_EMAIL',
+        message:
+          "メールアドレスが登録されていません。\n顧客情報を確認してください。",
+        error: "INVALID_EMAIL",
       };
     }
 
@@ -96,11 +98,11 @@ export async function sendReminderEmail(
 
     return result;
   } catch (error: any) {
-    console.error('❌ メール送信エラー:', error);
+    console.error("❌ メール送信エラー:", error);
 
     return {
       success: false,
-      message: 'メール送信に失敗しました',
+      message: "メール送信に失敗しました",
       error: error.message,
     };
   }
@@ -113,20 +115,18 @@ export async function sendReminderEmail(
  * @returns 作成結果
  */
 export async function createReminderEvent(
-  eventData: OutlookEventData
+  eventData: OutlookEventData,
 ): Promise<OutlookAPIResult> {
   try {
-    console.log('📅 カレンダー予定作成:', eventData);
-
     const result = await window.outlookAPI.createEvent(eventData);
 
     return result;
   } catch (error: any) {
-    console.error('❌ カレンダー予定作成エラー:', error);
+    console.error("❌ カレンダー予定作成エラー:", error);
 
     return {
       success: false,
-      message: 'カレンダー予定の作成に失敗しました',
+      message: "カレンダー予定の作成に失敗しました",
       error: error.message,
     };
   }
@@ -136,13 +136,13 @@ export async function createReminderEvent(
  * エラーメッセージを50代向けに変換
  */
 export function getOutlookErrorGuidance(error: string): string {
-  if (error.includes('INVALID_EMAIL')) {
+  if (error.includes("INVALID_EMAIL")) {
     return `メールアドレスが登録されていません。
 
 顧客情報を確認して、メールアドレスを登録してください。`;
   }
 
-  if (error.includes('openExternal')) {
+  if (error.includes("openExternal")) {
     return `メールアプリの起動に失敗しました。
 
 以下を確認してください：

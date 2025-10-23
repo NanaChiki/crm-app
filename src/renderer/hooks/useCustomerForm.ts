@@ -30,14 +30,14 @@ import {
   useMemo,
   useRef,
   useState,
-} from 'react';
+} from "react";
 import {
   CreateCustomerInput,
   Customer,
   UpdateCustomerInput,
-} from '../../types';
-import { useApp } from '../contexts/AppContext';
-import { useCustomer } from '../contexts/CustomerContext';
+} from "../../types";
+import { useApp } from "../contexts/AppContext";
+import { useCustomer } from "../contexts/CustomerContext";
 
 // =============================================================================
 // 🎯 型定義 - Hook専用の型システム
@@ -50,7 +50,7 @@ import { useCustomer } from '../contexts/CustomerContext';
  * 50代の方にも分かりやすいシンプルな文字列リテラル型を採用。
  * 'create' = 新規作成, 'edit' = 編集 - 直感的で覚えやすい。
  */
-type FormMode = 'create' | 'edit';
+type FormMode = "create" | "edit";
 
 /**
  * Hook の入力プロパティ
@@ -207,15 +207,15 @@ const VALIDATION_RULES: Record<keyof CreateCustomerInput, BaseValidationRule> =
       required: true,
       maxLength: 100,
       errorMessages: {
-        required: '会社名を入力してください',
-        maxLength: '会社名は100文字以内で入力してください',
+        required: "会社名を入力してください",
+        maxLength: "会社名は100文字以内で入力してください",
       },
     },
     contactPerson: {
       required: false,
       maxLength: 50,
       errorMessages: {
-        maxLength: '担当者名は50文字以内で入力してください',
+        maxLength: "担当者名は50文字以内で入力してください",
       },
     },
     phone: {
@@ -224,8 +224,8 @@ const VALIDATION_RULES: Record<keyof CreateCustomerInput, BaseValidationRule> =
       pattern: /^[\d\-()+ \s]*$/,
       errorMessages: {
         pattern:
-          '電話番号は数字、ハイフン、括弧、スペースのみ使用できます（例：03-1234-5678）',
-        maxLength: '電話番号は20文字以内で入力してください',
+          "電話番号は数字、ハイフン、括弧、スペースのみ使用できます（例：03-1234-5678）",
+        maxLength: "電話番号は20文字以内で入力してください",
       },
     },
     email: {
@@ -234,22 +234,22 @@ const VALIDATION_RULES: Record<keyof CreateCustomerInput, BaseValidationRule> =
       pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
       errorMessages: {
         pattern:
-          '正しいメールアドレスを入力してください（例：tanaka@example.com）',
-        maxLength: 'メールアドレスは100文字以内で入力してください',
+          "正しいメールアドレスを入力してください（例：tanaka@example.com）",
+        maxLength: "メールアドレスは100文字以内で入力してください",
       },
     },
     address: {
       required: false,
       maxLength: 200,
       errorMessages: {
-        maxLength: '住所は200文字以内で入力してください',
+        maxLength: "住所は200文字以内で入力してください",
       },
     },
     notes: {
       required: false,
       maxLength: 500,
       errorMessages: {
-        maxLength: '備考は500文字以内で入力してください',
+        maxLength: "備考は500文字以内で入力してください",
       },
     },
   };
@@ -264,15 +264,15 @@ const VALIDATION_RULES: Record<keyof CreateCustomerInput, BaseValidationRule> =
  */
 const MESSAGES = {
   success: {
-    create: '顧客情報を登録しました',
-    update: '顧客情報を更新しました',
+    create: "顧客情報を登録しました",
+    update: "顧客情報を更新しました",
   },
   error: {
-    submit: '保存に失敗しました。入力内容をご確認の上、もう一度お試しください',
+    submit: "保存に失敗しました。入力内容をご確認の上、もう一度お試しください",
     network:
-      '保存に失敗しました。インターネット接続を確認してもう一度お試しください',
-    duplicate: 'この会社名は既に登録されています。別の名前でお試しください',
-    validation: '入力内容に不備があります。赤字の項目をご確認ください',
+      "保存に失敗しました。インターネット接続を確認してもう一度お試しください",
+    duplicate: "この会社名は既に登録されています。別の名前でお試しください",
+    validation: "入力内容に不備があります。赤字の項目をご確認ください",
   },
 } as const;
 
@@ -299,7 +299,7 @@ const MESSAGES = {
  * @returns フォーム管理機能一式
  */
 export const useCustomerForm = (
-  props: UseCustomerFormProps
+  props: UseCustomerFormProps,
 ): UseCustomerFormReturn => {
   const { mode, initialCustomer } = props;
 
@@ -321,25 +321,25 @@ export const useCustomerForm = (
    * 編集時は既存データ、新規時は空文字でクリーンスタート。
    */
   const getInitialFormData = useCallback((): CreateCustomerInput => {
-    if (mode === 'edit' && initialCustomer) {
+    if (mode === "edit" && initialCustomer) {
       return {
         companyName: initialCustomer.companyName,
-        contactPerson: initialCustomer.contactPerson || '',
-        phone: initialCustomer.phone || '',
-        email: initialCustomer.email || '',
-        address: initialCustomer.address || '',
-        notes: initialCustomer.notes || '',
+        contactPerson: initialCustomer.contactPerson || "",
+        phone: initialCustomer.phone || "",
+        email: initialCustomer.email || "",
+        address: initialCustomer.address || "",
+        notes: initialCustomer.notes || "",
       };
     }
 
     // 新規作成時のデフォルト値
     return {
-      companyName: '',
-      contactPerson: '',
-      phone: '',
-      email: '',
-      address: '',
-      notes: '',
+      companyName: "",
+      contactPerson: "",
+      phone: "",
+      email: "",
+      address: "",
+      notes: "",
     };
   }, [mode, initialCustomer]);
 
@@ -352,7 +352,7 @@ export const useCustomerForm = (
 
   /** フィールドタッチ状態（フォーカス済みフィールドの追跡） */
   const [touchedFields, setTouchedFields] = useState<TouchedFields>(
-    {} as TouchedFields
+    {} as TouchedFields,
   );
 
   /** 送信処理中フラグ */
@@ -387,12 +387,12 @@ export const useCustomerForm = (
       const rules = VALIDATION_RULES[field];
 
       // 必須チェック
-      if (rules.required && (!fieldValue || fieldValue.trim() === '')) {
-        return rules.errorMessages.required || '入力してください';
+      if (rules.required && (!fieldValue || fieldValue.trim() === "")) {
+        return rules.errorMessages.required || "入力してください";
       }
 
       // 空の場合は必須以外のバリデーションをスキップ
-      if (!fieldValue || fieldValue.trim() === '') {
+      if (!fieldValue || fieldValue.trim() === "") {
         return null;
       }
 
@@ -406,12 +406,12 @@ export const useCustomerForm = (
 
       // パターンマッチングチェック（型安全）
       if (rules.pattern && !rules.pattern.test(fieldValue)) {
-        return rules.errorMessages.pattern || 'フォーマットが正しくありません';
+        return rules.errorMessages.pattern || "フォーマットが正しくありません";
       }
 
       return null;
     },
-    [formData]
+    [formData],
   );
 
   /**
@@ -436,7 +436,7 @@ export const useCustomerForm = (
           newErrors[field] = error;
           hasError = true;
         }
-      }
+      },
     );
 
     setErrors(newErrors);
@@ -448,7 +448,7 @@ export const useCustomerForm = (
       (Object.keys(formData) as (keyof CreateCustomerInput)[]).forEach(
         (field) => {
           allTouched[field] = true;
-        }
+        },
       );
       setTouchedFields(allTouched);
     }
@@ -485,10 +485,10 @@ export const useCustomerForm = (
       // エラー状態更新（即座にエラークリア）
       setErrors((prev) => ({
         ...prev,
-        [field]: error || '',
+        [field]: error || "",
       }));
     },
-    [validateField]
+    [validateField],
   );
 
   /**
@@ -538,26 +538,26 @@ export const useCustomerForm = (
         // 送信前バリデーション
         if (!validateForm()) {
           handleError({
-            type: 'VALIDATION_ERROR',
+            type: "VALIDATION_ERROR",
             message: MESSAGES.error.validation,
-            suggestion: '入力内容を確認してください',
+            suggestion: "入力内容を確認してください",
           });
           return;
         }
 
         // Context経由でCRUD操作実行
-        if (mode === 'create') {
+        if (mode === "create") {
           await createCustomer(formData);
-          showSnackbar(MESSAGES.success.create, 'success');
+          showSnackbar(MESSAGES.success.create, "success");
 
           // 新規作成成功時はフォームをリセット
           const freshFormData = getInitialFormData();
           setFormData(freshFormData);
           initialDataRef.current = freshFormData;
           setTouchedFields({} as TouchedFields);
-        } else if (mode === 'edit' && initialCustomer) {
+        } else if (mode === "edit" && initialCustomer) {
           await updateCustomer(initialCustomer.customerId, formData);
-          showSnackbar(MESSAGES.success.update, 'success');
+          showSnackbar(MESSAGES.success.update, "success");
 
           // 編集成功時は新しいデータを初期状態として更新
           initialDataRef.current = formData;
@@ -566,40 +566,40 @@ export const useCustomerForm = (
         // エラー状態クリア
         setErrors({} as FormErrors);
       } catch (error) {
-        console.error('Form submission error:', error);
+        console.error("Form submission error:", error);
 
         // エラー種別に応じた適切なメッセージ表示
         if (error instanceof Error) {
           if (
-            error.message.includes('duplicate') ||
-            error.message.includes('重複')
+            error.message.includes("duplicate") ||
+            error.message.includes("重複")
           ) {
             handleError({
-              type: 'VALIDATION_ERROR',
+              type: "VALIDATION_ERROR",
               message: MESSAGES.error.duplicate,
-              suggestion: '別の名前でお試しください',
+              suggestion: "別の名前でお試しください",
             });
           } else if (
-            error.message.includes('network') ||
-            error.message.includes('fetch')
+            error.message.includes("network") ||
+            error.message.includes("fetch")
           ) {
             handleError({
-              type: 'NETWORK_ERROR',
+              type: "NETWORK_ERROR",
               message: MESSAGES.error.network,
-              suggestion: 'ページを再読み込みしてもう一度お試しください',
+              suggestion: "ページを再読み込みしてもう一度お試しください",
             });
           } else {
             handleError({
-              type: 'SERVER_ERROR',
+              type: "SERVER_ERROR",
               message: MESSAGES.error.submit,
-              suggestion: 'もう一度お試しください',
+              suggestion: "もう一度お試しください",
             });
           }
         } else {
           handleError({
-            type: 'SERVER_ERROR',
+            type: "SERVER_ERROR",
             message: MESSAGES.error.submit,
-            suggestion: 'もう一度お試しください',
+            suggestion: "もう一度お試しください",
           });
         }
       } finally {
@@ -617,7 +617,7 @@ export const useCustomerForm = (
       showSnackbar,
       handleError,
       getInitialFormData,
-    ]
+    ],
   );
 
   /**
@@ -662,7 +662,7 @@ export const useCustomerForm = (
   const isValid = useMemo(() => {
     return (
       Object.values(errors).every((error) => !error) &&
-      formData.companyName.trim() !== ''
+      formData.companyName.trim() !== ""
     );
   }, [errors, formData.companyName]);
 
@@ -693,7 +693,7 @@ export const useCustomerForm = (
 
       return isTouched && error ? error : null;
     },
-    [errors, touchedFields]
+    [errors, touchedFields],
   );
 
   /**
@@ -703,7 +703,7 @@ export const useCustomerForm = (
     (field: keyof CreateCustomerInput): boolean => {
       return !!touchedFields[field];
     },
-    [touchedFields]
+    [touchedFields],
   );
 
   // =============================
@@ -719,7 +719,7 @@ export const useCustomerForm = (
    * 編集対象が切り替わった場合などに対応。
    */
   useEffect(() => {
-    if (mode === 'edit' && initialCustomer) {
+    if (mode === "edit" && initialCustomer) {
       const newInitialData = getInitialFormData();
       setFormData(newInitialData);
       initialDataRef.current = newInitialData;
@@ -748,7 +748,7 @@ export const useCustomerForm = (
     // ユーティリティ
     validateField: useCallback(
       (field: keyof CreateCustomerInput) => validateField(field),
-      [validateField]
+      [validateField],
     ),
     getFieldError,
     isFieldTouched,

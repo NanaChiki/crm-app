@@ -4,7 +4,7 @@ import React, {
   useContext,
   useState,
   useCallback,
-} from 'react';
+} from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,9 +12,9 @@ import {
   DialogContentText,
   DialogActions,
   Button as MuiButton,
-} from '@mui/material';
-import { useApp } from './AppContext';
-import { FONT_SIZES } from '../constants/uiDesignSystem';
+} from "@mui/material";
+import { useApp } from "./AppContext";
+import { FONT_SIZES } from "../constants/uiDesignSystem";
 
 // ================================
 // Window API型定義
@@ -67,37 +67,33 @@ export function BackupProvider({ children }: { children: ReactNode }) {
   const createBackup = useCallback(async (): Promise<void> => {
     setLoading(true);
     try {
-      console.log('💾 バックアップ作成開始');
-
       const result = await window.backupAPI.createBackup();
 
       // キャンセルされた場合
       if (result.canceled) {
-        console.log('ℹ️ バックアップ作成がキャンセルされました');
         return;
       }
 
       // 成功した場合
       if (result.success) {
         showSnackbar(
-          result.message || 'バックアップを作成しました',
-          'success',
-          8000
+          result.message || "バックアップを作成しました",
+          "success",
+          8000,
         );
-        console.log('✅ バックアップ作成成功');
       } else {
         // エラーの場合
         const errorMessage =
           result.error ||
-          'バックアップの作成に失敗しました。もう一度お試しください。';
-        showSnackbar(errorMessage, 'error');
-        console.error('❌ バックアップ作成失敗:', result.error);
+          "バックアップの作成に失敗しました。もう一度お試しください。";
+        showSnackbar(errorMessage, "error");
+        console.error("❌ バックアップ作成失敗:", result.error);
       }
     } catch (error) {
-      console.error('❌ バックアップ作成例外エラー:', error);
+      console.error("❌ バックアップ作成例外エラー:", error);
       showSnackbar(
-        'バックアップの作成中にエラーが発生しました。\nアプリを再起動してもう一度お試しください。',
-        'error'
+        "バックアップの作成中にエラーが発生しました。\nアプリを再起動してもう一度お試しください。",
+        "error",
       );
     } finally {
       setLoading(false);
@@ -119,36 +115,32 @@ export function BackupProvider({ children }: { children: ReactNode }) {
     setLoading(true);
 
     try {
-      console.log('🔄 バックアップ復元開始');
-
       const result = await window.backupAPI.restoreBackup();
 
       // キャンセルされた場合
       if (result.canceled) {
-        console.log('ℹ️ バックアップ復元がキャンセルされました');
         return;
       }
 
       // 成功した場合
       if (result.success) {
         showSnackbar(
-          result.message || 'バックアップから復元しました',
-          'success',
-          10000
+          result.message || "バックアップから復元しました",
+          "success",
+          10000,
         );
-        console.log('✅ バックアップ復元成功');
       } else {
         // エラーの場合
         const errorMessage =
-          result.error || '復元に失敗しました。もう一度お試しください。';
-        showSnackbar(errorMessage, 'error');
-        console.error('❌ バックアップ復元失敗:', result.error);
+          result.error || "復元に失敗しました。もう一度お試しください。";
+        showSnackbar(errorMessage, "error");
+        console.error("❌ バックアップ復元失敗:", result.error);
       }
     } catch (error) {
-      console.error('❌ バックアップ復元例外エラー:', error);
+      console.error("❌ バックアップ復元例外エラー:", error);
       showSnackbar(
-        '復元中にエラーが発生しました。\nアプリを再起動してもう一度お試しください。',
-        'error'
+        "復元中にエラーが発生しました。\nアプリを再起動してもう一度お試しください。",
+        "error",
       );
     } finally {
       setLoading(false);
@@ -175,7 +167,7 @@ export function BackupProvider({ children }: { children: ReactNode }) {
         <DialogTitle
           sx={{
             fontSize: FONT_SIZES.cardTitle.desktop,
-            fontWeight: 'bold',
+            fontWeight: "bold",
           }}
         >
           バックアップから復元
@@ -185,7 +177,7 @@ export function BackupProvider({ children }: { children: ReactNode }) {
             sx={{
               fontSize: FONT_SIZES.body.desktop,
               lineHeight: 1.8,
-              color: 'text.primary',
+              color: "text.primary",
             }}
           >
             現在のすべてのデータが削除され、
@@ -229,7 +221,7 @@ export function BackupProvider({ children }: { children: ReactNode }) {
 export function useBackup() {
   const context = useContext(BackupContext);
   if (!context) {
-    throw new Error('useBackup must be used within BackupProvider');
+    throw new Error("useBackup must be used within BackupProvider");
   }
   return context;
 }

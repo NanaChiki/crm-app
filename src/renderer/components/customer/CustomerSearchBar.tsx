@@ -25,7 +25,7 @@ import {
   FilterList as FilterIcon,
   Search as SearchIcon,
   Sort as SortIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -41,9 +41,9 @@ import {
   TextField,
   useMediaQuery,
   useTheme,
-} from '@mui/material';
-import React, { useCallback, useState } from 'react';
-import { SortOrder } from '../../../types';
+} from "@mui/material";
+import React, { useCallback, useState } from "react";
+import { SortOrder } from "../../../types";
 
 interface CustomerSearchBarProps {
   onSearch: (keyword: string) => void;
@@ -63,14 +63,14 @@ const SEARCH_BAR_STYLES = {
   p: 3,
   mb: 3,
   borderRadius: 2,
-  backgroundColor: 'background.paper',
+  backgroundColor: "background.paper",
 };
 
 const BUTTON_STYLES = {
   minHeight: 44,
   minWidth: 44,
-  fontSize: '16px',
-  fontWeight: 'bold',
+  fontSize: "16px",
+  fontWeight: "bold",
 };
 
 // ================================
@@ -88,10 +88,10 @@ export const CustomerSearchBar: React.FC<CustomerSearchBarProps> = ({
   sortOptions,
   isLoading = false,
   resultCount,
-  searchKeyword = '',
+  searchKeyword = "",
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [localKeyword, setLocalKeyword] = useState(searchKeyword);
 
@@ -106,32 +106,32 @@ export const CustomerSearchBar: React.FC<CustomerSearchBarProps> = ({
   }, [localKeyword, onSearch]);
 
   const handleClear = useCallback(() => {
-    setLocalKeyword('');
+    setLocalKeyword("");
     onClear();
   }, [onClear]);
 
   const handleKeyPress = useCallback(
     (event: React.KeyboardEvent) => {
-      if (event.key === 'Enter') {
+      if (event.key === "Enter") {
         event.preventDefault();
         handleSearch();
       }
     },
-    [handleSearch]
+    [handleSearch],
   );
 
   const handleSortChange = useCallback(
     (event: any) => {
       const sortValue = event.target.value;
       const sortOption = sortOptions.find(
-        (option) => `${option.field}-${option.direction}` === sortValue
+        (option) => `${option.field}-${option.direction}` === sortValue,
       );
 
       if (sortOption) {
         onSortChange(sortOption);
       }
     },
-    [sortOptions, onSortChange]
+    [sortOptions, onSortChange],
   );
 
   const currentSortValue = `${selectedSort.field}-${selectedSort.direction}`;
@@ -144,13 +144,13 @@ export const CustomerSearchBar: React.FC<CustomerSearchBarProps> = ({
       <Box sx={{ mb: 2 }}>
         {/* 検索結果カウンター */}
         {resultCount !== undefined && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
             <FilterIcon color="action" />
             <Chip
               label={`${resultCount}件の顧客`}
               color="primary"
               variant="outlined"
-              sx={{ fontWeight: 'bold' }}
+              sx={{ fontWeight: "bold" }}
             />
             {searchKeyword && (
               <Chip
@@ -167,11 +167,12 @@ export const CustomerSearchBar: React.FC<CustomerSearchBarProps> = ({
 
       <Box
         sx={{
-          display: 'flex',
+          display: "flex",
           gap: 2,
-          flexDirection: isMobile ? 'column' : 'row',
-          alignItems: isMobile ? 'stretch' : 'flex-end',
-        }}>
+          flexDirection: isMobile ? "column" : "row",
+          alignItems: isMobile ? "stretch" : "flex-end",
+        }}
+      >
         {/* 検索キーワード入力 */}
         <TextField
           label="顧客検索"
@@ -183,8 +184,8 @@ export const CustomerSearchBar: React.FC<CustomerSearchBarProps> = ({
           size="medium"
           sx={{
             flex: 1,
-            '& .MuiInputBase-input': {
-              fontSize: '16px',
+            "& .MuiInputBase-input": {
+              fontSize: "16px",
             },
           }}
           slotProps={{
@@ -197,9 +198,10 @@ export const CustomerSearchBar: React.FC<CustomerSearchBarProps> = ({
               endAdornment: localKeyword ? (
                 <InputAdornment position="end">
                   <IconButton
-                    onClick={() => setLocalKeyword('')}
+                    onClick={() => setLocalKeyword("")}
                     size="small"
-                    aria-label="入力をクリア">
+                    aria-label="入力をクリア"
+                  >
                     <ClearIcon />
                   </IconButton>
                 </InputAdornment>
@@ -212,24 +214,25 @@ export const CustomerSearchBar: React.FC<CustomerSearchBarProps> = ({
         <FormControl
           size="medium"
           sx={{
-            minWidth: isMobile ? '100%' : 200,
-            '& .MuiInputBase-input': {
-              fontSize: '16px',
+            minWidth: isMobile ? "100%" : 200,
+            "& .MuiInputBase-input": {
+              fontSize: "16px",
             },
-          }}>
+          }}
+        >
           <InputLabel>並び順</InputLabel>
           <Select
             value={currentSortValue}
             onChange={handleSortChange}
             label="並び順"
-            startAdornment={
-              <SortIcon sx={{ mr: 1, color: 'action.active' }} />
-            }>
+            startAdornment={<SortIcon sx={{ mr: 1, color: "action.active" }} />}
+          >
             {sortOptions.map((option) => (
               <MenuItem
                 key={`${option.field}-${option.direction}`}
                 value={`${option.field}-${option.direction}`}
-                sx={{ fontSize: '16px' }}>
+                sx={{ fontSize: "16px" }}
+              >
                 {option.label}
               </MenuItem>
             ))}
@@ -246,9 +249,10 @@ export const CustomerSearchBar: React.FC<CustomerSearchBarProps> = ({
           }
           sx={{
             ...BUTTON_STYLES,
-            minWidth: isMobile ? '100%' : 100,
-          }}>
-          {isLoading ? '検索中...' : '検索'}
+            minWidth: isMobile ? "100%" : 100,
+          }}
+        >
+          {isLoading ? "検索中..." : "検索"}
         </Button>
 
         {/* クリアボタン */}
@@ -259,8 +263,9 @@ export const CustomerSearchBar: React.FC<CustomerSearchBarProps> = ({
             startIcon={<ClearIcon />}
             sx={{
               ...BUTTON_STYLES,
-              minWidth: isMobile ? '100%' : 200,
-            }}>
+              minWidth: isMobile ? "100%" : 200,
+            }}
+          >
             クリア
           </Button>
         )}
@@ -268,7 +273,7 @@ export const CustomerSearchBar: React.FC<CustomerSearchBarProps> = ({
 
       {/* 検索のヒント（50代向け） */}
       {!searchKeyword && !localKeyword && (
-        <Box sx={{ mt: 2, fontSize: '14px', color: 'text.secondary' }}>
+        <Box sx={{ mt: 2, fontSize: "14px", color: "text.secondary" }}>
           💡 検索のコツ:
           会社名の一部（例：「田中」「建設」）や担当者名でも検索できます
         </Box>

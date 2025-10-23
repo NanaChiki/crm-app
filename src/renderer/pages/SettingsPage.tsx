@@ -23,33 +23,33 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from '@mui/material';
-import React, { useState } from 'react';
+} from "@mui/material";
+import React, { useState } from "react";
 
 // Icons
-import BackupIcon from '@mui/icons-material/Backup';
-import DownloadIcon from '@mui/icons-material/Download';
-import RestoreIcon from '@mui/icons-material/Restore';
-import SettingsIcon from '@mui/icons-material/Settings';
+import BackupIcon from "@mui/icons-material/Backup";
+import DownloadIcon from "@mui/icons-material/Download";
+import RestoreIcon from "@mui/icons-material/Restore";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 // Components
-import { DataStatistics } from '../components/backup/DataStatistics';
-import PageHeader from '../components/layout/PageHeader';
-import { Button } from '../components/ui/Button';
+import { DataStatistics } from "../components/backup/DataStatistics";
+import PageHeader from "../components/layout/PageHeader";
+import { Button } from "../components/ui/Button";
 
 // Contexts
-import { useBackup } from '../contexts/BackupContext';
-import { useCSV } from '../contexts/CSVContext';
+import { useBackup } from "../contexts/BackupContext";
+import { useCSV } from "../contexts/CSVContext";
 
 // Design System
-import { BUTTON_SIZE, FONT_SIZES, SPACING } from '../constants/uiDesignSystem';
+import { BUTTON_SIZE, FONT_SIZES, SPACING } from "../constants/uiDesignSystem";
 
 /**
  * 設定ページメインコンポーネント
  */
 export default function SettingsPage() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [currentTab, setCurrentTab] = useState(0);
   const { loading, exportCustomersCSV, exportServiceRecordsCSV } = useCSV();
@@ -83,29 +83,31 @@ export default function SettingsPage() {
         subtitle="データ連携、バックアップ、アプリ設定"
         breadcrumbs={[
           // { label: 'ホーム', path: '/' },
-          { label: '設定', path: '/settings' },
+          { label: "設定", path: "/settings" },
         ]}
       />
 
       <Paper
         sx={{
           mb: SPACING.gap.large,
-          overflow: 'hidden',
-        }}>
+          overflow: "hidden",
+        }}
+      >
         {/* タブヘッダー */}
         <Tabs
           value={currentTab}
           onChange={handleTabChange}
-          variant={isMobile ? 'fullWidth' : 'standard'}
+          variant={isMobile ? "fullWidth" : "standard"}
           sx={{
             borderBottom: 1,
-            borderColor: 'divider',
-            '& .MuiTab-root': {
+            borderColor: "divider",
+            "& .MuiTab-root": {
               fontSize: FONT_SIZES.body.desktop,
               py: SPACING.gap.medium,
               minHeight: BUTTON_SIZE.minHeight.tablet,
             },
-          }}>
+          }}
+        >
           <Tab
             label="データ連携"
             icon={<DownloadIcon />}
@@ -126,15 +128,17 @@ export default function SettingsPage() {
         {/* タブ1: データ連携 */}
         {currentTab === 0 && (
           <Box
-            sx={{ p: { xs: SPACING.card.mobile, md: SPACING.card.desktop } }}>
+            sx={{ p: { xs: SPACING.card.mobile, md: SPACING.card.desktop } }}
+          >
             <Typography
               variant="h6"
               gutterBottom
               sx={{
                 fontSize: FONT_SIZES.cardTitle.desktop,
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 mb: SPACING.gap.large,
-              }}>
+              }}
+            >
               ジョブカン連携
             </Typography>
 
@@ -144,9 +148,10 @@ export default function SettingsPage() {
                 sx={{
                   fontSize: FONT_SIZES.body.desktop,
                   mb: SPACING.gap.medium,
-                  color: 'text.secondary',
+                  color: "text.secondary",
                   lineHeight: 1.8,
-                }}>
+                }}
+              >
                 CRMの顧客データをジョブカン形式のCSVファイルに出力します。
                 <br />
                 出力したCSVファイルをジョブカンでインポートできます。
@@ -169,8 +174,9 @@ export default function SettingsPage() {
                   py: 2,
                   px: 4,
                   minHeight: BUTTON_SIZE.minHeight.desktop,
-                }}>
-                {loading ? 'エクスポート中...' : '顧客データをCSV出力'}
+                }}
+              >
+                {loading ? "エクスポート中..." : "顧客データをCSV出力"}
               </Button>
             </Box>
 
@@ -181,9 +187,10 @@ export default function SettingsPage() {
                 sx={{
                   fontSize: FONT_SIZES.body.desktop,
                   mb: SPACING.gap.medium,
-                  color: 'text.secondary',
+                  color: "text.secondary",
                   lineHeight: 1.8,
-                }}>
+                }}
+              >
                 CRMのサービス履歴をジョブカン請求書作成用のCSVファイルに出力します。
                 <br />
                 出力したCSVファイルをジョブカンで参照、またはインポートできます。
@@ -207,8 +214,9 @@ export default function SettingsPage() {
                   py: 2,
                   px: 4,
                   minHeight: BUTTON_SIZE.minHeight.desktop,
-                }}>
-                {loading ? 'エクスポート中...' : 'サービス履歴をCSV出力'}
+                }}
+              >
+                {loading ? "エクスポート中..." : "サービス履歴をCSV出力"}
               </Button>
             </Box>
 
@@ -216,18 +224,20 @@ export default function SettingsPage() {
             <Box
               sx={{
                 p: SPACING.card.desktop,
-                bgcolor: 'info.light',
+                bgcolor: "info.light",
                 borderRadius: 1,
-                border: '1px solid',
-                borderColor: 'info.main',
-              }}>
+                border: "1px solid",
+                borderColor: "info.main",
+              }}
+            >
               <Typography
                 variant="body2"
                 sx={{
                   fontSize: FONT_SIZES.body.desktop,
-                  color: 'text.primary',
+                  color: "text.primary",
                   lineHeight: 1.8,
-                }}>
+                }}
+              >
                 <strong>使い方:</strong>
                 <br />
                 <br />
@@ -255,15 +265,17 @@ export default function SettingsPage() {
         {/* タブ2: バックアップ */}
         {currentTab === 1 && (
           <Box
-            sx={{ p: { xs: SPACING.card.mobile, md: SPACING.card.desktop } }}>
+            sx={{ p: { xs: SPACING.card.mobile, md: SPACING.card.desktop } }}
+          >
             <Typography
               variant="h6"
               gutterBottom
               sx={{
                 fontSize: FONT_SIZES.cardTitle.desktop,
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 mb: SPACING.gap.large,
-              }}>
+              }}
+            >
               データバックアップ
             </Typography>
 
@@ -279,9 +291,10 @@ export default function SettingsPage() {
                 sx={{
                   fontSize: FONT_SIZES.body.desktop,
                   mb: SPACING.gap.medium,
-                  color: 'text.secondary',
+                  color: "text.secondary",
                   lineHeight: 1.8,
-                }}>
+                }}
+              >
                 すべてのデータをZIPファイルにバックアップします。
                 <br />
                 定期的にバックアップを作成することをおすすめします。
@@ -304,8 +317,9 @@ export default function SettingsPage() {
                   py: 2,
                   px: 4,
                   minHeight: BUTTON_SIZE.minHeight.desktop,
-                }}>
-                {backupLoading ? '作成中...' : 'バックアップを作成'}
+                }}
+              >
+                {backupLoading ? "作成中..." : "バックアップを作成"}
               </Button>
             </Box>
 
@@ -316,9 +330,10 @@ export default function SettingsPage() {
                 sx={{
                   fontSize: FONT_SIZES.body.desktop,
                   mb: SPACING.gap.medium,
-                  color: 'text.secondary',
+                  color: "text.secondary",
                   lineHeight: 1.8,
-                }}>
+                }}
+              >
                 バックアップファイルからデータを復元します。
                 <br />
                 現在のデータは削除されますのでご注意ください。
@@ -342,8 +357,9 @@ export default function SettingsPage() {
                   py: 2,
                   px: 4,
                   minHeight: BUTTON_SIZE.minHeight.desktop,
-                }}>
-                {backupLoading ? '復元中...' : 'バックアップから復元'}
+                }}
+              >
+                {backupLoading ? "復元中..." : "バックアップから復元"}
               </Button>
             </Box>
 
@@ -351,18 +367,20 @@ export default function SettingsPage() {
             <Box
               sx={{
                 p: SPACING.card.desktop,
-                bgcolor: 'warning.light',
+                bgcolor: "warning.light",
                 borderRadius: 1,
-                border: '1px solid',
-                borderColor: 'warning.main',
-              }}>
+                border: "1px solid",
+                borderColor: "warning.main",
+              }}
+            >
               <Typography
                 variant="body2"
                 sx={{
                   fontSize: FONT_SIZES.body.desktop,
-                  color: 'text.dark',
+                  color: "text.dark",
                   lineHeight: 1.8,
-                }}>
+                }}
+              >
                 <strong>⚠️ 重要な注意事項:</strong>
                 <br />
                 <br />
@@ -381,23 +399,26 @@ export default function SettingsPage() {
         {/* タブ3: アプリ設定（Phase 3B で実装予定） */}
         {currentTab === 2 && (
           <Box
-            sx={{ p: { xs: SPACING.card.mobile, md: SPACING.card.desktop } }}>
+            sx={{ p: { xs: SPACING.card.mobile, md: SPACING.card.desktop } }}
+          >
             <Typography
               variant="h6"
               gutterBottom
               sx={{
                 fontSize: FONT_SIZES.cardTitle.desktop,
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 mb: SPACING.gap.large,
-              }}>
+              }}
+            >
               アプリ設定
             </Typography>
             <Typography
               variant="body1"
               sx={{
                 fontSize: FONT_SIZES.body.desktop,
-                color: 'text.secondary',
-              }}>
+                color: "text.secondary",
+              }}
+            >
               この機能は次回のアップデートで実装予定です。
             </Typography>
           </Box>

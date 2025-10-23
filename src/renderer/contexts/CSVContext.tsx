@@ -15,8 +15,8 @@ import {
   useCallback,
   useContext,
   useState,
-} from 'react';
-import { useApp } from './AppContext';
+} from "react";
+import { useApp } from "./AppContext";
 
 /**
  * Window API型定義（preload.tsで公開されたAPI）
@@ -90,40 +90,36 @@ export function CSVProvider({ children }: CSVProviderProps) {
     setLoading(true);
 
     try {
-      console.log('📤 顧客CSVエクスポート開始');
-
       // メインプロセスのCSVエクスポート処理を呼び出し
       const result = await window.csvAPI.exportCustomers();
 
       // ユーザーがキャンセルした場合
       if (result.canceled) {
-        console.log('ℹ️ CSVエクスポートがキャンセルされました');
         return; // 何も表示しない
       }
 
       // 成功時
       if (result.success) {
         showSnackbar(
-          result.message || '顧客データをCSVファイルに出力しました',
-          'success',
-          8000 // 保存先を確認できるように長めに表示
+          result.message || "顧客データをCSVファイルに出力しました",
+          "success",
+          8000, // 保存先を確認できるように長めに表示
         );
-        console.log('✅ CSVエクスポート成功');
       } else {
         // エラー時（50代向けに親切なメッセージ）
         const errorMessage =
           result.error ||
-          'CSVファイルの保存に失敗しました。もう一度お試しください。';
-        showSnackbar(errorMessage, 'error');
-        console.error('❌ CSVエクスポート失敗:', result.error);
+          "CSVファイルの保存に失敗しました。もう一度お試しください。";
+        showSnackbar(errorMessage, "error");
+        console.error("❌ CSVエクスポート失敗:", result.error);
       }
     } catch (error) {
-      console.error('❌ CSVエクスポート例外エラー:', error);
+      console.error("❌ CSVエクスポート例外エラー:", error);
 
       // 予期しないエラーの場合
       showSnackbar(
-        'CSVファイルの保存中にエラーが発生しました。\nアプリを再起動してもう一度お試しください。',
-        'error'
+        "CSVファイルの保存中にエラーが発生しました。\nアプリを再起動してもう一度お試しください。",
+        "error",
       );
     } finally {
       setLoading(false);
@@ -149,40 +145,36 @@ export function CSVProvider({ children }: CSVProviderProps) {
     setLoading(true);
 
     try {
-      console.log('📤 サービス履歴CSVエクスポート開始');
-
       // メインプロセスのCSVエクスポート処理を呼び出し
       const result = await window.csvAPI.exportServiceRecords();
 
       // ユーザーがキャンセルした場合
       if (result.canceled) {
-        console.log('ℹ️ サービス履歴CSVエクスポートがキャンセルされました');
         return; // 何も表示しない
       }
 
       // 成功時
       if (result.success) {
         showSnackbar(
-          result.message || 'サービス履歴をCSVファイルに出力しました',
-          'success',
-          8000 // 保存先を確認できるように長めに表示
+          result.message || "サービス履歴をCSVファイルに出力しました",
+          "success",
+          8000, // 保存先を確認できるように長めに表示
         );
-        console.log('✅ サービス履歴CSVエクスポート成功');
       } else {
         // エラー時（50代向けに親切なメッセージ）
         const errorMessage =
           result.error ||
-          'CSVファイルの保存に失敗しました。もう一度お試しください。';
-        showSnackbar(errorMessage, 'error');
-        console.error('❌ サービス履歴CSVエクスポート失敗:', result.error);
+          "CSVファイルの保存に失敗しました。もう一度お試しください。";
+        showSnackbar(errorMessage, "error");
+        console.error("❌ サービス履歴CSVエクスポート失敗:", result.error);
       }
     } catch (error) {
-      console.error('❌ サービス履歴CSVエクスポート例外エラー:', error);
+      console.error("❌ サービス履歴CSVエクスポート例外エラー:", error);
 
       // 予期しないエラーの場合
       showSnackbar(
-        'CSVファイルの保存中にエラーが発生しました。\nアプリを再起動してもう一度お試しください。',
-        'error'
+        "CSVファイルの保存中にエラーが発生しました。\nアプリを再起動してもう一度お試しください。",
+        "error",
       );
     } finally {
       setLoading(false);
@@ -221,7 +213,7 @@ export function useCSV(): CSVContextType {
   const context = useContext(CSVContext);
 
   if (!context) {
-    throw new Error('useCSV must be used within CSVProvider');
+    throw new Error("useCSV must be used within CSVProvider");
   }
 
   return context;

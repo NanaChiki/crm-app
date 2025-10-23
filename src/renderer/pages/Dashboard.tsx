@@ -59,7 +59,7 @@ import { useReminder } from '../contexts/ReminderContext';
 import { useServiceRecords } from '../hooks/useServiceRecords';
 
 // Design System
-import { FONT_SIZES, SPACING, BUTTON_SIZE, GRID_LAYOUT } from '../constants/uiDesignSystem';
+import { BUTTON_SIZE, FONT_SIZES, SPACING } from '../constants/uiDesignSystem';
 
 // Types
 import { Customer } from '../../types';
@@ -86,7 +86,7 @@ function Dashboard() {
   // ================================
 
   // 顧客データ
-  const { customers, loading /*error*/ } = useCustomer();
+  const { customers, loading } = useCustomer();
 
   // 全サービス履歴を取得
   const { serviceRecords, error: serviceError } = useServiceRecords({
@@ -103,7 +103,8 @@ function Dashboard() {
   // リマインダーを初回ロード時に取得
   useEffect(() => {
     fetchReminders();
-  }, [fetchReminders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only on mount to avoid unnecessary re-fetches
 
   // ================================
   // データ計算（useMemoで最適化）
@@ -117,10 +118,14 @@ function Dashboard() {
     const currentYear = new Date().getFullYear();
 
     return serviceRecords.filter((record) => {
-      const dateObj = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+      const dateObj =
+        typeof record.serviceDate === 'string'
+          ? new Date(record.serviceDate)
+          : record.serviceDate;
 
       return (
-        dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear
+        dateObj.getMonth() === currentMonth &&
+        dateObj.getFullYear() === currentYear
       );
     });
   }, [serviceRecords]);
@@ -171,7 +176,10 @@ function Dashboard() {
     serviceRecords.forEach((record) => {
       const key = `${record.customerId}-${record.serviceType}`;
       const existing = customerServiceLastDate.get(key);
-      const serviceDate = typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate;
+      const serviceDate =
+        typeof record.serviceDate === 'string'
+          ? new Date(record.serviceDate)
+          : record.serviceDate;
 
       // 同じserviceTypeの最新日付を保存（最新実施日基準でメンテナンス判定）
       if (!existing || serviceDate > existing.lastServiceDate) {
@@ -226,18 +234,25 @@ function Dashboard() {
   }, [maintenanceAlerts]);
 
   /**
+   * 顧客情報のMap（O(1)検索用）
+   */
+  const customerMap = useMemo(() => {
+    return new Map(customers.map((c) => [c.customerId, c]));
+  }, [customers]);
+
+  /**
    * 最近の顧客（登録日順）
    */
   const recentCustomers = useMemo(() => {
     return customers
       .slice()
-      .sort(
-        (a, b) => {
-          const dateA = typeof b.createdAt === 'string' ? new Date(b.createdAt) : b.createdAt;
-          const dateB = typeof a.createdAt === 'string' ? new Date(a.createdAt) : a.createdAt;
-          return dateA.getTime() - dateB.getTime();
-        }
-      )
+      .sort((a, b) => {
+        const dateA =
+          typeof b.createdAt === 'string' ? new Date(b.createdAt) : b.createdAt;
+        const dateB =
+          typeof a.createdAt === 'string' ? new Date(a.createdAt) : a.createdAt;
+        return dateA.getTime() - dateB.getTime();
+      })
       .slice(0, 10);
   }, [customers]);
 
@@ -256,8 +271,14 @@ function Dashboard() {
       .slice()
       .sort((a, b) => {
         // まずserviceDateで降順ソート
-        const dateA = typeof a.serviceDate === 'string' ? new Date(a.serviceDate) : a.serviceDate;
-        const dateB = typeof b.serviceDate === 'string' ? new Date(b.serviceDate) : b.serviceDate;
+        const dateA =
+          typeof a.serviceDate === 'string'
+            ? new Date(a.serviceDate)
+            : a.serviceDate;
+        const dateB =
+          typeof b.serviceDate === 'string'
+            ? new Date(b.serviceDate)
+            : b.serviceDate;
         const dateCompare = dateB.getTime() - dateA.getTime();
 
         // serviceDateが同じ場合は、recordId（追加順）で降順ソート
@@ -295,12 +316,13 @@ function Dashboard() {
         <>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {recentServices.map((record) => {
-              const customer = customers.find(
-                (c) => c.customerId === record.customerId
-              );
+              const customer = customerMap.get(record.customerId);
               return (
                 <Box
                   key={record.recordId}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${customer?.companyName || '不明'}のサービス履歴を表示`}
                   sx={{
                     p: 2,
                     border: 1,
@@ -313,7 +335,12 @@ function Dashboard() {
                   }}
                   onClick={() =>
                     navigate(`/customers/${record.customerId}#history`)
-                  }>
+                  }
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      navigate(`/customers/${record.customerId}#history`);
+                    }
+                  }}>
                   <Typography
                     variant="subtitle1"
                     sx={{
@@ -340,7 +367,10 @@ function Dashboard() {
                     variant="caption"
                     color="text.secondary"
                     sx={{ fontSize: FONT_SIZES.label.desktop }}>
-                    {(typeof record.serviceDate === 'string' ? new Date(record.serviceDate) : record.serviceDate).toLocaleDateString('ja-JP')}
+                    {(typeof record.serviceDate === 'string'
+                      ? new Date(record.serviceDate)
+                      : record.serviceDate
+                    ).toLocaleDateString('ja-JP')}
                   </Typography>
                 </Box>
               );
@@ -363,7 +393,11 @@ function Dashboard() {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ fontSize: FONT_SIZES.body.desktop, textAlign: 'center', py: 8 }}>
+          sx={{
+            fontSize: FONT_SIZES.body.desktop,
+            textAlign: 'center',
+            py: 8,
+          }}>
           サービス履歴がありません
         </Typography>
       )}
@@ -381,6 +415,9 @@ function Dashboard() {
             {maintenanceAlerts.map((alert) => (
               <Box
                 key={`${alert.customer.customerId}-${alert.lastServiceType}`}
+                role="button"
+                tabIndex={0}
+                aria-label={`${alert.customer.companyName}の${alert.lastServiceType}メンテナンス推奨 - ${alert.yearsSince}年経過`}
                 sx={{
                   p: 2,
                   border: 2,
@@ -400,7 +437,14 @@ function Dashboard() {
                   navigate(
                     `/customers/${alert.customer.customerId}#maintenance`
                   )
-                }>
+                }
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    navigate(
+                      `/customers/${alert.customer.customerId}#maintenance`
+                    );
+                  }
+                }}>
                 <Box
                   sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                   <Chip
@@ -408,7 +452,10 @@ function Dashboard() {
                       alert.urgency === 'high' ? '🔴 要対応' : '🟡 推奨時期'
                     }
                     color={alert.urgency === 'high' ? 'error' : 'warning'}
-                    sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.label.desktop }}
+                    sx={{
+                      fontWeight: 'bold',
+                      fontSize: FONT_SIZES.label.desktop,
+                    }}
                   />
                 </Box>
                 <Typography
@@ -435,7 +482,11 @@ function Dashboard() {
             <Button
               variant="outlined"
               onClick={() => navigate('/customers')}
-              sx={{ mt: 3, fontSize: FONT_SIZES.body.desktop, minHeight: BUTTON_SIZE.minHeight.desktop }}>
+              sx={{
+                mt: 3,
+                fontSize: FONT_SIZES.body.desktop,
+                minHeight: BUTTON_SIZE.minHeight.desktop,
+              }}>
               全ての顧客を見る
             </Button>
           </Box>
@@ -444,7 +495,11 @@ function Dashboard() {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ fontSize: FONT_SIZES.body.desktop, textAlign: 'center', py: 8 }}>
+          sx={{
+            fontSize: FONT_SIZES.body.desktop,
+            textAlign: 'center',
+            py: 8,
+          }}>
           メンテナンス推奨顧客がありません
         </Typography>
       )}
@@ -492,7 +547,10 @@ function Dashboard() {
                   color="text.secondary"
                   sx={{ fontSize: FONT_SIZES.label.desktop }}>
                   送信予定:{' '}
-                  {(typeof reminder.reminderDate === 'string' ? new Date(reminder.reminderDate) : reminder.reminderDate).toLocaleDateString('ja-JP')}
+                  {(typeof reminder.reminderDate === 'string'
+                    ? new Date(reminder.reminderDate)
+                    : reminder.reminderDate
+                  ).toLocaleDateString('ja-JP')}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                   <Button
@@ -511,7 +569,11 @@ function Dashboard() {
             <Button
               variant="outlined"
               onClick={() => navigate('/reminders')}
-              sx={{ mt: 2, fontSize: FONT_SIZES.body.desktop, minHeight: BUTTON_SIZE.minHeight.desktop }}>
+              sx={{
+                mt: 2,
+                fontSize: FONT_SIZES.body.desktop,
+                minHeight: BUTTON_SIZE.minHeight.desktop,
+              }}>
               すべてのリマインダーを見る
             </Button>
           </Box>
@@ -520,7 +582,11 @@ function Dashboard() {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ fontSize: FONT_SIZES.body.desktop, textAlign: 'center', py: 8 }}>
+          sx={{
+            fontSize: FONT_SIZES.body.desktop,
+            textAlign: 'center',
+            py: 8,
+          }}>
           今週のリマインダーはありません
         </Typography>
       )}
@@ -535,6 +601,9 @@ function Dashboard() {
             {recentCustomers.map((customer) => (
               <Box
                 key={customer.customerId}
+                role="button"
+                tabIndex={0}
+                aria-label={`${customer.companyName}の詳細を表示`}
                 sx={{
                   p: 2,
                   border: 1,
@@ -545,7 +614,12 @@ function Dashboard() {
                     cursor: 'pointer',
                   },
                 }}
-                onClick={() => navigate(`/customers/${customer.customerId}`)}>
+                onClick={() => navigate(`/customers/${customer.customerId}`)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    navigate(`/customers/${customer.customerId}`);
+                  }
+                }}>
                 <Typography
                   variant="subtitle1"
                   sx={{
@@ -566,7 +640,10 @@ function Dashboard() {
                   color="text.secondary"
                   sx={{ fontSize: FONT_SIZES.label.desktop }}>
                   登録日:{' '}
-                  {(typeof customer.createdAt === 'string' ? new Date(customer.createdAt) : customer.createdAt).toLocaleDateString('ja-JP')}
+                  {(typeof customer.createdAt === 'string'
+                    ? new Date(customer.createdAt)
+                    : customer.createdAt
+                  ).toLocaleDateString('ja-JP')}
                 </Typography>
               </Box>
             ))}
@@ -576,7 +653,11 @@ function Dashboard() {
             <Button
               variant="contained"
               onClick={() => navigate('/customers')}
-              sx={{ mt: 3, fontSize: FONT_SIZES.body.desktop, minHeight: BUTTON_SIZE.minHeight.desktop }}>
+              sx={{
+                mt: 3,
+                fontSize: FONT_SIZES.body.desktop,
+                minHeight: BUTTON_SIZE.minHeight.desktop,
+              }}>
               顧客一覧へ
             </Button>
           </Box>
@@ -585,7 +666,11 @@ function Dashboard() {
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ fontSize: FONT_SIZES.body.desktop, textAlign: 'center', py: 8 }}>
+          sx={{
+            fontSize: FONT_SIZES.body.desktop,
+            textAlign: 'center',
+            py: 8,
+          }}>
           登録済みの顧客がありません
         </Typography>
       )}
@@ -605,7 +690,9 @@ function Dashboard() {
 
       {/* エラー表示 */}
       {(loading.error || serviceError) && (
-        <Alert severity="error" sx={{ mb: 3, fontSize: FONT_SIZES.body.desktop }}>
+        <Alert
+          severity="error"
+          sx={{ mb: 3, fontSize: FONT_SIZES.body.desktop }}>
           データの読み込みに失敗しました。ページを再読み込みしてください。
         </Alert>
       )}
@@ -622,7 +709,11 @@ function Dashboard() {
           <Box sx={{ mb: 6 }}>
             <Typography
               variant="h6"
-              sx={{ mb: 2, fontWeight: 'bold', fontSize: FONT_SIZES.pageTitle.desktop }}>
+              sx={{
+                mb: 2,
+                fontWeight: 'bold',
+                fontSize: FONT_SIZES.pageTitle.desktop,
+              }}>
               ⚡ よく使う機能
             </Typography>
             <Grid container spacing={SPACING.gap.medium}>
@@ -679,7 +770,11 @@ function Dashboard() {
           <Box sx={{ mb: 6 }}>
             <Typography
               variant="h6"
-              sx={{ mb: 2, fontWeight: 'bold', fontSize: FONT_SIZES.pageTitle.desktop }}>
+              sx={{
+                mb: 2,
+                fontWeight: 'bold',
+                fontSize: FONT_SIZES.pageTitle.desktop,
+              }}>
               📊 今月の事業サマリー
             </Typography>
             <Grid container spacing={3}>

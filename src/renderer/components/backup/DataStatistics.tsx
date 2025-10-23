@@ -5,12 +5,12 @@
  * バックアップ前後のデータ確認用
  */
 
-import React, { useEffect, useState } from 'react';
-import { Box, Paper, Typography, CircularProgress } from '@mui/material';
-import { useCustomer } from '../../contexts/CustomerContext';
-import { useServiceRecords } from '../../hooks/useServiceRecords';
-import { useReminder } from '../../contexts/ReminderContext';
-import { FONT_SIZES, SPACING } from '../../constants/uiDesignSystem';
+import React, { useEffect, useState } from "react";
+import { Box, Paper, Typography, CircularProgress } from "@mui/material";
+import { useCustomer } from "../../contexts/CustomerContext";
+import { useServiceRecords } from "../../hooks/useServiceRecords";
+import { useReminder } from "../../contexts/ReminderContext";
+import { FONT_SIZES, SPACING } from "../../constants/uiDesignSystem";
 
 interface DataStats {
   customerCount: number;
@@ -33,13 +33,13 @@ export function DataStatistics() {
         customerCount: customers.length,
         serviceRecordCount: serviceRecords.length,
         reminderCount: reminders.length,
-        lastUpdated: new Date().toLocaleString('ja-JP', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
+        lastUpdated: new Date().toLocaleString("ja-JP", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
         }),
       });
       setLoading(false);
@@ -50,7 +50,7 @@ export function DataStatistics() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
         <CircularProgress />
       </Box>
     );
@@ -64,29 +64,29 @@ export function DataStatistics() {
     <Paper
       sx={{
         p: SPACING.card.desktop,
-        bgcolor: 'info.light',
-        border: '1px solid',
-        borderColor: 'info.main',
+        bgcolor: "info.light",
+        border: "1px solid",
+        borderColor: "info.main",
       }}
     >
       <Typography
         variant="h6"
         sx={{
           fontSize: FONT_SIZES.cardTitle.desktop,
-          fontWeight: 'bold',
+          fontWeight: "bold",
           mb: SPACING.gap.medium,
-          color: 'info.dark',
+          color: "info.dark",
         }}
       >
         📊 現在のデータ統計
       </Typography>
 
-      <Box sx={{ display: 'grid', gap: 1.5 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Box sx={{ display: "grid", gap: 1.5 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           <Typography
             sx={{
               fontSize: FONT_SIZES.body.desktop,
-              color: 'text.primary',
+              color: "text.primary",
             }}
           >
             顧客数:
@@ -94,19 +94,19 @@ export function DataStatistics() {
           <Typography
             sx={{
               fontSize: FONT_SIZES.body.desktop,
-              fontWeight: 'bold',
-              color: 'info.dark',
+              fontWeight: "bold",
+              color: "info.dark",
             }}
           >
             {stats.customerCount}件
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           <Typography
             sx={{
               fontSize: FONT_SIZES.body.desktop,
-              color: 'text.primary',
+              color: "text.primary",
             }}
           >
             サービス履歴:
@@ -114,19 +114,19 @@ export function DataStatistics() {
           <Typography
             sx={{
               fontSize: FONT_SIZES.body.desktop,
-              fontWeight: 'bold',
-              color: 'info.dark',
+              fontWeight: "bold",
+              color: "info.dark",
             }}
           >
             {stats.serviceRecordCount}件
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
           <Typography
             sx={{
               fontSize: FONT_SIZES.body.desktop,
-              color: 'text.primary',
+              color: "text.primary",
             }}
           >
             リマインダー:
@@ -134,8 +134,8 @@ export function DataStatistics() {
           <Typography
             sx={{
               fontSize: FONT_SIZES.body.desktop,
-              fontWeight: 'bold',
-              color: 'info.dark',
+              fontWeight: "bold",
+              color: "info.dark",
             }}
           >
             {stats.reminderCount}件
@@ -146,15 +146,15 @@ export function DataStatistics() {
           sx={{
             mt: 1,
             pt: 1.5,
-            borderTop: '1px solid',
-            borderColor: 'info.main',
+            borderTop: "1px solid",
+            borderColor: "info.main",
           }}
         >
           <Typography
             sx={{
               fontSize: FONT_SIZES.label.desktop,
-              color: 'text.secondary',
-              textAlign: 'right',
+              color: "text.secondary",
+              textAlign: "right",
             }}
           >
             最終更新: {stats.lastUpdated}
@@ -166,11 +166,12 @@ export function DataStatistics() {
         sx={{
           mt: 2,
           fontSize: FONT_SIZES.label.desktop,
-          color: 'text.secondary',
-          fontStyle: 'italic',
+          color: "text.secondary",
+          fontStyle: "italic",
         }}
       >
-        💡 ヒント: バックアップ作成前にこの数値をメモしておくと、復元後の確認に便利です
+        💡 ヒント:
+        バックアップ作成前にこの数値をメモしておくと、復元後の確認に便利です
       </Typography>
     </Paper>
   );

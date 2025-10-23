@@ -30,7 +30,7 @@ import {
   Schedule as ScheduleIcon,
   TrendingUp as TrendingUpIcon,
   Warning as WarningIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -42,22 +42,22 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from '@mui/material';
-import React, { useCallback, useMemo, useState } from 'react';
+} from "@mui/material";
+import React, { useCallback, useMemo, useState } from "react";
 
 // Custom Components
-import { ReminderForm } from '../reminder/ReminderForm';
-import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
+import { ReminderForm } from "../reminder/ReminderForm";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 
 // Custom Hooks
-import { useServiceRecords } from '../../hooks/useServiceRecords';
+import { useServiceRecords } from "../../hooks/useServiceRecords";
 
 // Design System
-import { CARD_MIN_HEIGHT, GRID_LAYOUT } from '../../constants/uiDesignSystem';
+import { CARD_MIN_HEIGHT, GRID_LAYOUT } from "../../constants/uiDesignSystem";
 
 // Types
-import { ServiceRecordWithCustomer } from '../../../types';
+import { ServiceRecordWithCustomer } from "../../../types";
 
 // ================================
 // 型定義・定数
@@ -70,7 +70,7 @@ interface MaintenancePredictionProps {
 }
 
 //緊急度レベル
-type UrgencyLevel = 'low' | 'medium' | 'high' | 'overdue';
+type UrgencyLevel = "low" | "medium" | "high" | "overdue";
 
 // メンテナンス予測データ
 interface MaintenanceStatus {
@@ -90,18 +90,18 @@ interface MaintenanceStatus {
 
 /** 建築業界標準メンテナンス周期（50代向け業界知識） */
 const MAINTENANCE_CYCLES = {
-  外壁塗装: { standard: 10, early: 8, late: 12, icon: '🎨' },
-  屋根修理: { standard: 15, early: 12, late: 18, icon: '🏠' },
-  屋根塗装: { standard: 8, early: 6, late: 10, icon: '🎨' },
-  防水工事: { standard: 10, early: 8, late: 12, icon: '💧' },
-  配管工事: { standard: 20, early: 15, late: 25, icon: '🔧' },
-  電気工事: { standard: 15, early: 12, late: 18, icon: '⚡' },
-  内装リフォーム: { standard: 15, early: 12, late: 20, icon: '🏡' },
-  水回りリフォーム: { standard: 12, early: 10, late: 15, icon: '🚿' },
-  定期点検: { standard: 3, early: 2, late: 4, icon: '🔍' },
-  緊急修理: { standard: 5, early: 3, late: 7, icon: '🚨' },
-  エアコン工事: { standard: 10, early: 8, late: 12, icon: '❄️' },
-  その他: { standard: 10, early: 8, late: 12, icon: '🛠️' },
+  外壁塗装: { standard: 10, early: 8, late: 12, icon: "🎨" },
+  屋根修理: { standard: 15, early: 12, late: 18, icon: "🏠" },
+  屋根塗装: { standard: 8, early: 6, late: 10, icon: "🎨" },
+  防水工事: { standard: 10, early: 8, late: 12, icon: "💧" },
+  配管工事: { standard: 20, early: 15, late: 25, icon: "🔧" },
+  電気工事: { standard: 15, early: 12, late: 18, icon: "⚡" },
+  内装リフォーム: { standard: 15, early: 12, late: 20, icon: "🏡" },
+  水回りリフォーム: { standard: 12, early: 10, late: 15, icon: "🚿" },
+  定期点検: { standard: 3, early: 2, late: 4, icon: "🔍" },
+  緊急修理: { standard: 5, early: 3, late: 7, icon: "🚨" },
+  エアコン工事: { standard: 10, early: 8, late: 12, icon: "❄️" },
+  その他: { standard: 10, early: 8, late: 12, icon: "🛠️" },
 } as const;
 
 // ================================
@@ -109,36 +109,36 @@ const MAINTENANCE_CYCLES = {
 // ================================
 const URGENCY_CONFIG = {
   low: {
-    label: '余裕あり',
-    color: 'success' as const,
-    bgColor: '#e8f5e8',
-    textColor: '#2e7d32',
+    label: "余裕あり",
+    color: "success" as const,
+    bgColor: "#e8f5e8",
+    textColor: "#2e7d32",
     icon: <CheckCircleIcon />,
-    message: 'まだ余裕があります',
+    message: "まだ余裕があります",
   },
   medium: {
-    label: '検討時期',
-    color: 'warning' as const,
-    bgColor: '#fff3e0',
-    textColor: '#f57c00',
+    label: "検討時期",
+    color: "warning" as const,
+    bgColor: "#fff3e0",
+    textColor: "#f57c00",
     icon: <ScheduleIcon />,
-    message: 'そろそろ検討時期です',
+    message: "そろそろ検討時期です",
   },
   high: {
-    label: '推奨時期',
-    color: 'error' as const,
-    bgColor: '#ffebee',
-    textColor: '#d32f2f',
+    label: "推奨時期",
+    color: "error" as const,
+    bgColor: "#ffebee",
+    textColor: "#d32f2f",
     icon: <WarningIcon />,
-    message: 'メンテナンス推奨時期です',
+    message: "メンテナンス推奨時期です",
   },
   overdue: {
-    label: '要対応',
-    color: 'error' as const,
-    bgColor: '#ffcdd2',
-    textColor: '#c62828',
+    label: "要対応",
+    color: "error" as const,
+    bgColor: "#ffcdd2",
+    textColor: "#c62828",
     icon: <ErrorIcon />,
-    message: '早急な対応が必要です',
+    message: "早急な対応が必要です",
   },
 } as const;
 
@@ -147,15 +147,15 @@ const URGENCY_CONFIG = {
 // ================================
 const MESSAGES = {
   info: {
-    noServices: 'サービス履歴がないため、メンテナンス予測を表示できません。',
-    noMaintenanceNeeded: '現在、緊急なメンテナンスは必要ありません。',
-    analysisNote: '※ 予測は目安です。実際の状況に応じてご判断ください。',
-    industryStandard: '建築業界標準周期に基づく予測',
+    noServices: "サービス履歴がないため、メンテナンス予測を表示できません。",
+    noMaintenanceNeeded: "現在、緊急なメンテナンスは必要ありません。",
+    analysisNote: "※ 予測は目安です。実際の状況に応じてご判断ください。",
+    industryStandard: "建築業界標準周期に基づく予測",
   },
   action: {
-    contactCustomer: '顧客に連絡する',
-    scheduleVisit: '訪問予定を立てる',
-    createEstimate: '見積もりを作成',
+    contactCustomer: "顧客に連絡する",
+    scheduleVisit: "訪問予定を立てる",
+    createEstimate: "見積もりを作成",
   },
 } as const;
 
@@ -169,7 +169,7 @@ const MESSAGES = {
 const calculateYearsElapsed = (serviceData: Date | string): number => {
   const now = new Date();
   const dateObj =
-    typeof serviceData === 'string' ? new Date(serviceData) : serviceData;
+    typeof serviceData === "string" ? new Date(serviceData) : serviceData;
   const diffMs = now.getTime() - dateObj.getTime();
   const years = diffMs / (1000 * 60 * 60 * 24 * 365.25);
   return Math.floor(years * 10) / 10; // 小数点第1位まで
@@ -180,18 +180,18 @@ const calculateYearsElapsed = (serviceData: Date | string): number => {
  */
 const getMaintenanceUrgencyLevel = (
   yearsElapsed: number,
-  cycle: (typeof MAINTENANCE_CYCLES)[keyof typeof MAINTENANCE_CYCLES]
+  cycle: (typeof MAINTENANCE_CYCLES)[keyof typeof MAINTENANCE_CYCLES],
 ): UrgencyLevel => {
   if (yearsElapsed >= cycle.late) {
-    return 'overdue';
+    return "overdue";
   }
   if (yearsElapsed >= cycle.standard) {
-    return 'high';
+    return "high";
   }
   if (yearsElapsed >= cycle.early) {
-    return 'medium';
+    return "medium";
   }
-  return 'low';
+  return "low";
 };
 
 /**
@@ -199,13 +199,13 @@ const getMaintenanceUrgencyLevel = (
  */
 const calculateNextRecommendedDate = (
   lastServiceDate: Date | string,
-  standardCycle: number
+  standardCycle: number,
 ): Date => {
   // nextDate.getFullYear() → gets current year (e.g., 2024)
   // + standardCycle → adds cycle years (e.g., + 10)
   // setFullYear(2024 + 10) → sets year to 2034
   const dateObj =
-    typeof lastServiceDate === 'string'
+    typeof lastServiceDate === "string"
       ? new Date(lastServiceDate)
       : lastServiceDate;
   const nextDate = new Date(dateObj);
@@ -223,7 +223,7 @@ const calculateNextRecommendedDate = (
  */
 const calculateProgressPercentage = (
   yearsElapsed: number,
-  standardCycle: number
+  standardCycle: number,
 ): number => {
   const percentage = (yearsElapsed / standardCycle) * 100;
   return Math.min(Math.max(percentage, 0), 100);
@@ -234,13 +234,13 @@ const calculateProgressPercentage = (
  * より詳細に統一
  */
 const formatDateForDisplay = (date: Date | string): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
-    era: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'short',
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
+    era: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
   }).format(dateObj);
 };
 
@@ -253,7 +253,7 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
   serviceRecordsHook: providedHook,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   // ================================
   // データ取得
@@ -285,15 +285,15 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
     const serviceMap = new Map<string, ServiceRecordWithCustomer>();
 
     serviceRecords.forEach((record) => {
-      const serviceType = record.serviceType || 'その他';
+      const serviceType = record.serviceType || "その他";
       const existingRecord = serviceMap.get(serviceType);
 
       const recordDate =
-        typeof record.serviceDate === 'string'
+        typeof record.serviceDate === "string"
           ? new Date(record.serviceDate)
           : record.serviceDate;
       const existingDate = existingRecord
-        ? typeof existingRecord.serviceDate === 'string'
+        ? typeof existingRecord.serviceDate === "string"
           ? new Date(existingRecord.serviceDate)
           : existingRecord.serviceDate
         : null;
@@ -315,21 +315,21 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
     latestServicesByType.forEach((record, serviceType) => {
       const cycle =
         MAINTENANCE_CYCLES[serviceType as keyof typeof MAINTENANCE_CYCLES] ||
-        MAINTENANCE_CYCLES['その他'];
+        MAINTENANCE_CYCLES["その他"];
 
       const lastServiceDate =
-        typeof record.serviceDate === 'string'
+        typeof record.serviceDate === "string"
           ? new Date(record.serviceDate)
           : record.serviceDate;
       const yearsElapsed = calculateYearsElapsed(lastServiceDate);
       const urgencyLevel = getMaintenanceUrgencyLevel(yearsElapsed, cycle);
       const nextRecommendedDate = calculateNextRecommendedDate(
         lastServiceDate,
-        cycle.standard
+        cycle.standard,
       );
       const progressPercentage = calculateProgressPercentage(
         yearsElapsed,
-        cycle.standard
+        cycle.standard,
       );
 
       predictions.push({
@@ -356,7 +356,7 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
    */
   const urgentItems = useMemo(() => {
     return maintenancePredictions.filter(
-      (item) => item.urgencyLevel === 'overdue' || item.urgencyLevel === 'high'
+      (item) => item.urgencyLevel === "overdue" || item.urgencyLevel === "high",
     );
   }, [maintenancePredictions]);
 
@@ -366,11 +366,11 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
   const responsiveSettings = useMemo(
     () => ({
       cardPadding: isMobile ? 2 : 3,
-      fontSize: isMobile ? '18px' : '20px',
-      titleFontSize: isMobile ? '20px' : '24px',
+      fontSize: isMobile ? "18px" : "20px",
+      titleFontSize: isMobile ? "20px" : "24px",
       spacing: isMobile ? 2 : 3,
     }),
-    [isMobile]
+    [isMobile],
   );
 
   // ================================
@@ -385,17 +385,17 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
   // ================================
   const handleContactCustomer = useCallback(() => {
     // 将来的に顧客連絡機能と連携
-    alert('顧客連絡機能は今後実装予定です');
+    alert("顧客連絡機能は今後実装予定です");
   }, []);
 
   const handleScheduleVisit = useCallback(() => {
     // 将来的にスケジュール機能と連携
-    alert('訪問スケジュール機能は今後実装予定です');
+    alert("訪問スケジュール機能は今後実装予定です");
   }, []);
 
   const handleCreateEstimate = useCallback(() => {
     // 将来的に見積もり機能と連携
-    alert('見積もり作成機能は今後実装予定です');
+    alert("見積もり作成機能は今後実装予定です");
   }, []);
 
   const handleCreateReminder = useCallback((prediction: MaintenanceStatus) => {
@@ -425,26 +425,28 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
         severity="error"
         sx={{
           mb: 3,
-          fontSize: '16px',
-          '& .MuiAlert-message': {
-            width: '100%',
+          fontSize: "16px",
+          "& .MuiAlert-message": {
+            width: "100%",
           },
-        }}>
+        }}
+      >
         <Box>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
             🚨 緊急メンテナンス対応が必要です
           </Typography>
           <Typography variant="body2" sx={{ mb: 2 }}>
             {urgentItems.length}件のサービス推奨時期を迎えています。
             早急な顧客対応をお勧めします。
           </Typography>
-          <Stack direction={isMobile ? 'column' : 'row'} spacing={1}>
+          <Stack direction={isMobile ? "column" : "row"} spacing={1}>
             <Button
               variant="contained"
               size="small"
               color="error"
               onClick={handleContactCustomer}
-              sx={{ fontSize: '14px' }}>
+              sx={{ fontSize: "14px" }}
+            >
               {MESSAGES.action.contactCustomer}
             </Button>
             <Button
@@ -452,7 +454,8 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
               variant="outlined"
               color="error"
               onClick={handleScheduleVisit}
-              sx={{ fontSize: '14px' }}>
+              sx={{ fontSize: "14px" }}
+            >
               {MESSAGES.action.scheduleVisit}
             </Button>
           </Stack>
@@ -476,19 +479,21 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
           sx={{
             p: responsiveSettings.cardPadding,
             minHeight: CARD_MIN_HEIGHT.maintenance, // Design System統一
-            display: 'flex',
-            flexDirection: 'column',
-          }}>
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           {/* ヘッダー */}
-          <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 1, mb: 2 }}>
-            <Typography sx={{ fontSize: '24px' }}>{prediction.icon}</Typography>
+          <Box sx={{ display: "flex", alignItems: "stretch", gap: 1, mb: 2 }}>
+            <Typography sx={{ fontSize: "24px" }}>{prediction.icon}</Typography>
             <Typography
               variant="h6"
               sx={{
                 fontSize: responsiveSettings.fontSize,
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 flex: 1,
-              }}>
+              }}
+            >
               {prediction.serviceType}
             </Typography>
             <Chip
@@ -496,8 +501,8 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
               label={urgencyConfig.label}
               color={urgencyConfig.color}
               sx={{
-                fontWeight: 'bold',
-                fontSize: isMobile ? '14px' : '12px',
+                fontWeight: "bold",
+                fontSize: isMobile ? "14px" : "12px",
               }}
             />
           </Box>
@@ -505,7 +510,8 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
           {/* 進捗バー */}
           <Box sx={{ mb: 3 }}>
             <Box
-              sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
+            >
               <Typography variant="body2" color="text.secondary">
                 経過年数: {prediction.yearsElapsed}年
               </Typography>
@@ -520,13 +526,13 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
                 height: 12,
                 borderRadius: 6,
                 backgroundColor: theme.palette.grey[200],
-                '& .MuiLinearProgress-bar': {
+                "& .MuiLinearProgress-bar": {
                   backgroundColor:
-                    prediction.urgencyLevel === 'overdue'
+                    prediction.urgencyLevel === "overdue"
                       ? theme.palette.error.main
-                      : prediction.urgencyLevel === 'high'
+                      : prediction.urgencyLevel === "high"
                         ? theme.palette.error.light
-                        : prediction.urgencyLevel === 'medium'
+                        : prediction.urgencyLevel === "medium"
                           ? theme.palette.warning.main
                           : theme.palette.success.main,
                   borderRadius: 6,
@@ -535,7 +541,8 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
             />
             <Typography
               variant="caption"
-              sx={{ display: 'block', textAlign: 'center', mt: 1 }}>
+              sx={{ display: "block", textAlign: "center", mt: 1 }}
+            >
               {Math.round(prediction.progressPercentage)}% 経過
             </Typography>
           </Box>
@@ -546,9 +553,10 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 6 }}>
               <Box
-                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}
+              >
                 <CalendarIcon fontSize="small" color="primary" />
-                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="body2" sx={{ fontWeight: "bold" }}>
                   最終実施日
                 </Typography>
               </Box>
@@ -560,13 +568,14 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
             <Grid size={{ xs: 12, md: 6 }}>
               <Box
                 sx={{
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 1,
                   mb: 1,
-                }}>
+                }}
+              >
                 <TrendingUpIcon fontSize="small" color="primary" />
-                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="body2" sx={{ fontWeight: "bold" }}>
                   次回推奨時期
                 </Typography>
               </Box>
@@ -574,16 +583,17 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
                 variant="body2"
                 sx={{
                   color:
-                    prediction.urgencyLevel === 'overdue' ||
-                    prediction.urgencyLevel === 'high'
+                    prediction.urgencyLevel === "overdue" ||
+                    prediction.urgencyLevel === "high"
                       ? theme.palette.error.main
-                      : 'text.secondary',
+                      : "text.secondary",
                   fontWeight:
-                    prediction.urgencyLevel === 'overdue' ||
-                    prediction.urgencyLevel === 'high'
-                      ? 'bold'
-                      : 'normal',
-                }}>
+                    prediction.urgencyLevel === "overdue" ||
+                    prediction.urgencyLevel === "high"
+                      ? "bold"
+                      : "normal",
+                }}
+              >
                 {formatDateForDisplay(prediction.nextRecommendedDate)}
               </Typography>
             </Grid>
@@ -596,38 +606,42 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
               p: 2,
               borderRadius: 2,
               backgroundColor: urgencyConfig.bgColor,
-              textAlign: 'center',
-            }}>
+              textAlign: "center",
+            }}
+          >
             <Typography
               variant="body2"
               sx={{
                 color: urgencyConfig.textColor,
-                fontWeight: 'bold',
-              }}>
+                fontWeight: "bold",
+              }}
+            >
               {urgencyConfig.message}
             </Typography>
           </Box>
 
           {/* アクションボタン */}
-          {(prediction.urgencyLevel === 'overdue' ||
-            prediction.urgencyLevel === 'high') && (
+          {(prediction.urgencyLevel === "overdue" ||
+            prediction.urgencyLevel === "high") && (
             <Box
               sx={{
                 mt: 3,
-                display: 'flex',
+                display: "flex",
                 gap: 2,
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-              }}>
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
               <Button
                 variant="contained"
                 size="small"
                 startIcon={<NotificationsIcon />}
                 onClick={() => handleCreateReminder(prediction)}
                 sx={{
-                  fontSize: '14px',
+                  fontSize: "14px",
                   minWidth: 150,
-                }}>
+                }}
+              >
                 リマインダー作成
               </Button>
               <Button
@@ -635,9 +649,10 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
                 size="small"
                 onClick={handleCreateEstimate}
                 sx={{
-                  fontSize: '14px',
+                  fontSize: "14px",
                   minWidth: 120,
-                }}>
+                }}
+              >
                 {MESSAGES.action.createEstimate}
               </Button>
             </Box>
@@ -652,11 +667,12 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
    */
   const renderEmptyState = () => (
     <Card>
-      <Box sx={{ textAlign: 'center', p: 6 }}>
-        <ScheduleIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+      <Box sx={{ textAlign: "center", p: 6 }}>
+        <ScheduleIcon sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
         <Typography
           variant="h6"
-          sx={{ mb: 2, fontSize: responsiveSettings.fontSize }}>
+          sx={{ mb: 2, fontSize: responsiveSettings.fontSize }}
+        >
           {MESSAGES.info.noServices}
         </Typography>
         <Typography variant="body2" color="text.secondary">
@@ -672,7 +688,7 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
 
   if (loading) {
     return (
-      <Box sx={{ textAlign: 'center', p: 4 }}>
+      <Box sx={{ textAlign: "center", p: 4 }}>
         <Typography variant="h6" color="text.secondary">
           メンテナンス予測を分析中...
         </Typography>
@@ -692,16 +708,18 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
           variant="h5"
           sx={{
             fontSize: responsiveSettings.titleFontSize,
-            fontWeight: 'bold',
-            textAlign: isMobile ? 'center' : 'left',
+            fontWeight: "bold",
+            textAlign: isMobile ? "center" : "left",
             mb: 1,
-          }}>
+          }}
+        >
           🔔 メンテナンス予測
         </Typography>
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ textAlign: isMobile ? 'center' : 'left' }}>
+          sx={{ textAlign: isMobile ? "center" : "left" }}
+        >
           {MESSAGES.info.industryStandard}
         </Typography>
       </Box>
@@ -714,20 +732,25 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
         <Grid
           container
           spacing={3}
-          sx={{ display: 'flex', alignItems: 'stretch' }}>
+          sx={{ display: "flex", alignItems: "stretch" }}
+        >
           {maintenancePredictions.map((prediction) => (
-            <Grid size={GRID_LAYOUT.maintenancePrediction} key={prediction.serviceType}>
+            <Grid
+              size={GRID_LAYOUT.maintenancePrediction}
+              key={prediction.serviceType}
+            >
               {renderMaintenanceCard(prediction)}
             </Grid>
           ))}
         </Grid>
       ) : (
         <Card>
-          <Box sx={{ textAlign: 'center', p: 4 }}>
-            <ScheduleIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
+          <Box sx={{ textAlign: "center", p: 4 }}>
+            <ScheduleIcon sx={{ fontSize: 80, color: "success.main", mb: 2 }} />
             <Typography
               variant="h6"
-              sx={{ mb: 2, fontSize: responsiveSettings.fontSize }}>
+              sx={{ mb: 2, fontSize: responsiveSettings.fontSize }}
+            >
               {MESSAGES.info.noMaintenanceNeeded}
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -738,7 +761,7 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
       )}
 
       {/* 注意事項 */}
-      <Box sx={{ mt: 4, textAlign: 'center' }}>
+      <Box sx={{ mt: 4, textAlign: "center" }}>
         <Typography variant="caption" color="text.secondary">
           {MESSAGES.info.analysisNote}
         </Typography>
@@ -753,7 +776,7 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
           defaultTitle={`${selectedPrediction.serviceType}メンテナンス推奨`}
           defaultMessage={`前回の${selectedPrediction.serviceType}から${selectedPrediction.yearsElapsed}年が経過しました。\nそろそろメンテナンスの時期ではないでしょうか？`}
           defaultDate={
-            selectedPrediction.urgencyLevel === 'overdue'
+            selectedPrediction.urgencyLevel === "overdue"
               ? new Date()
               : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
           }

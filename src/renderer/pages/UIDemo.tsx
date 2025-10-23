@@ -1,19 +1,19 @@
-import { Add, Delete, Edit } from '@mui/icons-material';
-import { Box, Container, Divider, Grid, Typography } from '@mui/material';
-import { useState } from 'react';
+import { Add, Delete, Edit } from "@mui/icons-material";
+import { Box, Container, Divider, Grid, Typography } from "@mui/material";
+import { useState } from "react";
 import {
   Button,
   Card,
   ConfirmModal,
   Input,
   Modal,
-} from '../components/ui/indexUI';
+} from "../components/ui/indexUI";
 
 export default function UIDemo() {
   const [showModal, setShowModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const handleConfirm = () => {
@@ -31,7 +31,7 @@ export default function UIDemo() {
         🎨 50代向けUIコンポーネントデモ
       </Typography>
 
-      <Typography variant="body1" sx={{ mb: 4, fontSize: '18px' }}>
+      <Typography variant="body1" sx={{ mb: 4, fontSize: "18px" }}>
         建築事業者向けCRMツールのUIコンポーネントライブラリ
       </Typography>
 
@@ -40,13 +40,13 @@ export default function UIDemo() {
         <Typography variant="h2" gutterBottom>
           📱 Button コンポーネント
         </Typography>
-        <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+        <Typography variant="body2" sx={{ mb: 3, color: "text.secondary" }}>
           最小44px×44px、フォントサイズ16px以上、アクセシビリティ対応
         </Typography>
 
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Button size="small" variant="contained" startIcon={<Add />}>
                 Small (44px)
               </Button>
@@ -60,7 +60,7 @@ export default function UIDemo() {
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Button variant="outlined" color="secondary">
                 アウトライン
               </Button>
@@ -74,7 +74,7 @@ export default function UIDemo() {
           </Grid>
 
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Button loading disabled>
                 ローディング中
               </Button>
@@ -94,13 +94,13 @@ export default function UIDemo() {
         <Typography variant="h2" gutterBottom>
           ✍️ Input コンポーネント
         </Typography>
-        <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+        <Typography variant="body2" sx={{ mb: 3, color: "text.secondary" }}>
           大きめで見やすい入力フィールド、パスワード表示切り替え対応
         </Typography>
 
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 6 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <Input
                 inputsize="small"
                 label="会社名（Small）"
@@ -127,7 +127,7 @@ export default function UIDemo() {
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <Input
                 isPassword
                 label="パスワード"
@@ -162,7 +162,7 @@ export default function UIDemo() {
         <Typography variant="h2" gutterBottom>
           🗂️ Card コンポーネント
         </Typography>
-        <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+        <Typography variant="body2" sx={{ mb: 3, color: "text.secondary" }}>
           顧客情報・サービス情報表示用カード、ステータス表示・アクション対応
         </Typography>
 
@@ -172,10 +172,11 @@ export default function UIDemo() {
               title="株式会社サンプル建設"
               subtitle="顧客ID: #001 • 登録日: 2025/01/15"
               status="active"
-              onEdit={() => alert('編集クリック')}
+              onEdit={() => alert("編集クリック")}
               onDelete={() => setShowConfirmModal(true)}
               clickable
-              onCardClick={() => alert('カードクリック')}>
+              onCardClick={() => alert("カードクリック")}
+            >
               <Typography variant="body2" sx={{ mb: 2 }}>
                 📞 <strong>電話:</strong> 03-1234-5678
               </Typography>
@@ -193,7 +194,8 @@ export default function UIDemo() {
               title="住宅リフォーム工事"
               subtitle="サービス記録 • 2025/01/10"
               status="completed"
-              cardsize="medium">
+              cardsize="medium"
+            >
               <Typography variant="body2" sx={{ mb: 2 }}>
                 💰 <strong>金額:</strong> ¥1,500,000
               </Typography>
@@ -212,7 +214,8 @@ export default function UIDemo() {
               subtitle="次回点検 • 2025/02/01"
               status="pending"
               cardsize="large"
-              onEdit={() => alert('メンテナンス編集')}>
+              onEdit={() => alert("メンテナンス編集")}
+            >
               <Typography variant="body2" sx={{ mb: 2 }}>
                 🔧 <strong>種類:</strong> 定期点検
               </Typography>
@@ -234,11 +237,11 @@ export default function UIDemo() {
         <Typography variant="h2" gutterBottom>
           💬 Modal コンポーネント
         </Typography>
-        <Typography variant="body2" sx={{ mb: 3, color: 'text.secondary' }}>
+        <Typography variant="body2" sx={{ mb: 3, color: "text.secondary" }}>
           削除確認、情報表示用モーダルダイアログ
         </Typography>
 
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           <Button variant="contained" onClick={() => setShowModal(true)}>
             情報モーダルを開く
           </Button>
@@ -246,7 +249,8 @@ export default function UIDemo() {
           <Button
             variant="contained"
             color="error"
-            onClick={() => setShowConfirmModal(true)}>
+            onClick={() => setShowConfirmModal(true)}
+          >
             削除確認モーダルを開く
           </Button>
         </Box>
@@ -274,7 +278,8 @@ export default function UIDemo() {
               <strong>設立:</strong> 1995年4月1日
             </Typography>
           </Box>
-        }>
+        }
+      >
         <Typography variant="body1">
           この顧客の詳細情報を表示しています。編集する場合は「保存」ボタンをクリックしてください。
         </Typography>
@@ -285,7 +290,8 @@ export default function UIDemo() {
         type="delete"
         onClose={() => setShowConfirmModal(false)}
         onConfirm={handleConfirm}
-        loading={loading}>
+        loading={loading}
+      >
         <Typography variant="body1">
           <strong>「株式会社サンプル建設」</strong>の顧客データを削除しますか？
         </Typography>
@@ -299,9 +305,10 @@ export default function UIDemo() {
         sx={{
           mt: 8,
           p: 3,
-          backgroundColor: 'background.default',
+          backgroundColor: "background.default",
           borderRadius: 2,
-        }}>
+        }}
+      >
         <Typography variant="h3" gutterBottom>
           🎯 使用方法
         </Typography>
@@ -310,12 +317,13 @@ export default function UIDemo() {
         </Typography>
         <Box
           sx={{
-            backgroundColor: 'grey.100',
+            backgroundColor: "grey.100",
             p: 2,
             borderRadius: 1,
-            fontFamily: 'monospace',
-            fontSize: '14px',
-          }}>
+            fontFamily: "monospace",
+            fontSize: "14px",
+          }}
+        >
           <code>
             {`import { Button, Input, Card, Modal, ConfirmModal } from '@/components/ui';`}
           </code>

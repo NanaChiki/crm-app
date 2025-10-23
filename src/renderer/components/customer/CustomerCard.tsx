@@ -27,7 +27,7 @@ import {
   Email as EmailIcon,
   Person as PersonIcon,
   Phone as PhoneIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -38,10 +38,15 @@ import {
   Divider,
   Typography,
   useTheme,
-} from '@mui/material';
-import React from 'react';
-import { Customer } from '../../../types';
-import { CARD_MIN_HEIGHT, FONT_SIZES, ANIMATION, ICON_SIZE } from '../../constants/uiDesignSystem';
+} from "@mui/material";
+import React from "react";
+import { Customer } from "../../../types";
+import {
+  CARD_MIN_HEIGHT,
+  FONT_SIZES,
+  ANIMATION,
+  ICON_SIZE,
+} from "../../constants/uiDesignSystem";
 
 // ================================
 // 型定義
@@ -58,25 +63,25 @@ interface CustomerCardProps {
 const CARD_STYLES = {
   minHeight: CARD_MIN_HEIGHT.customer, // Design Systemから統一
   transition: `all ${ANIMATION.duration.normal} ${ANIMATION.easing}`,
-  cursor: 'pointer',
+  cursor: "pointer",
   borderRadius: 3, // 12px相当
-  '&:hover, &:focus': {
+  "&:hover, &:focus": {
     transform: `translateY(-2px) scale(${ANIMATION.hoverScale})`,
     boxShadow: 3,
   },
-  '&:active': {
-    transform: 'translateY(0)',
+  "&:active": {
+    transform: "translateY(0)",
     boxShadow: 2,
   },
-  '&:disabled': {
+  "&:disabled": {
     opacity: 0.6,
-    cursor: 'not-allowed',
+    cursor: "not-allowed",
   },
 };
 
 const INFO_ROW_STYLES = {
-  display: 'flex',
-  alignItems: 'center',
+  display: "flex",
+  alignItems: "center",
   gap: 1,
   mb: 1.5,
   fontSize: FONT_SIZES.body.desktop, // Design Systemから統一
@@ -90,13 +95,13 @@ const INFO_ROW_STYLES = {
  * 日付フォーマット（50代向けに分かりやすく）
  */
 const formatDate = (date: Date): string => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
-    era: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'short',
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
+    era: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
   }).format(dateObj);
 };
 
@@ -104,9 +109,9 @@ const formatDate = (date: Date): string => {
  * 金額フォーマット（50代向けに分かりやすく）
  */
 const formatAmount = (amount: number): string => {
-  return new Intl.NumberFormat('ja-JP', {
-    style: 'currency',
-    currency: 'JPY',
+  return new Intl.NumberFormat("ja-JP", {
+    style: "currency",
+    currency: "JPY",
     minimumFractionDigits: 0,
   }).format(amount);
 };
@@ -115,22 +120,25 @@ const formatAmount = (amount: number): string => {
  * 顧客ステータスの判定
  */
 const getCustomerStatus = (
-  customer: Customer
+  customer: Customer,
 ): {
   label: string;
-  color: 'success' | 'warning' | 'error' | 'default';
+  color: "success" | "warning" | "error" | "default";
 } => {
-  const lastUpdate = typeof customer.updatedAt === 'string' ? new Date(customer.updatedAt) : customer.updatedAt;
+  const lastUpdate =
+    typeof customer.updatedAt === "string"
+      ? new Date(customer.updatedAt)
+      : customer.updatedAt;
   const daysSinceUpdate = Math.floor(
-    (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24)
+    (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   if (daysSinceUpdate <= 30) {
-    return { label: '活動中', color: 'success' };
+    return { label: "活動中", color: "success" };
   } else if (daysSinceUpdate <= 90) {
-    return { label: '要フォロー', color: 'warning' };
+    return { label: "要フォロー", color: "warning" };
   } else {
-    return { label: '長期未連絡', color: 'error' };
+    return { label: "長期未連絡", color: "error" };
   }
 };
 
@@ -156,7 +164,7 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
   };
 
   const handleCardKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       handleClick();
     }
@@ -169,22 +177,24 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
       onKeyDown={handleCardKeyPress}
       tabIndex={0}
       role="button"
-      aria-label={`${customer.companyName}の詳細を表示`}>
+      aria-label={`${customer.companyName}の詳細を表示`}
+    >
       <CardContent sx={{ pb: 1 }}>
         {/* ステータス */}
         <Box
           sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
             mb: 2,
-          }}>
+          }}
+        >
           <Chip
             label={status.label}
             color={status.color}
             size="small"
             sx={{
-              fontWeight: 'bold',
+              fontWeight: "bold",
             }}
           />
           <Typography variant="caption" color="text.secondary">
@@ -198,12 +208,13 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
           component="h3"
           sx={{
             fontSize: FONT_SIZES.cardTitle.desktop, // Design System統一
-            fontWeight: 'bold',
+            fontWeight: "bold",
             color: theme.palette.primary.dark,
             lineHeight: 1.3,
             mb: 2.5,
-          }}>
-          <BusinessIcon sx={{ mr: 0.5, verticalAlign: 'middle' }} />
+          }}
+        >
+          <BusinessIcon sx={{ mr: 0.5, verticalAlign: "middle" }} />
           {customer.companyName}
         </Typography>
 
@@ -224,7 +235,8 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
             <Typography
               variant="body2"
               color="text.primary"
-              sx={{ fontFamily: 'monospace' }}>
+              sx={{ fontFamily: "monospace" }}
+            >
               {customer.phone}
             </Typography>
           </Box>
@@ -238,9 +250,10 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
               variant="body2"
               color="text.primary"
               sx={{
-                fontFamily: 'monospace',
-                wordBreak: 'break-all',
-              }}>
+                fontFamily: "monospace",
+                wordBreak: "break-all",
+              }}
+            >
               {customer.email}
             </Typography>
           </Box>
@@ -249,7 +262,7 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
         <Divider sx={{ my: 1.5 }} />
 
         {/* 最終更新日 */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
           <CalendarIcon fontSize="small" color="action" />
           <Typography variant="body2" color="text.secondary">
             最終更新: {formatDate(customer.updatedAt)}
@@ -262,11 +275,12 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
             variant="body2"
             color="text.secondary"
             sx={{
-              fontSize: '14px',
-              overflow: 'hidden', // 修正
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}>
+              fontSize: "14px",
+              overflow: "hidden", // 修正
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             📍 {customer.address}
           </Typography>
         )}
@@ -282,10 +296,11 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({
             onClick={handleClick}
             sx={{
               minHeight: 36,
-              fontSize: '14px', // 16px→14pxが適切
-              fontWeight: 'bold',
-              width: '100%',
-            }}>
+              fontSize: "14px", // 16px→14pxが適切
+              fontWeight: "bold",
+              width: "100%",
+            }}
+          >
             詳細を見る
           </Button>
         </CardActions>

@@ -22,24 +22,24 @@ import {
   MenuItem,
   Select,
   Typography,
-} from '@mui/material';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import React, { useCallback, useState } from 'react';
+} from "@mui/material";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import React, { useCallback, useState } from "react";
 
 // Custom Components
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
-import { Modal } from '../ui/Modal';
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
+import { Modal } from "../ui/Modal";
 
 // Custom Hooks
-import { useApp } from '../../contexts/AppContext';
-import { useCustomer } from '../../contexts/CustomerContext';
-import { useReminder } from '../../contexts/ReminderContext';
+import { useApp } from "../../contexts/AppContext";
+import { useCustomer } from "../../contexts/CustomerContext";
+import { useReminder } from "../../contexts/ReminderContext";
 
 // Types
-import type { CreateReminderInput, ReminderWithCustomer } from '../../../types';
+import type { CreateReminderInput, ReminderWithCustomer } from "../../../types";
 
 // ================================
 // Props
@@ -61,12 +61,12 @@ interface ReminderFormProps {
 
 const MESSAGE_TEMPLATES = [
   {
-    label: '標準テンプレート',
+    label: "標準テンプレート",
     template: (companyName: string) =>
       `${companyName}様\n\nいつもお世話になっております。\n\nそろそろメンテナンスの時期ではないでしょうか？\n一度、現場を拝見させていただければと存じます。\n\nご都合の良い日時をお聞かせいただけますと幸いです。`,
   },
   {
-    label: '緊急対応テンプレート',
+    label: "緊急対応テンプレート",
     template: (companyName: string) =>
       `${companyName}様\n\nいつもお世話になっております。\n\n早急なメンテナンスをお勧めいたします。\nお早めにご連絡いただけますと幸いです。`,
   },
@@ -95,12 +95,12 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
 
   const [formData, setFormData] = useState<CreateReminderInput>({
     customerId: reminder?.customerId || defaultCustomerId || 0,
-    title: reminder?.title || defaultTitle || '',
-    message: reminder?.message || defaultMessage || '',
+    title: reminder?.title || defaultTitle || "",
+    message: reminder?.message || defaultMessage || "",
     reminderDate: reminder?.reminderDate
       ? new Date(reminder.reminderDate)
       : defaultDate || new Date(),
-    notes: reminder?.notes || '',
+    notes: reminder?.notes || "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -114,16 +114,16 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.customerId) {
-      newErrors.customerId = '顧客を選択してください';
+      newErrors.customerId = "顧客を選択してください";
     }
     if (!formData.title) {
-      newErrors.title = 'タイトルを入力してください';
+      newErrors.title = "タイトルを入力してください";
     }
     if (!formData.message) {
-      newErrors.message = 'メッセージを入力してください';
+      newErrors.message = "メッセージを入力してください";
     }
     if (!formData.reminderDate) {
-      newErrors.reminderDate = '送信予定日を選択してください';
+      newErrors.reminderDate = "送信予定日を選択してください";
     }
 
     setErrors(newErrors);
@@ -137,21 +137,21 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
   const handleChange = useCallback(
     (field: keyof CreateReminderInput, value: any) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
-      setErrors((prev) => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     },
-    []
+    [],
   );
 
   const handleTemplateApply = useCallback(
     (templateFn: (name: string) => string) => {
       const customer = customers.find(
-        (c) => c.customerId === formData.customerId
+        (c) => c.customerId === formData.customerId,
       );
       if (customer) {
-        handleChange('message', templateFn(customer.companyName));
+        handleChange("message", templateFn(customer.companyName));
       }
     },
-    [customers, formData.customerId, handleChange]
+    [customers, formData.customerId, handleChange],
   );
 
   const handleSubmit = useCallback(async () => {
@@ -166,14 +166,14 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
           reminderId: reminder.reminderId,
           ...formData,
         });
-        showSnackbar('リマインダーを更新しました', 'success');
+        showSnackbar("リマインダーを更新しました", "success");
       } else {
         await createReminder(formData);
-        showSnackbar('リマインダーを作成しました', 'success');
+        showSnackbar("リマインダーを作成しました", "success");
       }
       onClose();
     } catch (error) {
-      showSnackbar('保存に失敗しました', 'error');
+      showSnackbar("保存に失敗しました", "error");
     } finally {
       setSubmitting(false);
     }
@@ -195,18 +195,20 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
     <Modal
       open={open}
       onClose={onClose}
-      title={reminder ? 'リマインダー編集' : '新規リマインダー作成'}
-      maxWidth="md">
+      title={reminder ? "リマインダー編集" : "新規リマインダー作成"}
+      maxWidth="md"
+    >
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, p: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3, p: 2 }}>
           {/* 顧客選択 */}
           <FormControl fullWidth error={!!errors.customerId}>
             <InputLabel>顧客</InputLabel>
             <Select
               value={formData.customerId}
-              onChange={(e) => handleChange('customerId', e.target.value)}
+              onChange={(e) => handleChange("customerId", e.target.value)}
               label="顧客"
-              sx={{ minHeight: 48 }}>
+              sx={{ minHeight: 48 }}
+            >
               <MenuItem value={0}>選択してください</MenuItem>
               {customers.map((customer) => (
                 <MenuItem key={customer.customerId} value={customer.customerId}>
@@ -223,7 +225,7 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
           <Input
             label="タイトル"
             value={formData.title}
-            onChange={(e) => handleChange('title', e.target.value)}
+            onChange={(e) => handleChange("title", e.target.value)}
             error={!!errors.title}
             helperText={errors.title}
             placeholder="例: 外壁塗装メンテナンス推奨"
@@ -235,14 +237,15 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
             <Typography variant="body2" sx={{ mb: 1 }}>
               メッセージテンプレート:
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
               {MESSAGE_TEMPLATES.map((template, index) => (
                 <Button
                   key={index}
                   size="small"
                   variant="outlined"
                   onClick={() => handleTemplateApply(template.template)}
-                  disabled={!formData.customerId}>
+                  disabled={!formData.customerId}
+                >
                   {template.label}
                 </Button>
               ))}
@@ -253,7 +256,7 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
           <Input
             label="メッセージ"
             value={formData.message}
-            onChange={(e) => handleChange('message', e.target.value)}
+            onChange={(e) => handleChange("message", e.target.value)}
             error={!!errors.message}
             helperText={errors.message}
             multiline
@@ -266,7 +269,7 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
           <DatePicker
             label="送信予定日"
             value={formData.reminderDate}
-            onChange={(date) => handleChange('reminderDate', date)}
+            onChange={(date) => handleChange("reminderDate", date)}
             slotProps={{
               textField: {
                 error: !!errors.reminderDate,
@@ -279,8 +282,8 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
           {/* メモ */}
           <Input
             label="メモ（オプション）"
-            value={formData.notes || ''}
-            onChange={(e) => handleChange('notes', e.target.value)}
+            value={formData.notes || ""}
+            onChange={(e) => handleChange("notes", e.target.value)}
             multiline
             rows={3}
             placeholder="内部用のメモ"
@@ -289,7 +292,7 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
           {/* プレビュー */}
           {formData.message && (
             <Alert severity="info">
-              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+              <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
                 <strong>プレビュー:</strong>
                 <br />
                 {formData.message}
@@ -299,15 +302,17 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
 
           {/* アクションボタン */}
           <Box
-            sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
+            sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 3 }}
+          >
             <Button onClick={onClose} disabled={submitting}>
               キャンセル
             </Button>
             <Button
               variant="contained"
               onClick={handleSubmit}
-              disabled={submitting}>
-              {submitting ? '保存中...' : '保存'}
+              disabled={submitting}
+            >
+              {submitting ? "保存中..." : "保存"}
             </Button>
           </Box>
         </Box>

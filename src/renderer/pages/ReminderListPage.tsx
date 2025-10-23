@@ -30,7 +30,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   Schedule as ScheduleIcon,
   Send as SendIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -43,62 +43,67 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from '@mui/material';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+} from "@mui/material";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Custom Components
-import { PageHeader } from '../components/layout/PageHeader';
-import { ReminderForm } from '../components/reminder/ReminderForm';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { Modal } from '../components/ui/Modal';
+import { PageHeader } from "../components/layout/PageHeader";
+import { ReminderForm } from "../components/reminder/ReminderForm";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Modal } from "../components/ui/Modal";
 
 // Custom Hooks
-import { useApp } from '../contexts/AppContext';
-import { useReminder } from '../contexts/ReminderContext';
+import { useApp } from "../contexts/AppContext";
+import { useReminder } from "../contexts/ReminderContext";
 
 // Design System
-import { FONT_SIZES, SPACING, BUTTON_SIZE, ICON_SIZE } from '../constants/uiDesignSystem';
+import {
+  FONT_SIZES,
+  SPACING,
+  BUTTON_SIZE,
+  ICON_SIZE,
+} from "../constants/uiDesignSystem";
 
 // Types
-import type { ReminderStatus, ReminderWithCustomer } from '../../types';
+import type { ReminderStatus, ReminderWithCustomer } from "../../types";
 
 // ================================
 // 定数定義
 // ================================
 
-type TabValue = 'scheduled' | 'drafting' | 'sent' | 'cancelled';
+type TabValue = "scheduled" | "drafting" | "sent" | "cancelled";
 
 const STATUS_CONFIG = {
   scheduled: {
-    label: '送信予定',
-    color: 'primary' as const,
+    label: "送信予定",
+    color: "primary" as const,
     icon: <ScheduleIcon />,
   },
   drafting: {
-    label: '下書き作成中',
-    color: 'warning' as const,
+    label: "下書き作成中",
+    color: "warning" as const,
     icon: <DraftsIcon />,
   },
   sent: {
-    label: '送信済み',
-    color: 'success' as const,
+    label: "送信済み",
+    color: "success" as const,
     icon: <CheckCircleIcon />,
   },
   cancelled: {
-    label: 'キャンセル',
-    color: 'default' as const,
+    label: "キャンセル",
+    color: "default" as const,
     icon: <CancelIcon />,
   },
 };
 
 const MESSAGES = {
-  pageTitle: 'リマインダー管理',
-  pageSubtitle: 'メンテナンス推奨のリマインダーを管理します',
-  noReminders: 'リマインダーがありません',
-  deleteConfirm: 'このリマインダーを削除してもよろしいですか？',
-  sendConfirm: 'このリマインダーを今すぐ送信しますか？',
+  pageTitle: "リマインダー管理",
+  pageSubtitle: "メンテナンス推奨のリマインダーを管理します",
+  noReminders: "リマインダーがありません",
+  deleteConfirm: "このリマインダーを削除してもよろしいですか？",
+  sendConfirm: "このリマインダーを今すぐ送信しますか？",
 };
 
 // ================================
@@ -108,7 +113,7 @@ const MESSAGES = {
 export const ReminderListPage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { showSnackbar } = useApp();
 
   const {
@@ -126,14 +131,14 @@ export const ReminderListPage: React.FC = () => {
   // State
   // ================================
 
-  const [selectedTab, setSelectedTab] = useState<TabValue>('scheduled');
+  const [selectedTab, setSelectedTab] = useState<TabValue>("scheduled");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingReminder, setEditingReminder] =
     useState<ReminderWithCustomer | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [reminderToDelete, setReminderToDelete] = useState<number | null>(null);
   const [expandedMessages, setExpandedMessages] = useState<Set<number>>(
-    new Set()
+    new Set(),
   );
 
   // ================================
@@ -168,7 +173,7 @@ export const ReminderListPage: React.FC = () => {
     (event: React.SyntheticEvent, newValue: TabValue) => {
       setSelectedTab(newValue);
     },
-    []
+    [],
   );
 
   const handleCreateNew = useCallback(() => {
@@ -195,9 +200,9 @@ export const ReminderListPage: React.FC = () => {
     if (reminderToDelete) {
       try {
         await deleteReminder(reminderToDelete);
-        showSnackbar('リマインダーを削除しました', 'success');
+        showSnackbar("リマインダーを削除しました", "success");
       } catch (error) {
-        showSnackbar('削除に失敗しました', 'error');
+        showSnackbar("削除に失敗しました", "error");
       }
     }
     setDeleteConfirmOpen(false);
@@ -207,7 +212,7 @@ export const ReminderListPage: React.FC = () => {
   // 下書き作成: メールアプリを開いてステータスを「下書き作成中」に変更
   const handleCreateDraft = useCallback(
     async (reminderId: number) => {
-      const confirmed = window.confirm('メールアプリで下書きを作成しますか？');
+      const confirmed = window.confirm("メールアプリで下書きを作成しますか？");
       if (!confirmed) {
         return;
       }
@@ -216,17 +221,17 @@ export const ReminderListPage: React.FC = () => {
         await sendReminderEmail(reminderId);
         // sendReminderEmail内でステータスが'drafting'に変更される
       } catch (error) {
-        showSnackbar('下書き作成に失敗しました', 'error');
+        showSnackbar("下書き作成に失敗しました", "error");
       }
     },
-    [sendReminderEmail, showSnackbar]
+    [sendReminderEmail, showSnackbar],
   );
 
   // 今すぐ送信: draftingステータスから送信済みに変更
   const handleSendNow = useCallback(
     async (reminderId: number) => {
       const confirmed = window.confirm(
-        'メールを送信しましたか？\n「送信済み」ステータスに変更します。'
+        "メールを送信しましたか？\n「送信済み」ステータスに変更します。",
       );
       if (!confirmed) {
         return;
@@ -234,25 +239,25 @@ export const ReminderListPage: React.FC = () => {
 
       try {
         await markAsSent(reminderId);
-        showSnackbar('リマインダーを送信済みにしました', 'success');
+        showSnackbar("リマインダーを送信済みにしました", "success");
       } catch (error) {
-        showSnackbar('ステータス更新に失敗しました', 'error');
+        showSnackbar("ステータス更新に失敗しました", "error");
       }
     },
-    [markAsSent, showSnackbar]
+    [markAsSent, showSnackbar],
   );
 
   const handleCustomerClick = useCallback(
     (customerId: number) => {
       navigate(`/customers/${customerId}`);
     },
-    [navigate]
+    [navigate],
   );
 
   const handleCancelReminder = useCallback(
     async (reminderId: number) => {
       const confirmed = window.confirm(
-        'このリマインダーをキャンセルしてもよろしいですか？'
+        "このリマインダーをキャンセルしてもよろしいですか？",
       );
       if (!confirmed) {
         return;
@@ -260,12 +265,12 @@ export const ReminderListPage: React.FC = () => {
 
       try {
         await cancelReminder(reminderId);
-        showSnackbar('リマインダーをキャンセルしました', 'success');
+        showSnackbar("リマインダーをキャンセルしました", "success");
       } catch (error) {
-        showSnackbar('キャンセルに失敗しました', 'error');
+        showSnackbar("キャンセルに失敗しました", "error");
       }
     },
-    [cancelReminder, showSnackbar]
+    [cancelReminder, showSnackbar],
   );
 
   const handleReschedule = useCallback(
@@ -276,7 +281,7 @@ export const ReminderListPage: React.FC = () => {
         // エラーハンドリングはrescheduleReminder内で実施済み
       }
     },
-    [rescheduleReminder]
+    [rescheduleReminder],
   );
 
   const handleToggleMessage = useCallback((reminderId: number) => {
@@ -297,15 +302,15 @@ export const ReminderListPage: React.FC = () => {
 
   const renderReminderCard = (reminder: ReminderWithCustomer) => {
     const statusConfig = STATUS_CONFIG[reminder.status as ReminderStatus];
-    const isScheduled = reminder.status === 'scheduled';
-    const isDrafting = reminder.status === 'drafting';
-    const isCancelled = reminder.status === 'cancelled';
+    const isScheduled = reminder.status === "scheduled";
+    const isDrafting = reminder.status === "drafting";
+    const isCancelled = reminder.status === "cancelled";
     const daysUntil = Math.ceil(
       (new Date(reminder.reminderDate).getTime() - Date.now()) /
-        (1000 * 60 * 60 * 24)
+        (1000 * 60 * 60 * 24),
     );
     const isExpanded = expandedMessages.has(reminder.reminderId);
-    const messageLines = reminder.message.split('\n').length;
+    const messageLines = reminder.message.split("\n").length;
     const isLongMessage = messageLines > 3 || reminder.message.length > 100;
 
     return (
@@ -314,29 +319,39 @@ export const ReminderListPage: React.FC = () => {
           {/* ヘッダー部分 */}
           <Box
             sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
               mb: SPACING.gap.medium,
-            }}>
+            }}
+          >
             <Box sx={{ flex: 1 }}>
               <Typography
                 variant="h6"
-                sx={{ mb: 1, fontSize: { xs: FONT_SIZES.cardTitle.mobile, md: FONT_SIZES.cardTitle.desktop } }}>
+                sx={{
+                  mb: 1,
+                  fontSize: {
+                    xs: FONT_SIZES.cardTitle.mobile,
+                    md: FONT_SIZES.cardTitle.desktop,
+                  },
+                }}
+              >
                 {reminder.title}
               </Typography>
               <Box
                 sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  '&:hover': { textDecoration: 'underline' },
+                  display: "inline-flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  "&:hover": { textDecoration: "underline" },
                 }}
-                onClick={() => handleCustomerClick(reminder.customerId)}>
+                onClick={() => handleCustomerClick(reminder.customerId)}
+              >
                 <Typography
                   variant="body1"
                   color="primary"
-                  sx={{ fontWeight: 'bold' }}>
+                  sx={{ fontWeight: "bold" }}
+                >
                   {reminder.customer.companyName}
                 </Typography>
               </Box>
@@ -346,7 +361,7 @@ export const ReminderListPage: React.FC = () => {
               icon={statusConfig.icon}
               label={statusConfig.label}
               color={statusConfig.color}
-              sx={{ fontSize: FONT_SIZES.label.desktop, fontWeight: 'bold' }}
+              sx={{ fontSize: FONT_SIZES.label.desktop, fontWeight: "bold" }}
             />
           </Box>
 
@@ -356,63 +371,74 @@ export const ReminderListPage: React.FC = () => {
               variant="body2"
               color="text.secondary"
               sx={{
-                whiteSpace: 'pre-wrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                display: '-webkit-box',
-                WebkitLineClamp: isExpanded ? 'unset' : 3,
-                WebkitBoxOrient: 'vertical',
-              }}>
+                whiteSpace: "pre-wrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitLineClamp: isExpanded ? "unset" : 3,
+                WebkitBoxOrient: "vertical",
+              }}
+            >
               {reminder.message}
             </Typography>
             {isLongMessage && (
               <Box
                 sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   mt: SPACING.gap.small,
-                }}>
+                }}
+              >
                 <IconButton
                   size="small"
                   onClick={() => handleToggleMessage(reminder.reminderId)}
                   sx={{
-                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.3s',
-                  }}>
+                    transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.3s",
+                  }}
+                >
                   <ExpandMoreIcon />
                 </IconButton>
                 <Typography
                   variant="caption"
                   color="primary"
                   sx={{
-                    cursor: 'pointer',
-                    '&:hover': { textDecoration: 'underline' },
+                    cursor: "pointer",
+                    "&:hover": { textDecoration: "underline" },
                   }}
-                  onClick={() => handleToggleMessage(reminder.reminderId)}>
-                  {isExpanded ? '折りたたむ' : 'もっと見る'}
+                  onClick={() => handleToggleMessage(reminder.reminderId)}
+                >
+                  {isExpanded ? "折りたたむ" : "もっと見る"}
                 </Typography>
               </Box>
             )}
           </Box>
 
           {/* 送信予定日 */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.medium }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACING.gap.small,
+              mb: SPACING.gap.medium,
+            }}
+          >
             <ScheduleIcon fontSize="small" color="action" />
-            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-              送信予定日:{' '}
-              {new Date(reminder.reminderDate).toLocaleDateString('ja-JP', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                weekday: 'short',
+            <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+              送信予定日:{" "}
+              {new Date(reminder.reminderDate).toLocaleDateString("ja-JP", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                weekday: "short",
               })}
             </Typography>
             {isScheduled && daysUntil >= 0 && (
               <Chip
-                label={daysUntil === 0 ? '今日' : `${daysUntil}日後`}
+                label={daysUntil === 0 ? "今日" : `${daysUntil}日後`}
                 size="small"
-                color={daysUntil <= 3 ? 'warning' : 'default'}
+                color={daysUntil <= 3 ? "warning" : "default"}
               />
             )}
           </Box>
@@ -421,12 +447,15 @@ export const ReminderListPage: React.FC = () => {
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ mb: SPACING.gap.medium, display: 'block' }}>
-            {reminder.createdBy === 'system' ? '🤖 自動生成' : '✍️ 手動作成'}
+            sx={{ mb: SPACING.gap.medium, display: "block" }}
+          >
+            {reminder.createdBy === "system" ? "🤖 自動生成" : "✍️ 手動作成"}
           </Typography>
 
           {/* アクションボタン */}
-          <Box sx={{ display: 'flex', gap: SPACING.gap.small, flexWrap: 'wrap' }}>
+          <Box
+            sx={{ display: "flex", gap: SPACING.gap.small, flexWrap: "wrap" }}
+          >
             {/* 送信予定: 下書き作成ボタン */}
             {isScheduled && (
               <Button
@@ -435,7 +464,8 @@ export const ReminderListPage: React.FC = () => {
                 color="warning"
                 startIcon={<DraftsIcon />}
                 onClick={() => handleCreateDraft(reminder.reminderId)}
-                sx={{ minWidth: BUTTON_SIZE.minWidth.desktop }}>
+                sx={{ minWidth: BUTTON_SIZE.minWidth.desktop }}
+              >
                 下書き作成
               </Button>
             )}
@@ -446,7 +476,8 @@ export const ReminderListPage: React.FC = () => {
                 size="small"
                 startIcon={<EditIcon />}
                 onClick={() => handleEdit(reminder)}
-                sx={{ minWidth: BUTTON_SIZE.minWidth.mobile }}>
+                sx={{ minWidth: BUTTON_SIZE.minWidth.mobile }}
+              >
                 編集
               </Button>
             )}
@@ -458,7 +489,8 @@ export const ReminderListPage: React.FC = () => {
                 color="warning"
                 startIcon={<CancelIcon />}
                 onClick={() => handleCancelReminder(reminder.reminderId)}
-                sx={{ minWidth: BUTTON_SIZE.minWidth.mobile }}>
+                sx={{ minWidth: BUTTON_SIZE.minWidth.mobile }}
+              >
                 キャンセル
               </Button>
             )}
@@ -471,7 +503,8 @@ export const ReminderListPage: React.FC = () => {
                 color="success"
                 startIcon={<SendIcon />}
                 onClick={() => handleSendNow(reminder.reminderId)}
-                sx={{ minWidth: BUTTON_SIZE.minWidth.desktop }}>
+                sx={{ minWidth: BUTTON_SIZE.minWidth.desktop }}
+              >
                 今すぐ送信
               </Button>
             )}
@@ -483,7 +516,8 @@ export const ReminderListPage: React.FC = () => {
                 color="primary"
                 startIcon={<ScheduleIcon />}
                 onClick={() => handleReschedule(reminder.reminderId)}
-                sx={{ minWidth: BUTTON_SIZE.minWidth.desktop }}>
+                sx={{ minWidth: BUTTON_SIZE.minWidth.desktop }}
+              >
                 再スケジュール
               </Button>
             )}
@@ -494,7 +528,8 @@ export const ReminderListPage: React.FC = () => {
               color="error"
               startIcon={<DeleteIcon />}
               onClick={() => handleDeleteClick(reminder.reminderId)}
-              sx={{ minWidth: BUTTON_SIZE.minWidth.mobile }}>
+              sx={{ minWidth: BUTTON_SIZE.minWidth.mobile }}
+            >
               削除
             </Button>
           </Box>
@@ -513,7 +548,13 @@ export const ReminderListPage: React.FC = () => {
       <PageHeader title={MESSAGES.pageTitle} subtitle={MESSAGES.pageSubtitle} />
 
       {/* ステータスタブ（スクロール対応） */}
-      <Box sx={{ mb: SPACING.section.desktop, borderBottom: 1, borderColor: 'divider' }}>
+      <Box
+        sx={{
+          mb: SPACING.section.desktop,
+          borderBottom: 1,
+          borderColor: "divider",
+        }}
+      >
         <Tabs
           value={selectedTab}
           onChange={handleTabChange}
@@ -521,10 +562,11 @@ export const ReminderListPage: React.FC = () => {
           scrollButtons="auto"
           allowScrollButtonsMobile
           sx={{
-            '& .MuiTabs-scrollButtons': {
-              '&.Mui-disabled': { opacity: 0.3 },
+            "& .MuiTabs-scrollButtons": {
+              "&.Mui-disabled": { opacity: 0.3 },
             },
-          }}>
+          }}
+        >
           {Object.entries(STATUS_CONFIG).map(([value, config]) => (
             <Tab
               key={value}
@@ -534,9 +576,12 @@ export const ReminderListPage: React.FC = () => {
               iconPosition="start"
               sx={{
                 minHeight: BUTTON_SIZE.minHeight.desktop,
-                fontSize: { xs: FONT_SIZES.label.mobile, md: FONT_SIZES.body.desktop },
-                fontWeight: 'bold',
-                minWidth: { xs: BUTTON_SIZE.minWidth.desktop, md: 'auto' },
+                fontSize: {
+                  xs: FONT_SIZES.label.mobile,
+                  md: FONT_SIZES.body.desktop,
+                },
+                fontWeight: "bold",
+                minWidth: { xs: BUTTON_SIZE.minWidth.desktop, md: "auto" },
               }}
             />
           ))}
@@ -547,7 +592,13 @@ export const ReminderListPage: React.FC = () => {
       {loading ? (
         <Alert severity="info">読み込み中...</Alert>
       ) : filteredReminders.length > 0 ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: SPACING.gap.medium }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: SPACING.gap.medium,
+          }}
+        >
           {filteredReminders.map(renderReminderCard)}
         </Box>
       ) : (
@@ -560,12 +611,13 @@ export const ReminderListPage: React.FC = () => {
         aria-label="新規リマインダー作成"
         onClick={handleCreateNew}
         sx={{
-          position: 'fixed',
+          position: "fixed",
           bottom: SPACING.gap.large * 8,
           right: SPACING.gap.large * 8,
           width: 64,
           height: 64,
-        }}>
+        }}
+      >
         <AddIcon sx={{ fontSize: ICON_SIZE.large }} />
       </Fab>
 
@@ -582,11 +634,18 @@ export const ReminderListPage: React.FC = () => {
       <Modal
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
-        title="削除確認">
+        title="削除確認"
+      >
         <Box>
           <Typography>{MESSAGES.deleteConfirm}</Typography>
           <Box
-            sx={{ display: 'flex', justifyContent: 'flex-end', gap: SPACING.gap.small, mt: SPACING.section.desktop }}>
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: SPACING.gap.small,
+              mt: SPACING.section.desktop,
+            }}
+          >
             <Button onClick={() => setDeleteConfirmOpen(false)}>
               キャンセル
             </Button>

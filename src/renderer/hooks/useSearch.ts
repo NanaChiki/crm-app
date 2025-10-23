@@ -43,11 +43,11 @@
  * });
  * ```
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Customer, ServiceRecordWithCustomer } from '../../types';
-import { useApp } from '../contexts/AppContext';
-import { useCustomer } from '../contexts/CustomerContext';
-import { useServiceRecords } from './useServiceRecords';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Customer, ServiceRecordWithCustomer } from "../../types";
+import { useApp } from "../contexts/AppContext";
+import { useCustomer } from "../contexts/CustomerContext";
+import { useServiceRecords } from "./useServiceRecords";
 
 // ================================
 // 型定義
@@ -57,13 +57,13 @@ import { useServiceRecords } from './useServiceRecords';
  * 検索モード
  * 50代ユーザー向けに段階的な検索方式を提供
  */
-type SearchMode = 'basic' | 'detailed' | 'period';
+type SearchMode = "basic" | "detailed" | "period";
 
 /**
  * 検索対象
  * 顧客・サービス履歴・統合検索の選択
  */
-type SearchTarget = 'customers' | 'services' | 'all';
+type SearchTarget = "customers" | "services" | "all";
 
 /**
  * 検索条件
@@ -159,18 +159,18 @@ interface UseSearchReturn {
  * 50代ユーザーが理解しやすい表現
  */
 const MODE_LABELS = {
-  basic: '基本検索',
-  detailed: '詳細検索',
-  period: '期間検索',
+  basic: "基本検索",
+  detailed: "詳細検索",
+  period: "期間検索",
 } as const;
 
 /**
  * 検索対象の日本語ラベル
  */
 const TARGET_LABELS = {
-  customers: '顧客',
-  services: 'サービス履歴',
-  all: 'すべて',
+  customers: "顧客",
+  services: "サービス履歴",
+  all: "すべて",
 } as const;
 
 /**
@@ -178,24 +178,24 @@ const TARGET_LABELS = {
  */
 const SEARCH_MESSAGES = {
   error: {
-    noKeyword: '検索キーワードを入力してください',
-    invalidDate: '正しい日付を選択してください',
-    invalidAmount: '金額は正しい数値で入力してください（例：50000）',
-    searchFailed: '検索に失敗しました。もう一度お試しください',
-    noResults: '検索条件に一致する結果が見つかりませんでした',
+    noKeyword: "検索キーワードを入力してください",
+    invalidDate: "正しい日付を選択してください",
+    invalidAmount: "金額は正しい数値で入力してください（例：50000）",
+    searchFailed: "検索に失敗しました。もう一度お試しください",
+    noResults: "検索条件に一致する結果が見つかりませんでした",
     tooManyResults:
-      '検索結果が多すぎます。条件を絞り込んでください（100件以上）',
-    invalidCriteria: '検索条件を確認してください',
+      "検索結果が多すぎます。条件を絞り込んでください（100件以上）",
+    invalidCriteria: "検索条件を確認してください",
   },
   success: {
-    searchComplete: '検索が完了しました',
-    historyCleared: '検索履歴をクリアしました',
-    historyRemoved: '検索項目を削除しました',
+    searchComplete: "検索が完了しました",
+    historyCleared: "検索履歴をクリアしました",
+    historyRemoved: "検索項目を削除しました",
   },
   info: {
-    searching: '検索しています...',
-    emptyHistory: '検索履歴がありません',
-    suggestions: '以下のキーワードをお試しください',
+    searching: "検索しています...",
+    emptyHistory: "検索履歴がありません",
+    suggestions: "以下のキーワードをお試しください",
     modeChanged: (mode: string) => `検索モードを「${mode}」に変更しました`,
     targetChanged: (target: string) => `検索対象を「${target}」に変更しました`,
   },
@@ -206,9 +206,9 @@ const SEARCH_MESSAGES = {
  * 初期状態の設定
  */
 const DEFAULT_CRITERIA: SearchCriteria = {
-  keyword: '',
-  target: 'all',
-  mode: 'basic',
+  keyword: "",
+  target: "all",
+  mode: "basic",
 };
 
 /**
@@ -219,7 +219,7 @@ const EMPTY_RESULTS: SearchResults = {
   services: [],
   totalCount: 0,
   hasResults: false,
-  searchSummary: '検索を実行してください',
+  searchSummary: "検索を実行してください",
 };
 
 // ================================
@@ -276,7 +276,7 @@ export const useSearch = (): UseSearchReturn => {
       targetData: {
         customers: Customer[];
         services: ServiceRecordWithCustomer[];
-      }
+      },
     ) => {
       const normalizedKeyword = keyword.toLowerCase().trim();
 
@@ -321,13 +321,9 @@ export const useSearch = (): UseSearchReturn => {
         );
       });
 
-      console.log(
-        `基本検索実行: キーワード="${keyword}", 顧客${matchedCustomers.length}件,  サービス${matchedServices.length}件`
-      );
-
       return { customers: matchedCustomers, services: matchedServices };
     },
-    []
+    [],
   );
 
   /**
@@ -340,7 +336,7 @@ export const useSearch = (): UseSearchReturn => {
       targetData: {
         customers: Customer[];
         services: ServiceRecordWithCustomer[];
-      }
+      },
     ) => {
       let matchedCustomers = [...targetData.customers];
       let matchedServices = [...targetData.services];
@@ -348,22 +344,22 @@ export const useSearch = (): UseSearchReturn => {
       // 顧客の詳細検索
       if (criteria.companyName) {
         const term = criteria.companyName.toLowerCase().trim();
-        matchedCustomers = matchedCustomers.filter(
-          (customer) => customer.companyName?.toLowerCase().includes(term)
+        matchedCustomers = matchedCustomers.filter((customer) =>
+          customer.companyName?.toLowerCase().includes(term),
         );
       }
 
       if (criteria.contactPerson) {
         const term = criteria.contactPerson.toLowerCase().trim();
-        matchedCustomers = matchedCustomers.filter(
-          (customer) => customer.contactPerson?.toLowerCase().includes(term)
+        matchedCustomers = matchedCustomers.filter((customer) =>
+          customer.contactPerson?.toLowerCase().includes(term),
         );
       }
 
       if (criteria.phone) {
         const term = criteria.phone.trim();
         matchedCustomers = matchedCustomers.filter(
-          (customer) => customer.phone && customer.phone.includes(term)
+          (customer) => customer.phone && customer.phone.includes(term),
         );
       }
 
@@ -371,25 +367,21 @@ export const useSearch = (): UseSearchReturn => {
         const term = criteria.email.toLowerCase().trim();
         matchedCustomers = matchedCustomers.filter(
           (customer) =>
-            customer.email && customer.email.toLowerCase().includes(term)
+            customer.email && customer.email.toLowerCase().includes(term),
         );
       }
 
       // サービス履歴の詳細検索
       if (criteria.serviceType) {
         const term = criteria.serviceType.toLowerCase().trim();
-        matchedServices = matchedServices.filter(
-          (service) => service.serviceType?.toLowerCase().includes(term)
+        matchedServices = matchedServices.filter((service) =>
+          service.serviceType?.toLowerCase().includes(term),
         );
       }
 
-      console.log(
-        `詳細検索実行: 顧客${matchedCustomers.length}件, サービス${matchedServices.length}件`
-      );
-
       return { customers: matchedCustomers, services: matchedServices };
     },
-    []
+    [],
   );
 
   /**
@@ -402,7 +394,7 @@ export const useSearch = (): UseSearchReturn => {
       targetData: {
         customers: Customer[];
         services: ServiceRecordWithCustomer[];
-      }
+      },
     ) => {
       let matchedCustomers = [...targetData.customers];
       let matchedServices = [...targetData.services];
@@ -430,10 +422,10 @@ export const useSearch = (): UseSearchReturn => {
 
         // 期間に該当するサービスがある顧客のみを抽出
         const serviceCustomerIds = new Set(
-          matchedServices.map((s) => s.customerId)
+          matchedServices.map((s) => s.customerId),
         );
         matchedCustomers = matchedCustomers.filter((customer) =>
-          serviceCustomerIds.has(customer.customerId)
+          serviceCustomerIds.has(customer.customerId),
         );
       }
 
@@ -462,20 +454,16 @@ export const useSearch = (): UseSearchReturn => {
 
         // 金額に該当するサービスがある顧客のみを抽出
         const serviceCustomerIds = new Set(
-          matchedServices.map((s) => s.customerId)
+          matchedServices.map((s) => s.customerId),
         );
         matchedCustomers = matchedCustomers.filter((customer) =>
-          serviceCustomerIds.has(customer.customerId)
+          serviceCustomerIds.has(customer.customerId),
         );
       }
 
-      console.log(
-        `期間検索実行: 顧客${matchedCustomers.length}件, サービス${matchedServices.length}件`
-      );
-
       return { customers: matchedCustomers, services: matchedServices };
     },
-    [performBasicSearch]
+    [performBasicSearch],
   );
 
   /**
@@ -491,25 +479,25 @@ export const useSearch = (): UseSearchReturn => {
 
       // 検索対象フィルタ
       const filteredData = { ...targetData };
-      if (criteria.target === 'customers') {
+      if (criteria.target === "customers") {
         filteredData.services = [];
-      } else if (criteria.target === 'services') {
+      } else if (criteria.target === "services") {
         filteredData.customers = [];
       }
 
       // 検索モード別処理
       switch (criteria.mode) {
-        case 'basic':
+        case "basic":
           result = performBasicSearch(criteria.keyword, filteredData);
           break;
-        case 'detailed':
+        case "detailed":
           result = performDetailedSearch(criteria, filteredData);
           break;
-        case 'period':
+        case "period":
           result = performPeriodSearch(criteria, filteredData);
           break;
         default:
-          console.warn('未対応の検索モード:', criteria.mode);
+          console.warn("未対応の検索モード:", criteria.mode);
           result = { customers: [], services: [] };
       }
 
@@ -523,7 +511,7 @@ export const useSearch = (): UseSearchReturn => {
         searchSummary: generateSearchSummary(
           result.customers.length,
           result.services.length,
-          totalCount
+          totalCount,
         ),
       };
     },
@@ -533,7 +521,7 @@ export const useSearch = (): UseSearchReturn => {
       performBasicSearch,
       performDetailedSearch,
       performPeriodSearch,
-    ]
+    ],
   );
 
   /**
@@ -544,10 +532,10 @@ export const useSearch = (): UseSearchReturn => {
     (
       customerCount: number,
       serviceCount: number,
-      totalCount: number
+      totalCount: number,
     ): string => {
       if (totalCount === 0) {
-        return '該当する結果がありません';
+        return "該当する結果がありません";
       }
 
       const parts: string[] = [];
@@ -560,10 +548,10 @@ export const useSearch = (): UseSearchReturn => {
         parts.push(`サービス履歴${serviceCount}件`);
       }
 
-      const summary = parts.length > 0 ? parts.join('、') : '';
+      const summary = parts.length > 0 ? parts.join("、") : "";
       return `${summary}の合計${totalCount}件が見つかりました`;
     },
-    []
+    [],
   );
 
   // ================================
@@ -597,8 +585,8 @@ export const useSearch = (): UseSearchReturn => {
       if (criteria.dateFrom || criteria.dateTo) {
         const from = criteria.dateFrom
           ? formatDateForDisplay(criteria.dateFrom)
-          : '';
-        const to = criteria.dateTo ? formatDateForDisplay(criteria.dateTo) : '';
+          : "";
+        const to = criteria.dateTo ? formatDateForDisplay(criteria.dateTo) : "";
 
         if (from && to) {
           parts.push(`期間：${from}〜${to}`);
@@ -615,10 +603,10 @@ export const useSearch = (): UseSearchReturn => {
       ) {
         const from = criteria.amountFrom
           ? formatAmountForDisplay(criteria.amountFrom)
-          : '';
+          : "";
         const to = criteria.amountTo
           ? formatAmountForDisplay(criteria.amountTo)
-          : '';
+          : "";
 
         if (from && to) {
           parts.push(`金額：${from}〜${to}`);
@@ -633,21 +621,21 @@ export const useSearch = (): UseSearchReturn => {
         return `全件検索 (${MODE_LABELS[criteria.mode]})`;
       }
 
-      return parts.join(' ');
+      return parts.join(" ");
     },
-    []
+    [],
   );
 
   /**
    * 日付の表示用フォーマット
    */
   const formatDateForDisplay = useCallback((date: Date): string => {
-    return new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
-      era: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'short',
+    return new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
+      era: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "short",
     }).format(date);
   }, []);
 
@@ -655,9 +643,9 @@ export const useSearch = (): UseSearchReturn => {
    * 金額の表示用フォーマット
    */
   const formatAmountForDisplay = useCallback((amount: number): string => {
-    return new Intl.NumberFormat('ja-JP', {
-      style: 'currency',
-      currency: 'JPY',
+    return new Intl.NumberFormat("ja-JP", {
+      style: "currency",
+      currency: "JPY",
       minimumFractionDigits: 0,
     }).format(amount);
   }, []);
@@ -699,11 +687,10 @@ export const useSearch = (): UseSearchReturn => {
         // 最新を先頭に追加、10件制限
         const updated = [newHistory, ...filtered].slice(0, 10);
 
-        console.log(`検索履歴保存: ${label} (${resultCount}件)`);
         return updated;
       });
     },
-    [generateSearchLabel]
+    [generateSearchLabel],
   );
 
   // ================================
@@ -717,10 +704,10 @@ export const useSearch = (): UseSearchReturn => {
   const isValidCriteria = useCallback(
     (criteria: SearchCriteria): boolean => {
       // 基本検索：キーワード必須
-      if (criteria.mode === 'basic') {
+      if (criteria.mode === "basic") {
         if (!criteria.keyword?.trim()) {
           handleError({
-            type: 'VALIDATION_ERROR',
+            type: "VALIDATION_ERROR",
             message: SEARCH_MESSAGES.error.noKeyword,
           });
           return false;
@@ -728,12 +715,12 @@ export const useSearch = (): UseSearchReturn => {
       }
 
       // 期間検索：日付の妥当性チェック
-      if (criteria.mode === 'period') {
+      if (criteria.mode === "period") {
         if (criteria.dateFrom && criteria.dateTo) {
           if (criteria.dateFrom > criteria.dateTo) {
             handleError({
-              type: 'VALIDATION_ERROR',
-              message: '開始日は終了日より前の日付を選択してください',
+              type: "VALIDATION_ERROR",
+              message: "開始日は終了日より前の日付を選択してください",
             });
             return false;
           }
@@ -747,8 +734,8 @@ export const useSearch = (): UseSearchReturn => {
       ) {
         if (criteria.amountFrom > criteria.amountTo) {
           handleError({
-            type: 'VALIDATION_ERROR',
-            message: '最小金額は最大金額より小さい値を入力してください',
+            type: "VALIDATION_ERROR",
+            message: "最小金額は最大金額より小さい値を入力してください",
           });
           return false;
         }
@@ -756,7 +743,7 @@ export const useSearch = (): UseSearchReturn => {
 
       if (criteria.amountFrom !== undefined && criteria.amountFrom < 0) {
         handleError({
-          type: 'VALIDATION_ERROR',
+          type: "VALIDATION_ERROR",
           message: SEARCH_MESSAGES.error.invalidAmount,
         });
         return false;
@@ -764,7 +751,7 @@ export const useSearch = (): UseSearchReturn => {
 
       if (criteria.amountTo !== undefined && criteria.amountTo < 0) {
         handleError({
-          type: 'VALIDATION_ERROR',
+          type: "VALIDATION_ERROR",
           message: SEARCH_MESSAGES.error.invalidAmount,
         });
         return false;
@@ -772,7 +759,7 @@ export const useSearch = (): UseSearchReturn => {
 
       return true;
     },
-    [handleError]
+    [handleError],
   );
 
   // ================================
@@ -796,19 +783,17 @@ export const useSearch = (): UseSearchReturn => {
 
       try {
         // 検索実行前の通知（50代向け安心メッセージ）
-        showSnackbar(SEARCH_MESSAGES.info.searching, 'info');
+        showSnackbar(SEARCH_MESSAGES.info.searching, "info");
 
         // 検索実行をわずかに遅延（UIフィードバックのため）
         await new Promise((resolve) => setTimeout(resolve, 100));
-
-        console.log('検索実行開始:', newCriteria);
 
         // 検索結果の取得
         const searchResults = performSearch(newCriteria);
 
         // 結果が多すぎる場合の警告（50代配慮）
         if (searchResults.totalCount > 100) {
-          showSnackbar(SEARCH_MESSAGES.error.tooManyResults, 'warning');
+          showSnackbar(SEARCH_MESSAGES.error.tooManyResults, "warning");
         }
 
         // 結果の設定
@@ -822,17 +807,15 @@ export const useSearch = (): UseSearchReturn => {
         if (searchResults.hasResults) {
           showSnackbar(
             `${SEARCH_MESSAGES.success.searchComplete} - ${searchResults.searchSummary}`,
-            'success'
+            "success",
           );
         } else {
-          showSnackbar(SEARCH_MESSAGES.error.noResults, 'info');
+          showSnackbar(SEARCH_MESSAGES.error.noResults, "info");
         }
-
-        console.log('検索完了:', searchResults);
       } catch (error) {
-        console.error('検索エラー:', error);
+        console.error("検索エラー:", error);
         handleError({
-          type: 'NETWORK_ERROR',
+          type: "NETWORK_ERROR",
           message: SEARCH_MESSAGES.error.searchFailed,
         });
 
@@ -849,7 +832,7 @@ export const useSearch = (): UseSearchReturn => {
       showSnackbar,
       handleError,
       saveSearchHistory,
-    ]
+    ],
   );
 
   /**
@@ -858,7 +841,6 @@ export const useSearch = (): UseSearchReturn => {
   const updateCriteria = useCallback((updates: Partial<SearchCriteria>) => {
     setSearchCriteria((prev) => {
       const newCriteria = { ...prev, ...updates };
-      console.log('検索条件更新:', updates);
       return newCriteria;
     });
   }, []);
@@ -874,28 +856,27 @@ export const useSearch = (): UseSearchReturn => {
           ...prev,
           mode,
           // モード変更時は関連しない条件をクリア（混乱防止）
-          keyword: mode === 'basic' ? prev.keyword : '',
-          companyName: mode === 'detailed' ? prev.companyName : undefined,
-          contactPerson: mode === 'detailed' ? prev.contactPerson : undefined,
-          phone: mode === 'detailed' ? prev.phone : undefined,
-          email: mode === 'detailed' ? prev.email : undefined,
-          serviceType: mode === 'detailed' ? prev.serviceType : undefined,
-          dateFrom: mode === 'period' ? prev.dateFrom : undefined,
-          dateTo: mode === 'period' ? prev.dateTo : undefined,
-          amountFrom: mode === 'period' ? prev.amountFrom : undefined,
-          amountTo: mode === 'period' ? prev.amountTo : undefined,
+          keyword: mode === "basic" ? prev.keyword : "",
+          companyName: mode === "detailed" ? prev.companyName : undefined,
+          contactPerson: mode === "detailed" ? prev.contactPerson : undefined,
+          phone: mode === "detailed" ? prev.phone : undefined,
+          email: mode === "detailed" ? prev.email : undefined,
+          serviceType: mode === "detailed" ? prev.serviceType : undefined,
+          dateFrom: mode === "period" ? prev.dateFrom : undefined,
+          dateTo: mode === "period" ? prev.dateTo : undefined,
+          amountFrom: mode === "period" ? prev.amountFrom : undefined,
+          amountTo: mode === "period" ? prev.amountTo : undefined,
         };
 
-        console.log(`検索モード変更: ${MODE_LABELS[mode]}`);
         showSnackbar(
           SEARCH_MESSAGES.info.modeChanged(MODE_LABELS[mode]),
-          'info'
+          "info",
         );
 
         return newCriteria;
       });
     },
-    [showSnackbar]
+    [showSnackbar],
   );
 
   /**
@@ -908,13 +889,12 @@ export const useSearch = (): UseSearchReturn => {
         target,
       }));
 
-      console.log(`検索対象変更: ${TARGET_LABELS[target]}`);
       showSnackbar(
         SEARCH_MESSAGES.info.targetChanged(TARGET_LABELS[target]),
-        'info'
+        "info",
       );
     },
-    [showSnackbar]
+    [showSnackbar],
   );
 
   /**
@@ -923,7 +903,6 @@ export const useSearch = (): UseSearchReturn => {
    */
   const clearSearch = useCallback(() => {
     setSearchResults(EMPTY_RESULTS);
-    console.log('検索結果クリア');
   }, []);
 
   /**
@@ -933,7 +912,6 @@ export const useSearch = (): UseSearchReturn => {
   const resetSearch = useCallback(() => {
     setSearchCriteria(DEFAULT_CRITERIA);
     setSearchResults(EMPTY_RESULTS);
-    console.log('検索条件・結果リセット');
   }, []);
 
   /**
@@ -942,10 +920,9 @@ export const useSearch = (): UseSearchReturn => {
    */
   const searchFromHistory = useCallback(
     async (historyItem: SearchHistory) => {
-      console.log('履歴から検索実行:', historyItem.label);
       await executeSearch(historyItem.criteria);
     },
-    [executeSearch]
+    [executeSearch],
   );
 
   /**
@@ -953,8 +930,7 @@ export const useSearch = (): UseSearchReturn => {
    */
   const clearHistory = useCallback(() => {
     setSearchHistory([]);
-    showSnackbar(SEARCH_MESSAGES.success.historyCleared, 'success');
-    console.log('検索履歴クリア');
+    showSnackbar(SEARCH_MESSAGES.success.historyCleared, "success");
   }, [showSnackbar]);
 
   /**
@@ -963,10 +939,9 @@ export const useSearch = (): UseSearchReturn => {
   const removeFromHistory = useCallback(
     (id: string) => {
       setSearchHistory((prev) => prev.filter((item) => item.id !== id));
-      showSnackbar(SEARCH_MESSAGES.success.historyRemoved, 'success');
-      console.log(`履歴項目削除: ${id}`);
+      showSnackbar(SEARCH_MESSAGES.success.historyRemoved, "success");
     },
-    [showSnackbar]
+    [showSnackbar],
   );
 
   // ================================
@@ -980,7 +955,7 @@ export const useSearch = (): UseSearchReturn => {
     (count: number = 5): SearchHistory[] => {
       return searchHistory.slice(0, count);
     },
-    [searchHistory]
+    [searchHistory],
   );
 
   /**
@@ -1011,13 +986,13 @@ export const useSearch = (): UseSearchReturn => {
 
       // よく使われるサービス種別を追加
       const commonServiceTypes = [
-        '外壁塗装',
-        '屋根修理',
-        '配管工事',
-        '電気工事',
-        '内装リフォーム',
-        '定期点検',
-        '緊急修理',
+        "外壁塗装",
+        "屋根修理",
+        "配管工事",
+        "電気工事",
+        "内装リフォーム",
+        "定期点検",
+        "緊急修理",
       ];
       commonServiceTypes.forEach((type) => keywords.add(type));
 
@@ -1043,12 +1018,11 @@ export const useSearch = (): UseSearchReturn => {
       // 新しいタイマーを設定（300ms後に実行）
       debounceTimeoutRef.current = window.setTimeout(() => {
         if (keyword.trim() !== searchCriteria.keyword) {
-          console.log('debounce検索実行:', keyword);
           executeSearch({ keyword: keyword.trim() });
         }
       }, 300);
     },
-    [searchCriteria.keyword, executeSearch]
+    [searchCriteria.keyword, executeSearch],
   );
 
   /**
@@ -1066,7 +1040,6 @@ export const useSearch = (): UseSearchReturn => {
     }
 
     setIsSearching(false);
-    console.log('検索キャンセル');
   }, []);
 
   // ================================
@@ -1078,14 +1051,13 @@ export const useSearch = (): UseSearchReturn => {
    * CustomerContextとの連携
    */
   useEffect(() => {
-    if (selectedCustomer && searchCriteria.mode === 'basic') {
-      const newKeyword = selectedCustomer.companyName || '';
+    if (selectedCustomer && searchCriteria.mode === "basic") {
+      const newKeyword = selectedCustomer.companyName || "";
 
       if (newKeyword !== searchCriteria.keyword) {
-        console.log('選択中顧客で検索条件更新:', newKeyword);
         updateCriteria({
           keyword: newKeyword,
-          target: 'all',
+          target: "all",
         });
       }
     }

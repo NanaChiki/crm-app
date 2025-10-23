@@ -24,17 +24,17 @@ import React, {
   useContext,
   useMemo,
   useState,
-} from 'react';
+} from "react";
 
 // Contexts
-import { useApp } from './AppContext';
+import { useApp } from "./AppContext";
 
 // OutLook API
 import {
   createReminderEvent as createEventAPI,
   getOutlookErrorGuidance,
   sendReminderEmail as sendEmailAPI,
-} from '../utils/outlookAPI';
+} from "../utils/outlookAPI";
 
 // Types
 import type {
@@ -43,7 +43,7 @@ import type {
   ReminderFilters,
   ReminderWithCustomer,
   UpdateReminderInput,
-} from '../../types';
+} from "../../types";
 
 // ================================
 // ReminderAPI型定義
@@ -131,7 +131,7 @@ interface ReminderContextType {
 // ================================
 
 const ReminderContext = createContext<ReminderContextType | undefined>(
-  undefined
+  undefined,
 );
 
 // ================================
@@ -161,26 +161,23 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
       setError(null);
 
       try {
-        console.log('📅 リマインダー取得開始', filters);
-
         const result = await window.reminderAPI.fetch(filters);
 
         if (result.success && result.data) {
           setReminders(result.data);
-          console.log(`✅ ${result.data.length}件のリマインダーを取得しました`);
         } else {
-          throw new Error(result.error || 'リマインダーの取得に失敗しました');
+          throw new Error(result.error || "リマインダーの取得に失敗しました");
         }
       } catch (err: any) {
-        const errorMessage = err.message || 'リマインダーの取得に失敗しました';
-        console.error('❌ リマインダー取得エラー:', err);
+        const errorMessage = err.message || "リマインダーの取得に失敗しました";
+        console.error("❌ リマインダー取得エラー:", err);
         setError(errorMessage);
-        showSnackbar(errorMessage, 'error');
+        showSnackbar(errorMessage, "error");
       } finally {
         setLoading(false);
       }
     },
-    [showSnackbar]
+    [showSnackbar],
   );
 
   // ================================
@@ -193,32 +190,29 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
       setError(null);
 
       try {
-        console.log('📝 リマインダー作成開始', data);
-
         const result = await window.reminderAPI.create(data);
 
         if (result.success && result.data) {
           // 一覧を再取得
           await fetchReminders();
 
-          showSnackbar('リマインダーを作成しました', 'success');
-          console.log('✅ リマインダー作成成功', result.data.reminderId);
+          showSnackbar("リマインダーを作成しました。", "success");
 
           return result.data;
         } else {
-          throw new Error(result.error || 'リマインダーの作成に失敗しました');
+          throw new Error(result.error || "リマインダーの作成に失敗しました");
         }
       } catch (err: any) {
-        const errorMessage = err.message || 'リマインダーの作成に失敗しました';
-        console.error('❌ リマインダー作成エラー:', err);
+        const errorMessage = err.message || "リマインダーの作成に失敗しました";
+        console.error("❌ リマインダー作成エラー:", err);
         setError(errorMessage);
-        showSnackbar(errorMessage, 'error');
+        showSnackbar(errorMessage, "error");
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [fetchReminders, showSnackbar]
+    [fetchReminders, showSnackbar],
   );
 
   // ================================
@@ -231,32 +225,29 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
       setError(null);
 
       try {
-        console.log('📝 リマインダー更新開始', data.reminderId);
-
         const result = await window.reminderAPI.update(data);
 
         if (result.success && result.data) {
           // 一覧を再取得
           await fetchReminders();
 
-          showSnackbar('リマインダーを更新しました', 'success');
-          console.log('✅ リマインダー更新成功', result.data.reminderId);
+          showSnackbar("リマインダーを更新しました。", "success");
 
           return result.data;
         } else {
-          throw new Error(result.error || 'リマインダーの更新に失敗しました');
+          throw new Error(result.error || "リマインダーの更新に失敗しました");
         }
       } catch (err: any) {
-        const errorMessage = err.message || 'リマインダーの更新に失敗しました';
-        console.error('❌ リマインダー更新エラー:', err);
+        const errorMessage = err.message || "リマインダーの更新に失敗しました";
+        console.error("❌ リマインダー更新エラー:", err);
         setError(errorMessage);
-        showSnackbar(errorMessage, 'error');
+        showSnackbar(errorMessage, "error");
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [fetchReminders, showSnackbar]
+    [fetchReminders, showSnackbar],
   );
 
   // ================================
@@ -269,30 +260,27 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
       setError(null);
 
       try {
-        console.log('🗑️ リマインダー削除開始', reminderId);
-
         const result = await window.reminderAPI.delete(reminderId);
 
         if (result.success) {
           // 一覧を再取得
           await fetchReminders();
 
-          showSnackbar('リマインダーを削除しました', 'success');
-          console.log('✅ リマインダー削除成功', reminderId);
+          showSnackbar("リマインダーを削除しました。", "success");
         } else {
-          throw new Error(result.error || 'リマインダーの削除に失敗しました');
+          throw new Error(result.error || "リマインダーの削除に失敗しました");
         }
       } catch (err: any) {
-        const errorMessage = err.message || 'リマインダーの削除に失敗しました';
-        console.error('❌ リマインダー削除エラー:', err);
+        const errorMessage = err.message || "リマインダーの削除に失敗しました";
+        console.error("❌ リマインダー削除エラー:", err);
         setError(errorMessage);
-        showSnackbar(errorMessage, 'error');
+        showSnackbar(errorMessage, "error");
         throw err;
       } finally {
         setLoading(false);
       }
     },
-    [fetchReminders, showSnackbar]
+    [fetchReminders, showSnackbar],
   );
 
   // ================================
@@ -302,67 +290,61 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
   const markAsSent = useCallback(
     async (reminderId: number): Promise<void> => {
       try {
-        console.log('✉️ リマインダーを送信済みに変更', reminderId);
-
         const result = await window.reminderAPI.markAsSent(reminderId);
 
         if (result.success) {
           await fetchReminders();
-          showSnackbar('リマインダーを送信済みにしました', 'success');
+          showSnackbar("リマインダーを送信済みにしました。", "success");
         } else {
-          throw new Error(result.error || '送信済み変更に失敗しました');
+          throw new Error(result.error || "送信済み変更に失敗しました");
         }
       } catch (err: any) {
-        console.error('❌ 送信済み変更エラー:', err);
-        showSnackbar(err.message, 'error');
+        console.error("❌ 送信済み変更エラー:", err);
+        showSnackbar(err.message, "error");
         throw err;
       }
     },
-    [fetchReminders, showSnackbar]
+    [fetchReminders, showSnackbar],
   );
 
   const cancelReminder = useCallback(
     async (reminderId: number): Promise<void> => {
       try {
-        console.log('❌ リマインダーをキャンセル', reminderId);
-
         const result = await window.reminderAPI.cancel(reminderId);
 
         if (result.success) {
           await fetchReminders();
-          showSnackbar('リマインダーをキャンセルしました', 'success');
+          showSnackbar("リマインダーをキャンセルしました。", "success");
         } else {
-          throw new Error(result.error || 'キャンセルに失敗しました');
+          throw new Error(result.error || "キャンセルに失敗しました");
         }
       } catch (err: any) {
-        console.error('❌ キャンセルエラー:', err);
-        showSnackbar(err.message, 'error');
+        console.error("❌ キャンセルエラー:", err);
+        showSnackbar(err.message, "error");
         throw err;
       }
     },
-    [fetchReminders, showSnackbar]
+    [fetchReminders, showSnackbar],
   );
 
   const rescheduleReminder = useCallback(
     async (reminderId: number): Promise<void> => {
       try {
-        console.log('🔄 リマインダーを再スケジュール', reminderId);
-
         const result = await window.reminderAPI.reschedule(reminderId);
 
         if (result.success) {
           await fetchReminders();
-          showSnackbar('リマインダーを再スケジュールしました', 'success');
+          showSnackbar("リマインダーを再スケジュールしました。", "success");
         } else {
-          throw new Error(result.error || '再スケジュールに失敗しました');
+          throw new Error(result.error || "再スケジュールに失敗しました");
         }
       } catch (err: any) {
-        console.error('❌ 再スケジュールエラー:', err);
-        showSnackbar(err.message, 'error');
+        console.error("❌ 再スケジュールエラー:", err);
+        showSnackbar(err.message, "error");
         throw err;
       }
     },
-    [fetchReminders, showSnackbar]
+    [fetchReminders, showSnackbar],
   );
 
   // ================================
@@ -373,27 +355,25 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
     async (reminderId: number): Promise<void> => {
       const reminder = reminders.find((r) => r.reminderId === reminderId);
       if (!reminder) {
-        showSnackbar('リマインダーが見つかりません', 'error');
+        showSnackbar("リマインダーが見つかりません。", "error");
         return;
       }
 
       try {
-        console.log('📧 リマインダーメール送信開始', reminderId, reminder);
-
         // 顧客情報の存在確認
         if (!reminder.customer) {
           showSnackbar(
-            '顧客情報が見つかりません。\nリマインダーを再度読み込んでください。',
-            'error'
+            "顧客情報が見つかりません。\nリマインダーを再度読み込んでください。",
+            "error",
           );
-          console.error('❌ 顧客情報なし:', reminder);
+          console.error("❌ 顧客情報なし:", reminder);
           return;
         }
 
         if (!reminder.customer.email) {
           showSnackbar(
-            '顧客のメールアドレスが登録されていません。\n顧客情報を確認してください。',
-            'error'
+            "顧客のメールアドレスが登録されていません。\n顧客情報を確認してください。",
+            "error",
           );
           return;
         }
@@ -402,74 +382,75 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         const result = await sendEmailAPI(
           reminder.customer.email,
           reminder.title,
-          reminder.message
+          reminder.message,
         );
 
         if (result.success) {
           // ステータスを「下書き作成中」に変更
-          const statusResult = await window.reminderAPI.markAsDrafting(reminderId);
+          const statusResult =
+            await window.reminderAPI.markAsDrafting(reminderId);
 
           if (statusResult.success) {
             // リマインダー一覧を再取得してステータスを反映
             await fetchReminders();
 
             showSnackbar(
-              'メールアプリで下書きを確認してください。\n送信後、「今すぐ送信」ボタンで送信済みに変更できます。',
-              'info',
-              8000 // 8秒表示
+              "メールアプリで下書きを確認してください。\n送信後、「今すぐ送信」ボタンで送信済みに変更できます。",
+              "info",
+              8000, // 8秒表示
             );
-            console.log('✅ メール下書き作成成功 & ステータス更新完了');
           } else {
-            showSnackbar('下書きは作成されましたが、ステータスの更新に失敗しました', 'warning');
+            showSnackbar(
+              "下書きは作成されましたが、ステータスの更新に失敗しました",
+              "warning",
+            );
           }
         } else {
-          const guidance = getOutlookErrorGuidance(result.error || '');
-          showSnackbar(guidance, 'error');
+          const guidance = getOutlookErrorGuidance(result.error || "");
+          showSnackbar(guidance, "error");
         }
       } catch (error: any) {
-        console.error('❌ メール送信エラー:', error);
-        showSnackbar('メール送信に失敗しました', 'error');
+        console.error("❌ メール送信エラー:", error);
+        showSnackbar("メール送信に失敗しました", "error");
       }
     },
-    [reminders, fetchReminders, showSnackbar]
+    [reminders, fetchReminders, showSnackbar],
   );
 
   const createOutlookEvent = useCallback(
     async (reminderId: number): Promise<void> => {
       const reminder = reminders.find((r) => r.reminderId === reminderId);
       if (!reminder) {
-        showSnackbar('リマインダーが見つかりません', 'error');
+        showSnackbar("リマインダーが見つかりません。", "error");
         return;
       }
 
       try {
-        console.log('📅 カレンダー予定作成開始', reminderId);
-
         const eventData = {
           subject: reminder.title,
           body: reminder.message,
           start: new Date(reminder.reminderDate),
           end: new Date(
-            new Date(reminder.reminderDate).getTime() + 60 * 60 * 1000
+            new Date(reminder.reminderDate).getTime() + 60 * 60 * 1000,
           ),
-          location: reminder.customer.address || '',
+          location: reminder.customer.address || "",
           reminderMinutes: 60,
         };
 
         const result = await createEventAPI(eventData);
 
         if (result.success) {
-          showSnackbar('カレンダーに予定を追加しました', 'success');
+          showSnackbar("カレンダーに予定を追加しました。", "success");
         } else {
-          const guidance = getOutlookErrorGuidance(result.error || '');
-          showSnackbar(guidance, 'error');
+          const guidance = getOutlookErrorGuidance(result.error || "");
+          showSnackbar(guidance, "error");
         }
       } catch (error: any) {
-        console.error('❌ カレンダー予定作成エラー:', error);
-        showSnackbar('カレンダー予定の作成に失敗しました', 'error');
+        console.error("❌ カレンダー予定作成エラー:", error);
+        showSnackbar("カレンダー予定の作成に失敗しました", "error");
       }
     },
-    [reminders, showSnackbar]
+    [reminders, showSnackbar],
   );
 
   // ================================
@@ -480,7 +461,7 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
     (reminderId: number): ReminderWithCustomer | undefined => {
       return reminders.find((r) => r.reminderId === reminderId);
     },
-    [reminders]
+    [reminders],
   );
 
   const getUpcomingReminders = useCallback(
@@ -495,8 +476,8 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
       return reminders
         .filter((reminder) => {
           if (
-            reminder.status !== 'scheduled' &&
-            reminder.status !== 'drafting'
+            reminder.status !== "scheduled" &&
+            reminder.status !== "drafting"
           ) {
             return false;
           }
@@ -507,10 +488,10 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         .sort(
           (a, b) =>
             new Date(a.reminderDate).getTime() -
-            new Date(b.reminderDate).getTime()
+            new Date(b.reminderDate).getTime(),
         );
     },
-    [reminders]
+    [reminders],
   );
 
   const filterReminders = useCallback(
@@ -541,7 +522,7 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
         return true;
       });
     },
-    [reminders]
+    [reminders],
   );
 
   // ================================
@@ -582,7 +563,7 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
       getReminderById,
       getUpcomingReminders,
       filterReminders,
-    ]
+    ],
   );
 
   return (
@@ -599,7 +580,7 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
 export const useReminder = (): ReminderContextType => {
   const context = useContext(ReminderContext);
   if (!context) {
-    throw new Error('useReminder must be used within ReminderProvider');
+    throw new Error("useReminder must be used within ReminderProvider");
   }
   return context;
 };
