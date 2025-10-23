@@ -9,6 +9,7 @@ import { theme } from './styles/theme';
 // 🆕 Context Providers のインポート
 // =============================
 import { AppProvider, useApp } from './contexts/AppContext';
+import { BackupProvider } from './contexts/BackupContext';
 import { CSVProvider } from './contexts/CSVContext';
 import { CustomerProvider } from './contexts/CustomerContext';
 import { ReminderProvider } from './contexts/ReminderContext';
@@ -22,10 +23,12 @@ import { ReminderProvider } from './contexts/ReminderContext';
  * 1. AppProvider（最上位）     - グローバル状態管理（通知、エラー、ローディング）
  * 2. CustomerProvider          - 顧客データ特化状態管理（CRUD、検索、選択）
  * 3. ReminderProvider          - リマインダーデータ管理（CRUD、OutLook連携）
- * 4. ThemeProvider             - Material-UI テーマ設定
- * 5. BrowserRouter             - React Router ナビゲーション
- * 6. MainLayout                - レイアウト構造
- * 7. AppRouter                 - ページルーティング
+ * 4. CSVProvider               - CSV出力機能
+ * 5. BackupProvider            - バックアップ・リストア機能
+ * 6. ThemeProvider             - Material-UI テーマ設定
+ * 7. BrowserRouter             - React Router ナビゲーション
+ * 8. MainLayout                - レイアウト構造
+ * 9. AppRouter                 - ページルーティング
  *
  * 【50代・低ITリテラシー向け配慮】
  * • Provider階層の複雑さをコンポーネント内で隠蔽
@@ -48,14 +51,16 @@ function AppContent() {
       <CustomerProvider>
         <ReminderProvider>
           <CSVProvider>
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <BrowserRouter>
-                <MainLayout>
-                  <AppRouter />
-                </MainLayout>
-              </BrowserRouter>
-            </ThemeProvider>
+            <BackupProvider>
+              <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <BrowserRouter>
+                  <MainLayout>
+                    <AppRouter />
+                  </MainLayout>
+                </BrowserRouter>
+              </ThemeProvider>
+            </BackupProvider>
           </CSVProvider>
         </ReminderProvider>
       </CustomerProvider>

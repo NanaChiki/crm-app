@@ -8,6 +8,9 @@ import {
   getFriendlyErrorMessage,
 } from './outlook';
 import { generateCustomersCSV } from './csv/exportCustomers';
+import { generateServiceRecordsCSV } from './csv/exportServiceRecords';
+import { createBackup } from './backup/createBackup';
+import { restoreBackup } from './backup/restoreBackup';
 import {
   fetchReminders,
   createReminder,
@@ -566,4 +569,196 @@ ipcMain.handle('csv:export-customers', async () => {
   }
 });
 
+/**
+ * サービス履歴CSVエクスポート（ジョブカン請求書用）
+ */
+ipcMain.handle('csv:export-service-records', async () => {
+  try {
+    console.log('📤 サービス履歴CSVエクスポート開始');
+
+    // CSV文字列を生成
+    const csvContent = await generateServiceRecordsCSV();
+
+    // 現在の日付を取得してファイル名に使用
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    const defaultFileName = `サービス履歴_${dateStr}.csv`;
+
+    // ファイル保存ダイアログ表示
+    const result = await dialog.showSaveDialog({
+      title: 'サービス履歴をCSVファイルに保存',
+      defaultPath: path.join(os.homedir(), 'Desktop', defaultFileName),
+      filters: [
+        { name: 'CSVファイル', extensions: ['csv'] },
+        { name: 'すべてのファイル', extensions: ['*'] },
+      ],
+    });
+
+    // キャンセルされた場合
+    if (result.canceled || !result.filePath) {
+      console.log('ℹ️ ファイル保存がキャンセルされました');
+      return {
+        success: false,
+        canceled: true,
+      };
+    }
+
+    // BOM付きUTF-8で保存（Excelで文字化けしない）
+    const bom = '\uFEFF';
+    await fs.writeFile(result.filePath, bom + csvContent, 'utf-8');
+
+    console.log(`✅ サービス履歴CSVファイル保存完了: ${result.filePath}`);
+
+    return {
+      success: true,
+      filePath: result.filePath,
+      message: `サービス履歴を保存しました:\n${result.filePath}`,
+    };
+  } catch (error: any) {
+    console.error('❌ サービス履歴CSVエクスポートエラー:', error);
+    return {
+      success: false,
+      error: error.message || 'ファイルの保存に失敗しました',
+    };
+  }
+});
+
 console.log('✅ CSV エクスポート IPC ハンドラー登録完了');
+
+// =============================
+// バックアップ・リストア IPC ハンドラー
+// =============================
+
+/**
+ * バックアップ作成
+ *
+ * 【50代配慮】
+ * - デスクトップをデフォルト保存先に
+ * - 日時入りのファイル名で分かりやすく
+ * - 保存先パスを成功メッセージに含める
+ * - 自動で復元前バックアップ作成
+ */
+ipcMain.handle('backup:create', async () => {
+  try {
+    console.log('💾 バックアップ作成開始');
+
+    // 現在の日時を取得してファイル名に使用
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+    const defaultFileName = `CRMバックアップ_${dateStr}.zip`;
+
+    // ファイル保存ダイアログ表示
+    const result = await dialog.showSaveDialog({
+      title: 'バックアップを保存',
+      defaultPath: path.join(os.homedir(), 'Desktop', defaultFileName),
+      filters: [{ name: 'ZIPファイル', extensions: ['zip'] }],
+    });
+
+    // キャンセルされた場合
+    if (result.canceled || !result.filePath) {
+      console.log('ℹ️ バックアップ作成がキャンセルされました');
+      return {
+        success: false,
+        canceled: true,
+      };
+    }
+
+    // バックアップ作成
+    await createBackup(result.filePath);
+
+    console.log(`✅ バックアップ作成完了: ${result.filePath}`);
+
+    return {
+      success: true,
+      filePath: result.filePath,
+      message: `バックアップを作成しました:\n${result.filePath}`,
+    };
+  } catch (error: any) {
+    console.error('❌ バックアップ作成エラー:', error);
+    return {
+      success: false,
+      error: error.message || 'バックアップの作成に失敗しました',
+    };
+  }
+});
+
+/**
+ * バックアップから復元
+ *
+ * 【50代配慮】
+ * - 復元前に自動バックアップ作成
+ * - 分かりやすい成功メッセージ
+ * - 丁寧なエラーメッセージ
+ */
+ipcMain.handle('backup:restore', async () => {
+  try {
+    console.log('🔄 バックアップ復元開始');
+
+    // ファイル選択ダイアログ表示
+    const result = await dialog.showOpenDialog({
+      title: 'バックアップファイルを選択',
+      defaultPath: path.join(os.homedir(), 'Desktop'),
+      filters: [{ name: 'ZIPファイル', extensions: ['zip'] }],
+      properties: ['openFile'],
+    });
+
+    // キャンセルされた場合
+    if (result.canceled || result.filePaths.length === 0) {
+      console.log('ℹ️ バックアップ復元がキャンセルされました');
+      return {
+        success: false,
+        canceled: true,
+      };
+    }
+
+    const backupFilePath = result.filePaths[0];
+    console.log('選択されたバックアップファイル:', backupFilePath);
+
+    // 復元前に自動バックアップを作成
+    console.log('📦 復元前の自動バックアップ作成中...');
+    const autoBackupDir = path.join(os.homedir(), 'Desktop');
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+    const autoBackupPath = path.join(
+      autoBackupDir,
+      `自動バックアップ_復元前_${dateStr}.zip`
+    );
+
+    await createBackup(autoBackupPath);
+    console.log(`✅ 自動バックアップ作成完了: ${autoBackupPath}`);
+
+    // バックアップから復元
+    await restoreBackup(backupFilePath);
+
+    console.log('✅ バックアップ復元完了');
+
+    return {
+      success: true,
+      message:
+        'バックアップから復元しました。\n\nアプリを再起動してください。',
+    };
+  } catch (error: any) {
+    console.error('❌ バックアップ復元エラー:', error);
+    return {
+      success: false,
+      error: error.message || '復元に失敗しました',
+    };
+  }
+});
+
+console.log('✅ バックアップ・リストア IPC ハンドラー登録完了');

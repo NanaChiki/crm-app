@@ -146,6 +146,29 @@ contextBridge.exposeInMainWorld('csvAPI', {
    * 顧客データCSVエクスポート
    */
   exportCustomers: () => ipcRenderer.invoke('csv:export-customers'),
+
+  /**
+   * サービス履歴CSVエクスポート（ジョブカン請求書用）
+   */
+  exportServiceRecords: () => ipcRenderer.invoke('csv:export-service-records'),
 });
 
 console.log('✅ CSV API公開完了');
+
+// ================================
+// バックアップAPI公開
+// ================================
+
+contextBridge.exposeInMainWorld('backupAPI', {
+  /**
+   * バックアップ作成
+   */
+  createBackup: () => ipcRenderer.invoke('backup:create'),
+
+  /**
+   * バックアップから復元
+   */
+  restoreBackup: () => ipcRenderer.invoke('backup:restore'),
+});
+
+console.log('✅ バックアップAPI公開完了');
