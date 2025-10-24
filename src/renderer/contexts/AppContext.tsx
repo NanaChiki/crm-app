@@ -188,6 +188,10 @@ export function AppProvider({ children }: AppProviderProps) {
   const [snackbarMessage, setSnackbarMessage] =
     useState<SnackbarMessage | null>(null);
 
+  // スナックバーキュー管理（複数メッセージの順次表示）
+  const [snackbarQueue, setSnackbarQueue] = useState<SnackbarMessage[]>([]);
+  const [isProcessingQueue, setIsProcessingQueue] = useState<boolean>(false);
+
   // =============================
   // 🎬 アクション実装
   // =============================
@@ -211,7 +215,10 @@ export function AppProvider({ children }: AppProviderProps) {
    * 【50代向けの工夫】
    * - デフォルト表示時間を5秒に設定（読みやすい速度）
    * - メッセージ内容の検証とフォールバック
-   * - 自動非表示タイマーの設定
+   * - キューシステムによる順次表示で被りを防止
+   * - 重複メッセージの自動排除（同じメッセージが連続する場合）
+   *
+   * 【修正】依存配列を空にして、showSnackbarの再作成を防止
    */
   const showSnackbar = useCallback(
     (
@@ -228,16 +235,20 @@ export function AppProvider({ children }: AppProviderProps) {
         duration,
       };
 
-      setSnackbarMessage(newMessage);
+      // キューに追加（重複チェック）
+      setSnackbarQueue((prev) => {
+        // キュー内の最後のメッセージと同じ場合はスキップ
+        const lastInQueue = prev[prev.length - 1];
+        if (lastInQueue &&
+            lastInQueue.message === newMessage.message &&
+            lastInQueue.severity === newMessage.severity) {
+          return prev;
+        }
 
-      // 自動非表示タイマー（50代向け: 十分な時間を確保）
-      if (duration > 0) {
-        setTimeout(() => {
-          setSnackbarMessage(null);
-        }, duration);
-      }
+        return [...prev, newMessage];
+      });
     },
-    [],
+    [], // 空の依存配列でshowSnackbarの再作成を防止
   );
 
   /**
@@ -245,7 +256,33 @@ export function AppProvider({ children }: AppProviderProps) {
    */
   const hideSnackbar = useCallback(() => {
     setSnackbarMessage(null);
+    // 次のメッセージを表示
+    setIsProcessingQueue(false);
   }, []);
+
+  /**
+   * スナックバーキュー処理
+   *
+   * キューにメッセージがある場合、順次表示
+   * 1つのメッセージが完全に表示された後に次のメッセージを表示
+   */
+  React.useEffect(() => {
+    if (snackbarQueue.length > 0 && !isProcessingQueue && !snackbarMessage) {
+      const nextMessage = snackbarQueue[0];
+      setSnackbarQueue((prev) => prev.slice(1)); // キューから削除
+      setSnackbarMessage(nextMessage);
+      setIsProcessingQueue(true);
+
+      // 自動非表示タイマー
+      const duration = nextMessage.duration ?? 5000;
+      if (duration > 0) {
+        setTimeout(() => {
+          setSnackbarMessage(null);
+          setIsProcessingQueue(false);
+        }, duration);
+      }
+    }
+  }, [snackbarQueue, isProcessingQueue, snackbarMessage]);
 
   /**
    * 統一エラーハンドリングの実装

@@ -96,6 +96,8 @@ interface CustomerContextType {
   /**
    * 顧客一覧の取得
    *
+   * @param options.silent - trueの場合、成功時のスナックバーメッセージを表示しない
+   *
    * 【動作】
    * 1. ローディング状態をtrueに設定
    * 2. API呼び出し（現段階はモックデータ）
@@ -106,7 +108,7 @@ interface CustomerContextType {
    * - 「顧客一覧を読み込んでいます」等の明確な状況説明
    * - 成功時は「○件の顧客情報を読み込みました」等のフィードバック
    */
-  fetchCustomers: () => Promise<void>;
+  fetchCustomers: (options?: { silent?: boolean }) => Promise<void>;
 
   /**
    * 新規顧客の作成
@@ -369,23 +371,26 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
    * 4. React.memo() との相性向上
    */
   const fetchCustomers = useCallback(
-    async (filters?: any) => {
+    async (options?: { silent?: boolean }) => {
       try {
         // ローディング開始
         setLoading({ isLoading: true, error: null });
 
         // Phase 2E: Real Prisma database via window.customerAPI
-        const result = await window.customerAPI.fetch(filters);
+        const result = await window.customerAPI.fetch();
 
         if (result.success && result.data) {
           setCustomers(result.data);
 
           // 成功メッセージの表示 (50代向け：件数を明示)
-          showSnackbar(
-            `${result.data.length}件の顧客情報を読み込みました`,
-            "success",
-            4000,
-          );
+          // silentフラグがtrueの場合はメッセージを表示しない
+          if (!options?.silent) {
+            showSnackbar(
+              `${result.data.length}件の顧客情報を読み込みました`,
+              "success",
+              4000,
+            );
+          }
 
           // ローディング終了
           setLoading({ isLoading: false, error: null });
@@ -457,8 +462,8 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         if (result.success && result.data) {
           const newCustomer = result.data;
 
-          // Re-fetch to update list from database
-          await fetchCustomers();
+          // Re-fetch to update list from database (silently)
+          await fetchCustomers({ silent: true });
 
           // 新規作成した顧客を選択状態に
           setSelectedCustomer(newCustomer);
@@ -522,8 +527,8 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         if (result.success && result.data) {
           const updatedCustomer = result.data;
 
-          // Re-fetch to update list from database
-          await fetchCustomers();
+          // Re-fetch to update list from database (silently)
+          await fetchCustomers({ silent: true });
 
           // selectedCustomer の同期更新
           if (selectedCustomer?.customerId === customerId) {
@@ -588,17 +593,18 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
         const result = await window.customerAPI.delete(customerId);
 
         if (result.success) {
-          // Re-fetch to update list from database
-          await fetchCustomers();
-
           // selectedCustomer が削除対象の場合は選択解除
           if (selectedCustomer?.customerId === customerId) {
             setSelectedCustomer(null);
           }
 
+          // Re-fetch to update list from database (silently without showing snackbar)
+          await fetchCustomers({ silent: true });
+
           setLoading({ isLoading: false, error: null });
 
-          showSnackbar(`「${customerName}」を削除しました`, "success");
+          // Show deletion success message AFTER fetchCustomers completes
+          showSnackbar(`「${customerName}」を削除しました`, "success", 4000);
 
           return true;
         } else {
@@ -691,7 +697,7 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
    * 顧客データ再読み込みの実装
    */
   const refreshCustomers = useCallback(async () => {
-    await fetchCustomers();
+    await fetchCustomers({ silent: false }); // 明示的な再読み込みはメッセージ表示
   }, [fetchCustomers]);
 
   // =============================
@@ -715,10 +721,10 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
    * - 配列なし: 毎回実行（通常は避ける）
    */
 
-  // 初回マウント時の顧客データ取得
+  // 初回マウント時の顧客データ取得（静かに読み込み）
   useEffect(() => {
-    fetchCustomers();
-  }, []); // 空の依存配列 → マウント時のみ実行
+    fetchCustomers({ silent: true });
+  }, [fetchCustomers]); // fetchCustomers が変更されたときのみ再実行
 
   // =============================
   // 📦 Context値の構築

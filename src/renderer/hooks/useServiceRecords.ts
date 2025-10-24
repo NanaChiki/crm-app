@@ -526,12 +526,9 @@ export const useServiceRecords = (
           setIsInitialized(true);
 
           // サイレントモード時はスナックバーを表示しない（リスナー経由の更新時）
-          if (!silent) {
-            if (recordsWithCustomer.length === 0) {
-              showSnackbar(MESSAGES.info.noRecords, "info", 4000);
-            } else {
-              showSnackbar(MESSAGES.success.load, "success");
-            }
+          // 【修正】0件の場合のメッセージを削除（UIで表示するため不要）
+          if (!silent && recordsWithCustomer.length > 0) {
+            showSnackbar(MESSAGES.success.load, "success");
           }
         } else {
           throw new Error(result.error || "サービス履歴の取得に失敗しました");
@@ -1123,12 +1120,15 @@ export const useServiceRecords = (
    * 【修正】初回読み込みのみを行う。customerIdが変わっても
    * loadServiceRecordsは呼ばない。createServiceRecord等のCRUD操作が
    * 直接stateを更新するため、不要な再読み込みを避ける。
+   *
+   * 【修正2】isInitializedを依存配列に追加して、初回のみ実行を保証
    */
   useEffect(() => {
     if (autoLoad && !isInitialized) {
       loadServiceRecords();
     }
-  }, [autoLoad]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoLoad, isInitialized]); // loadServiceRecordsは除外して無限ループ防止
 
   /**
    * データ変更リスナーの登録
@@ -1137,6 +1137,8 @@ export const useServiceRecords = (
    * このインスタンスも自動的に最新データを読み込む。
    * これにより、Dashboard等の別コンポーネントで新しいサービス履歴が追加されても
    * 即座に反映される。
+   *
+   * 【修正】loadServiceRecordsを依存配列から除外して無限ループを防止
    */
   useEffect(() => {
     const handleDataChange = () => {
@@ -1154,7 +1156,8 @@ export const useServiceRecords = (
         dataChangeListeners.splice(index, 1);
       }
     };
-  }, [loadServiceRecords]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 空の依存配列で初回のみ登録
 
   /**
    * 選択中顧客変更時の自動フィルター適用
