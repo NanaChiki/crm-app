@@ -1,4 +1,4 @@
-import { Delete, Edit, MoreVert } from '@mui/icons-material';
+import { Delete, Edit, MoreVert } from "@mui/icons-material";
 import {
   Box,
   CardActions,
@@ -10,74 +10,74 @@ import {
   CardProps as MuiCardProps,
   styled,
   Typography,
-} from '@mui/material';
-import React, { forwardRef } from 'react';
+} from "@mui/material";
+import React, { forwardRef } from "react";
 
 // 50代向けのカードスタイル
 const StyledCard = styled(MuiCard)<CustomCardProps>(({ theme, cardsize }) => ({
   // サイズ調整
-  borderRadius: '12px',
+  borderRadius: "12px",
   padding:
-    cardsize === 'small' ? '16px' : cardsize === 'medium' ? '20px' : '24px',
+    cardsize === "small" ? "16px" : cardsize === "medium" ? "20px" : "24px",
 
   // シャドウとボーダー
   boxShadow: theme.shadows[2],
   border: `1px solid ${theme.palette.divider}`,
 
   // ホバー効果
-  transition: 'all 0.2s ease-in-out',
-  '&:hover': {
-    transform: 'translateY(-2px)',
+  transition: "all 0.2s ease-in-out",
+  "&:hover": {
+    transform: "translateY(-2px)",
     boxShadow: theme.shadows[4],
     borderColor: theme.palette.primary.light,
   },
 
   // フォーカス可能な場合のスタイル
-  '&[tabindex]': {
-    cursor: 'pointer',
-    '&:focus-visible': {
+  "&[tabindex]": {
+    cursor: "pointer",
+    "&:focus-visible": {
       outline: `3px solid ${theme.palette.primary.light}`,
-      outlineOffset: '2px',
+      outlineOffset: "2px",
     },
   },
 
   // アクション部分の調整
-  '& .MuiCardActions-root': {
-    padding: '16px 20px',
-    justifyContent: 'space-between',
+  "& .MuiCardActions-root": {
+    padding: "16px 20px",
+    justifyContent: "space-between",
     borderTop: `1px solid ${theme.palette.divider}`,
   },
 }));
 
 // カスタムヘッダーコンポーネント
 const CardHeader = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start',
-  marginBottom: '16px',
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  marginBottom: "16px",
 
-  '& .card-title': {
-    fontSize: '20px',
+  "& .card-title": {
+    fontSize: "20px",
     fontWeight: 600,
     color: theme.palette.text.primary,
     lineHeight: 1.3,
   },
 
-  '& .card-subtitle': {
-    fontSize: '14px',
+  "& .card-subtitle": {
+    fontSize: "14px",
     color: theme.palette.text.secondary,
-    marginTop: '4px',
+    marginTop: "4px",
   },
 
-  '& .card-actions': {
-    display: 'flex',
-    gap: '4px',
+  "& .card-actions": {
+    display: "flex",
+    gap: "4px",
   },
 }));
 
 // カスタムプロパティの型定義
-interface CustomCardProps extends Omit<MuiCardProps, 'children'> {
-  cardsize?: 'small' | 'medium' | 'large';
+interface CustomCardProps extends Omit<MuiCardProps, "children"> {
+  cardsize?: "small" | "medium" | "large";
   title?: string;
   subtitle?: string;
   children?: React.ReactNode;
@@ -85,7 +85,7 @@ interface CustomCardProps extends Omit<MuiCardProps, 'children'> {
   onEdit?: () => void;
   onDelete?: () => void;
   onMoreActions?: () => void;
-  status?: 'active' | 'inactive' | 'pending' | 'completed' | 'cancelled';
+  status?: "active" | "inactive" | "pending" | "completed" | "cancelled";
   clickable?: boolean;
   onCardClick?: () => void;
 }
@@ -93,34 +93,34 @@ interface CustomCardProps extends Omit<MuiCardProps, 'children'> {
 // ステータス色の定義
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'active':
-      return 'success';
-    case 'inactive':
-      return 'default';
-    case 'pending':
-      return 'warning';
-    case 'completed':
-      return 'info';
-    case 'cancelled':
-      return 'error';
+    case "active":
+      return "success";
+    case "inactive":
+      return "default";
+    case "pending":
+      return "warning";
+    case "completed":
+      return "info";
+    case "cancelled":
+      return "error";
     default:
-      return 'default';
+      return "default";
   }
 };
 
 // ステータスラベルの定義
 const getStatusLabel = (status: string) => {
   switch (status) {
-    case 'active':
-      return 'アクティブ';
-    case 'inactive':
-      return '非アクティブ';
-    case 'pending':
-      return '保留中';
-    case 'completed':
-      return '完了';
-    case 'cancelled':
-      return 'キャンセル';
+    case "active":
+      return "アクティブ";
+    case "inactive":
+      return "非アクティブ";
+    case "pending":
+      return "保留中";
+    case "completed":
+      return "完了";
+    case "cancelled":
+      return "キャンセル";
     default:
       return status;
   }
@@ -140,10 +140,10 @@ export const Card = forwardRef<HTMLDivElement, CustomCardProps>(
       status,
       clickable = false,
       onCardClick,
-      cardsize = 'medium',
+      cardsize = "medium",
       ...props
     },
-    ref
+    ref,
   ) => {
     // カードアクション
     const cardActions = (
@@ -157,9 +157,10 @@ export const Card = forwardRef<HTMLDivElement, CustomCardProps>(
             }}
             aria-label="編集"
             sx={{
-              padding: '12px',
-              '&:hover': { backgroundColor: 'primary.light', color: 'white' },
-            }}>
+              padding: "12px",
+              "&:hover": { backgroundColor: "primary.light", color: "white" },
+            }}
+          >
             <Edit />
           </IconButton>
         )}
@@ -172,9 +173,10 @@ export const Card = forwardRef<HTMLDivElement, CustomCardProps>(
             }}
             aria-label="削除"
             sx={{
-              padding: '12px',
-              '&:hover': { backgroundColor: 'error.main', color: 'white' },
-            }}>
+              padding: "12px",
+              "&:hover": { backgroundColor: "error.main", color: "white" },
+            }}
+          >
             <Delete />
           </IconButton>
         )}
@@ -186,7 +188,8 @@ export const Card = forwardRef<HTMLDivElement, CustomCardProps>(
               onMoreActions();
             }}
             aria-label="その他のアクション"
-            sx={{ padding: '12px' }}>
+            sx={{ padding: "12px" }}
+          >
             <MoreVert />
           </IconButton>
         )}
@@ -199,20 +202,21 @@ export const Card = forwardRef<HTMLDivElement, CustomCardProps>(
         cardsize={cardsize}
         onClick={clickable ? onCardClick : undefined}
         tabIndex={clickable ? 0 : undefined}
-        role={clickable ? 'button' : undefined}
+        role={clickable ? "button" : undefined}
         aria-label={clickable && title ? `${title}を選択` : undefined}
         onKeyDown={
           clickable
             ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+                if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   onCardClick?.();
                 }
               }
             : undefined
         }
-        {...props}>
-        <CardContent sx={{ padding: 0, '&:last-child': { paddingBottom: 0 } }}>
+        {...props}
+      >
+        <CardContent sx={{ padding: 0, "&:last-child": { paddingBottom: 0 } }}>
           {/* ヘッダー部分 */}
           {(title || subtitle || status || cardActions) && (
             <CardHeader>
@@ -231,8 +235,8 @@ export const Card = forwardRef<HTMLDivElement, CustomCardProps>(
                     color={getStatusColor(status) as any}
                     size="small"
                     sx={{
-                      marginTop: '8px',
-                      fontSize: '12px',
+                      marginTop: "8px",
+                      fontSize: "12px",
                       fontWeight: 500,
                     }}
                   />
@@ -247,12 +251,12 @@ export const Card = forwardRef<HTMLDivElement, CustomCardProps>(
 
           {/* 区切り線 */}
           {(title || subtitle) && children && (
-            <Divider sx={{ marginBottom: '16px' }} />
+            <Divider sx={{ marginBottom: "16px" }} />
           )}
 
           {/* メインコンテンツ */}
           {children && (
-            <Box sx={{ fontSize: '16px', lineHeight: 1.6 }}>{children}</Box>
+            <Box sx={{ fontSize: "16px", lineHeight: 1.6 }}>{children}</Box>
           )}
         </CardContent>
 
@@ -260,10 +264,10 @@ export const Card = forwardRef<HTMLDivElement, CustomCardProps>(
         {actions && <CardActions>{actions}</CardActions>}
       </StyledCard>
     );
-  }
+  },
 );
 
-Card.displayName = 'Card';
+Card.displayName = "Card";
 
 // 使用例のエクスポート
 export type { CustomCardProps as CardProps };

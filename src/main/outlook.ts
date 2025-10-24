@@ -17,9 +17,9 @@
  * - 送信前に確認・編集可能
  */
 
-import { shell } from 'electron';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { shell } from "electron";
+import { exec } from "child_process";
+import { promisify } from "util";
 
 // child_processのexecをPromise化
 const execAsync = promisify(exec);
@@ -29,18 +29,18 @@ const execAsync = promisify(exec);
 // ================================
 
 export interface OutlookEmailOptions {
-  to: string;           // 送信先メールアドレス
-  subject: string;      // 件名
-  body: string;         // 本文
-  cc?: string;          // CC（オプション）
+  to: string; // 送信先メールアドレス
+  subject: string; // 件名
+  body: string; // 本文
+  cc?: string; // CC（オプション）
 }
 
 export interface OutlookEventOptions {
-  subject: string;      // 予定のタイトル
-  body: string;         // 予定の説明
-  start: Date;          // 開始日時
-  end: Date;            // 終了日時
-  location?: string;    // 場所（オプション）
+  subject: string; // 予定のタイトル
+  body: string; // 予定の説明
+  start: Date; // 開始日時
+  end: Date; // 終了日時
+  location?: string; // 場所（オプション）
 }
 
 export interface OutlookResult {
@@ -64,64 +64,52 @@ export interface OutlookResult {
  * @returns 送信結果
  */
 export async function sendOutlookEmail(
-  options: OutlookEmailOptions
+  options: OutlookEmailOptions,
 ): Promise<OutlookResult> {
   try {
-    console.log('📧 メールクライアント起動:', options.to);
-
     // メールアドレスの基本的なバリデーション
-    if (!options.to || !options.to.includes('@')) {
+    if (!options.to || !options.to.includes("@")) {
       return {
         success: false,
-        message: '有効なメールアドレスではありません',
-        error: 'INVALID_EMAIL',
+        message: "有効なメールアドレスではありません",
+        error: "INVALID_EMAIL",
       };
     }
 
     // mailto:リンク構築
     // 改行を%0Dに変換（メールクライアントで改行として認識される）
     const subject = encodeURIComponent(options.subject);
-    const body = encodeURIComponent(options.body.replace(/\n/g, '\r\n'));
-    const cc = options.cc ? `&cc=${encodeURIComponent(options.cc)}` : '';
+    const body = encodeURIComponent(options.body.replace(/\n/g, "\r\n"));
+    const cc = options.cc ? `&cc=${encodeURIComponent(options.cc)}` : "";
 
     const mailtoLink = `mailto:${options.to}?subject=${subject}&body=${body}${cc}`;
-
-    console.log('📎 Mailto link:', mailtoLink);
-    console.log('📎 Link length:', mailtoLink.length);
 
     // 既定のメールクライアント起動
     // macOSではshell.openExternalが動作しない場合があるため、
     // プラットフォーム別の処理を実装
     const platform = process.platform;
-    console.log('💻 Platform:', platform);
 
-    if (platform === 'darwin') {
+    if (platform === "darwin") {
       // macOS: 複数の方法を試行
       try {
         // 方法1: openコマンドでmailtoリンクを開く
-        console.log('🔧 Trying method 1: open mailto link');
         await execAsync(`open "${mailtoLink}"`);
-        console.log('✅ macOS open command success');
       } catch (error1) {
-        console.error('❌ Method 1 failed:', error1);
+        console.error("❌ Method 1 failed:", error1);
 
         try {
           // 方法2: Mail.appを直接起動してmailtoリンクを渡す
-          console.log('🔧 Trying method 2: open with Mail.app');
           await execAsync(`open -a Mail "${mailtoLink}"`);
-          console.log('✅ Mail.app launch success');
         } catch (error2) {
-          console.error('❌ Method 2 failed:', error2);
+          console.error("❌ Method 2 failed:", error2);
 
           try {
             // 方法3: shell.openExternalを試す
-            console.log('🔧 Trying method 3: shell.openExternal');
             await shell.openExternal(mailtoLink);
-            console.log('✅ shell.openExternal success');
           } catch (error3) {
-            console.error('❌ All methods failed');
+            console.error("❌ All methods failed");
             throw new Error(
-              'メールアプリの起動に失敗しました。\nデフォルトのメールアプリが設定されているか確認してください。'
+              "メールアプリの起動に失敗しました。\nデフォルトのメールアプリが設定されているか確認してください。",
             );
           }
         }
@@ -131,17 +119,16 @@ export async function sendOutlookEmail(
       await shell.openExternal(mailtoLink);
     }
 
-    console.log('✅ メールクライアント起動成功');
     return {
       success: true,
-      message: 'メールアプリを起動しました。\n内容を確認して送信してください。',
+      message: "メールアプリを起動しました。\n内容を確認して送信してください。",
     };
   } catch (error: any) {
-    console.error('❌ メールクライアント起動エラー:', error);
+    console.error("❌ メールクライアント起動エラー:", error);
 
     return {
       success: false,
-      message: 'メールアプリの起動に失敗しました',
+      message: "メールアプリの起動に失敗しました",
       error: error.message,
     };
   }
@@ -161,11 +148,9 @@ export async function sendOutlookEmail(
  * @returns 作成結果
  */
 export async function createOutlookEvent(
-  options: OutlookEventOptions
+  options: OutlookEventOptions,
 ): Promise<OutlookResult> {
   try {
-    console.log('📅 カレンダー予定データ作成:', options.subject);
-
     // ICS形式のカレンダーデータを生成
     const icsContent = generateICSContent(options);
 
@@ -173,17 +158,16 @@ export async function createOutlookEvent(
     // 注：実際のファイル保存はレンダラープロセスで実施
     // ここではICSコンテンツの生成のみ
 
-    console.log('✅ カレンダーデータ生成成功');
     return {
       success: true,
-      message: 'カレンダーデータを生成しました',
+      message: "カレンダーデータを生成しました",
     };
   } catch (error: any) {
-    console.error('❌ カレンダーデータ生成エラー:', error);
+    console.error("❌ カレンダーデータ生成エラー:", error);
 
     return {
       success: false,
-      message: 'カレンダーデータの生成に失敗しました',
+      message: "カレンダーデータの生成に失敗しました",
       error: error.message,
     };
   }
@@ -203,11 +187,11 @@ function generateICSContent(options: OutlookEventOptions): string {
   // 日付をICS形式（YYYYMMDDTHHMMSS）に変換
   const formatDateForICS = (date: Date): string => {
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
 
     return `${year}${month}${day}T${hours}${minutes}${seconds}`;
   };
@@ -218,30 +202,30 @@ function generateICSContent(options: OutlookEventOptions): string {
 
   // ICS形式のテキスト生成
   const icsLines = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//CRM App//Reminder//JA',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
-    'BEGIN:VEVENT',
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//CRM App//Reminder//JA",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
     `DTSTART:${startDate}`,
     `DTEND:${endDate}`,
     `DTSTAMP:${now}`,
     `UID:${Date.now()}@crm-app`,
     `SUMMARY:${options.subject}`,
-    `DESCRIPTION:${options.body.replace(/\n/g, '\\n')}`,
+    `DESCRIPTION:${options.body.replace(/\n/g, "\\n")}`,
   ];
 
   if (options.location) {
     icsLines.push(`LOCATION:${options.location}`);
   }
 
-  icsLines.push('STATUS:CONFIRMED');
-  icsLines.push('SEQUENCE:0');
-  icsLines.push('END:VEVENT');
-  icsLines.push('END:VCALENDAR');
+  icsLines.push("STATUS:CONFIRMED");
+  icsLines.push("SEQUENCE:0");
+  icsLines.push("END:VEVENT");
+  icsLines.push("END:VCALENDAR");
 
-  return icsLines.join('\r\n');
+  return icsLines.join("\r\n");
 }
 
 /**
@@ -251,13 +235,13 @@ function generateICSContent(options: OutlookEventOptions): string {
  * @returns 分かりやすいエラーメッセージ
  */
 export function getFriendlyErrorMessage(error: string): string {
-  if (error.includes('INVALID_EMAIL')) {
+  if (error.includes("INVALID_EMAIL")) {
     return `メールアドレスが正しくありません。
 
 顧客情報を確認して、正しいメールアドレスを登録してください。`;
   }
 
-  if (error.includes('openExternal')) {
+  if (error.includes("openExternal")) {
     return `メールアプリの起動に失敗しました。
 
 以下を確認してください：

@@ -27,6 +27,8 @@
  * - 直感的なナビゲーション
  * - 親切な日本語メッセージ
  */
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowBack as ArrowBackIcon,
   History as HistoryIcon,
@@ -34,7 +36,7 @@ import {
   Person as PersonIcon,
   Schedule as ScheduleIcon,
   Warning as WarningIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -47,34 +49,31 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from '@mui/material';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+} from "@mui/material";
 
-// Custom Components
-import { CustomerForm } from '../components/customer/CustomerForm';
-import { PageHeader } from '../components/layout/PageHeader';
-import { MaintenancePrediction } from '../components/maintenance/MaintenancePrediction';
-import { ServiceRecordList } from '../components/service/ServiceRecordList';
-import { Button } from '../components/ui/Button';
+import { CustomerForm } from "../components/customer/CustomerForm";
+import { PageHeader } from "../components/layout/PageHeader";
+import { MaintenancePrediction } from "../components/maintenance/MaintenancePrediction";
+import { ServiceRecordList } from "../components/service/ServiceRecordList";
+import { Button } from "../components/ui/Button";
 
 // Custom Hooks
-import { useApp } from '../contexts/AppContext';
-import { useCustomer } from '../contexts/CustomerContext';
-import { useServiceRecords } from '../hooks/useServiceRecords';
+import { useApp } from "../contexts/AppContext";
+import { useCustomer } from "../contexts/CustomerContext";
+import { useServiceRecords } from "../hooks/useServiceRecords";
 
 // Types
-import { Customer } from '../../types';
+import { Customer } from "../../types";
 
 // Design System
-import { FONT_SIZES, SPACING, BUTTON_SIZE } from '../constants/uiDesignSystem';
+import { BUTTON_SIZE, FONT_SIZES, SPACING } from "../constants/uiDesignSystem";
 
 // ================================
 // 型定義・定数
 // ================================
 
 /** タブ識別子 */
-type TabValue = 'info' | 'history' | 'maintenance';
+type TabValue = "info" | "history" | "maintenance";
 
 // Page State
 interface PageState {
@@ -97,22 +96,22 @@ interface TabConfig {
 // ================================
 const TAB_CONFIGS: TabConfig[] = [
   {
-    value: 'info',
-    label: '基本情報',
+    value: "info",
+    label: "基本情報",
     icon: <PersonIcon />,
-    description: '顧客の基本情報を表示・編集',
+    description: "顧客の基本情報を表示・編集",
   },
   {
-    value: 'history',
-    label: 'サービス履歴',
+    value: "history",
+    label: "サービス履歴",
     icon: <HistoryIcon />,
-    description: '年度別のサービス履歴管理',
+    description: "年度別のサービス履歴管理",
   },
   {
-    value: 'maintenance',
-    label: 'メンテナンス予測',
+    value: "maintenance",
+    label: "メンテナンス予測",
     icon: <ScheduleIcon />,
-    description: '次回推奨時期の予測表示',
+    description: "次回推奨時期の予測表示",
   },
 ];
 
@@ -121,23 +120,23 @@ const TAB_CONFIGS: TabConfig[] = [
 // ================================
 const MESSAGES = {
   error: {
-    customerNotFound: '指定された顧客が見つかりません。',
-    invalidId: '無効な顧客IDです。',
-    loadFailed: '顧客情報の読み込みに失敗しました。',
+    customerNotFound: "指定された顧客が見つかりません。",
+    invalidId: "無効な顧客IDです。",
+    loadFailed: "顧客情報の読み込みに失敗しました。",
     networkError:
-      '通信エラーが発生しました。しばらくしてから再度お試しください。',
+      "通信エラーが発生しました。しばらくしてから再度お試しください。",
   },
   confirm: {
-    unsavedChanges: '変更が保存されていません。このまま移動しますか？',
-    leaveTab: 'タブを切り替えますか？未保存の変更は失われます。',
+    unsavedChanges: "変更が保存されていません。このまま移動しますか？",
+    leaveTab: "タブを切り替えますか？未保存の変更は失われます。",
   },
   info: {
-    loading: '顧客情報を読み込んでいます...',
-    tabChanged: 'タブを切り替えました。',
+    loading: "顧客情報を読み込んでいます...",
+    tabChanged: "タブを切り替えました。",
   },
   action: {
-    backToList: '顧客一覧に戻る',
-    reload: '再読み込み',
+    backToList: "顧客一覧に戻る",
+    reload: "再読み込み",
   },
 } as const;
 
@@ -146,8 +145,8 @@ const MESSAGES = {
 // ================================
 export const CustomerDetailPage: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("lg"));
 
   // Router hooks
   const { customerId } = useParams<{ customerId: string }>();
@@ -160,7 +159,7 @@ export const CustomerDetailPage: React.FC = () => {
   const [pageState, setPageState] = useState<PageState>({
     loading: true,
     error: null,
-    currentTab: 'info',
+    currentTab: "info",
     hasUnsavedChanges: false,
   });
 
@@ -221,13 +220,13 @@ export const CustomerDetailPage: React.FC = () => {
    */
   const breadcrumbs = useMemo(() => {
     const baseBreadcrumbs = [
-      { label: '顧客管理', href: '/customers', icon: <PeopleIcon /> },
+      { label: "顧客管理", href: "/customers", icon: <PeopleIcon /> },
     ];
 
     if (currentCustomer) {
       baseBreadcrumbs.push({
         label: currentCustomer.companyName,
-        href: '',
+        href: "",
         icon: <PersonIcon />,
       });
     }
@@ -240,15 +239,15 @@ export const CustomerDetailPage: React.FC = () => {
    */
   const responsiveSettings = useMemo(
     () => ({
-      containerMaxWidth: 'xl' as const,
-      tabSize: isMobile ? 'large' : 'medium',
+      containerMaxWidth: "xl" as const,
+      tabSize: isMobile ? "large" : "medium",
       tabMinHeight: isMobile ? 56 : BUTTON_SIZE.minHeight.desktop,
       fontSize: isMobile ? FONT_SIZES.body.mobile : FONT_SIZES.label.desktop,
       spacing: isMobile ? SPACING.gap.medium : SPACING.page.desktop,
-      tabOrientation: isMobile ? 'horizontal' : 'horizontal',
+      tabOrientation: isMobile ? "horizontal" : "horizontal",
       tabSpacing: isMobile ? SPACING.gap.small : SPACING.gap.medium,
     }),
-    [isMobile, isTablet]
+    [isMobile, isTablet],
   );
 
   // ================================
@@ -272,10 +271,9 @@ export const CustomerDetailPage: React.FC = () => {
         }
 
         // 顧客データが読み込まれるまで待機
-        if (customerLoading || customers.length === 0) {
-          console.log('⏳ 顧客データ読み込み待機中...');
+        if (customerLoading.isLoading || customers.length === 0) {
           setPageState((prev) => ({ ...prev, loading: true, error: null }));
-          // return;
+          return;
         }
 
         // 顧客データ存在確認
@@ -291,8 +289,6 @@ export const CustomerDetailPage: React.FC = () => {
           loading: false,
           error: null,
         }));
-
-        console.log(`✅ 顧客詳細ページ初期化: ${currentCustomer.companyName}`);
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : MESSAGES.error.loadFailed;
@@ -305,10 +301,17 @@ export const CustomerDetailPage: React.FC = () => {
         // handleError の引数を修正（AppError型に準拠）
         handleError({
           message: errorMessage,
-          type: 'NOT_FOUND',
+          type: "NOT_FOUND",
         });
 
-        console.error('❌ 顧客詳細ページエラー:', error);
+        console.error("❌ 顧客詳細ページエラー:", error);
+
+        // 顧客が見つからない場合は顧客一覧にリダイレクト
+        if (errorMessage.includes("見つかりません")) {
+          setTimeout(() => {
+            navigate("/customers");
+          }, 2000); // エラーメッセージ表示後にリダイレクト
+        }
       }
     };
 
@@ -316,17 +319,19 @@ export const CustomerDetailPage: React.FC = () => {
   }, [
     customerId,
     customers.length,
-    customerLoading,
-    // Note: currentCustomer, selectCustomer, handleErrorは依存配列から除外
-    // 理由: 無限ループ防止。customersとcustomerIdの変更のみを監視
+    customerLoading.isLoading,
+    currentCustomer,
+    selectCustomer,
+    handleError,
+    navigate,
   ]);
 
   /**
    * URL変更時のタブ同期
    */
   useEffect(() => {
-    const hash = location.hash.replace('#', '');
-    if (hash && ['info', 'history', 'maintenance'].includes(hash)) {
+    const hash = location.hash.replace("#", "");
+    if (hash && ["info", "history", "maintenance"].includes(hash)) {
       setPageState((prev) => ({
         ...prev,
         currentTab: hash as TabValue,
@@ -360,9 +365,9 @@ export const CustomerDetailPage: React.FC = () => {
       // URL更新
       navigate(`${location.pathname}#${newTab}`, { replace: true });
 
-      showSnackbar(MESSAGES.info.tabChanged, 'info', 2000);
+      showSnackbar(MESSAGES.info.tabChanged, "info", 2000);
     },
-    [pageState.hasUnsavedChanges, navigate, location.pathname, showSnackbar]
+    [pageState.hasUnsavedChanges, navigate, location.pathname, showSnackbar],
   );
 
   /**
@@ -387,7 +392,7 @@ export const CustomerDetailPage: React.FC = () => {
       }
     }
 
-    navigate('/customers');
+    navigate("/customers");
   }, [pageState.hasUnsavedChanges, navigate]);
 
   /**
@@ -408,15 +413,18 @@ export const CustomerDetailPage: React.FC = () => {
         variant="outlined"
         onClick={handleBackToList}
         startIcon={<ArrowBackIcon />}
-        size={isMobile ? 'large' : 'medium'}
+        size={isMobile ? "large" : "medium"}
         sx={{
           minHeight: BUTTON_SIZE.minHeight.tablet,
-          fontSize: isMobile ? FONT_SIZES.body.mobile : FONT_SIZES.label.desktop,
-        }}>
+          fontSize: isMobile
+            ? FONT_SIZES.body.mobile
+            : FONT_SIZES.label.desktop,
+        }}
+      >
         {MESSAGES.action.backToList}
       </Button>,
     ],
-    [isMobile, handleBackToList]
+    [isMobile, handleBackToList],
   );
 
   // ================================
@@ -428,12 +436,13 @@ export const CustomerDetailPage: React.FC = () => {
    */
   const renderLoading = () => (
     <Container maxWidth={responsiveSettings.containerMaxWidth} sx={{ py: 4 }}>
-      <Box sx={{ textAlign: 'center', py: 8 }}>
+      <Box sx={{ textAlign: "center", py: 8 }}>
         <CircularProgress size={60} thickness={4} sx={{ mb: 3 }} />
         <Typography
           variant="h6"
           color="text.secondary"
-          sx={{ fontSize: FONT_SIZES.subtitle.desktop }}>
+          sx={{ fontSize: FONT_SIZES.subtitle.desktop }}
+        >
           {MESSAGES.info.loading}
         </Typography>
       </Box>
@@ -449,13 +458,14 @@ export const CustomerDetailPage: React.FC = () => {
         severity="error"
         sx={{
           mb: 3,
-          '& .MuiAlert-message': {
-            width: '100%',
+          "& .MuiAlert-message": {
+            width: "100%",
           },
-        }}>
+        }}
+      >
         <Box>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-            <WarningIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+          <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
+            <WarningIcon sx={{ mr: 1, verticalAlign: "middle" }} />
             エラーが発生しました
           </Typography>
           <Typography variant="body2" sx={{ mb: 2 }}>
@@ -485,7 +495,7 @@ export const CustomerDetailPage: React.FC = () => {
     }
 
     switch (pageState.currentTab) {
-      case 'info':
+      case "info":
         return (
           <CustomerForm
             customer={currentCustomer}
@@ -493,7 +503,7 @@ export const CustomerDetailPage: React.FC = () => {
           />
         );
 
-      case 'history':
+      case "history":
         return (
           <ServiceRecordList
             customerId={currentCustomer.customerId}
@@ -501,7 +511,7 @@ export const CustomerDetailPage: React.FC = () => {
           />
         );
 
-      case 'maintenance':
+      case "maintenance":
         return (
           <MaintenancePrediction
             customerId={currentCustomer.customerId}
@@ -518,14 +528,16 @@ export const CustomerDetailPage: React.FC = () => {
   // メインレンダー
   // ================================
 
+  // 顧客が存在しない場合は顧客一覧にリダイレクト（条件付きuseEffectを回避）
+  useEffect(() => {
+    if (!pageState.loading && !currentCustomer && !pageState.error) {
+      navigate("/customers");
+    }
+  }, [pageState.loading, currentCustomer, pageState.error, navigate]);
+
   // ローディング状態
   if (pageState.loading) {
     return renderLoading();
-  }
-
-  if (!currentCustomer) {
-    navigate('/customers');
-    return;
   }
 
   // エラー状態
@@ -533,10 +545,16 @@ export const CustomerDetailPage: React.FC = () => {
     return renderError();
   }
 
+  // 顧客が見つからない場合
+  if (!currentCustomer) {
+    return null;
+  }
+
   return (
     <Container
       maxWidth={responsiveSettings.containerMaxWidth}
-      sx={{ py: responsiveSettings.spacing }}>
+      sx={{ py: responsiveSettings.spacing }}
+    >
       {/* Page Header */}
       <PageHeader
         title={`${currentCustomer.companyName} 様`}
@@ -549,40 +567,42 @@ export const CustomerDetailPage: React.FC = () => {
         <Tabs
           value={pageState.currentTab}
           onChange={handleTabChange}
-          variant={isMobile ? 'fullWidth' : 'standard'}
+          variant={isMobile ? "fullWidth" : "standard"}
           centered={!isMobile}
           sx={{
-            '& .MuiTab-root': {
+            "& .MuiTab-root": {
               minHeight: responsiveSettings.tabMinHeight,
               fontSize: responsiveSettings.fontSize,
-              fontWeight: 'bold',
-              textTransform: 'none',
-              padding: isMobile ? '12px 16px' : '12px 24px',
-              '&:hover': {
+              fontWeight: "bold",
+              textTransform: "none",
+              padding: isMobile ? "12px 16px" : "12px 24px",
+              "&:hover": {
                 backgroundColor: theme.palette.action.hover,
               },
-              '&.Mui-selected': {
+              "&.Mui-selected": {
                 color: theme.palette.primary.main,
-                fontWeight: 'bold',
+                fontWeight: "bold",
               },
             },
-            '& .MuiTabs-indicator': {
+            "& .MuiTabs-indicator": {
               height: 3,
-              borderRadius: '2px 2px 0 0',
+              borderRadius: "2px 2px 0 0",
             },
-          }}>
+          }}
+        >
           {TAB_CONFIGS.map((tab) => (
             <Tab
               key={tab.value}
               label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   {tab.icon}
                   <Typography
                     component="span"
                     sx={{
                       fontSize: responsiveSettings.fontSize,
-                      fontWeight: 'inherit',
-                    }}>
+                      fontWeight: "inherit",
+                    }}
+                  >
                     {tab.label}
                   </Typography>
                 </Box>
@@ -595,19 +615,20 @@ export const CustomerDetailPage: React.FC = () => {
       </Paper>
 
       {/* Tab content */}
-      <Box sx={{ minHeight: '60vh' }}>{renderTabContent()}</Box>
+      <Box sx={{ minHeight: "60vh" }}>{renderTabContent()}</Box>
 
       {/* 未保存変更インジケーター */}
       {pageState.hasUnsavedChanges && (
         <Alert
           severity="warning"
           sx={{
-            position: 'fixed',
+            position: "fixed",
             bottom: 24,
             right: 24,
             zIndex: theme.zIndex.snackbar,
             maxWidth: 300,
-          }}>
+          }}
+        >
           未保存の変更があります
         </Alert>
       )}

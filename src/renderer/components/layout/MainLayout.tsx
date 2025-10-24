@@ -1,6 +1,6 @@
-import { Box, Container, styled } from '@mui/material';
-import React from 'react';
-import { Header } from './Header';
+import { Box, Container, styled } from "@mui/material";
+import React from "react";
+import { Header } from "./Header";
 
 // =============================
 // 🔧 修正: MainContentArea の型安全な component prop 対応
@@ -17,17 +17,17 @@ import { Header } from './Header';
 // Main Content Area with proper component prop typing
 const MainContentArea = styled(Box)<{ component?: React.ElementType }>(
   ({ theme }) => ({
-    minHeight: 'calc(100vh - 72px)', // 修正: 64px → 72px
+    minHeight: "calc(100vh - 72px)", // 修正: 64px → 72px
     backgroundColor: theme.palette.background.default,
     paddingTop: theme.spacing(3),
     paddingBottom: theme.spacing(3),
-    width: '100%', // 幅を明示的に指定
+    width: "100%", // 幅を明示的に指定
 
     // フレックスレイアウトでコンテンツを中央配置
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center', // 子要素を横幅いっぱいに展開
-  })
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center", // 子要素を横幅いっぱいに展開
+  }),
 );
 
 // TypeScript Type Definition
@@ -56,12 +56,13 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <Box
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-        width: '100%',
-        overflow: 'hidden', // 横スクロール防止
-      }}>
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        width: "100%",
+        overflow: "hidden", // 横スクロール防止
+      }}
+    >
       {/* =============================
        * Header Area - 統合済みナビゲーション
        * ============================= */}
@@ -77,10 +78,11 @@ export function MainLayout({ children }: MainLayoutProps) {
           sx={{
             paddingX: { xs: 2, sm: 3, md: 4 },
             // コンテンツの垂直中央寄せ防止（上寄せ）
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-          }}>
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           {children}
         </Container>
       </MainContentArea>

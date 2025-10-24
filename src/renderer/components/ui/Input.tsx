@@ -1,109 +1,109 @@
-import { ErrorOutline, Visibility, VisibilityOff } from '@mui/icons-material';
+import { ErrorOutline, Visibility, VisibilityOff } from "@mui/icons-material";
 import {
   InputAdornment,
   styled,
   TextField,
   TextFieldProps,
   useTheme,
-} from '@mui/material';
-import { forwardRef } from 'react';
+} from "@mui/material";
+import { forwardRef } from "react";
 
 // 50代向けの入力フィールドスタイル
 const StyledTextField = styled(TextField)<CustomInputProps>(
   ({ theme, inputsize }) => ({
-    '& .MuiInputBase-root': {
+    "& .MuiInputBase-root": {
       // 最小高さとフォントサイズ
       minHeight:
-        inputsize === 'small'
-          ? '48px'
-          : inputsize === 'medium'
-          ? '56px'
-          : '64px',
+        inputsize === "small"
+          ? "48px"
+          : inputsize === "medium"
+            ? "56px"
+            : "64px",
       fontSize:
-        inputsize === 'small'
-          ? '16px'
-          : inputsize === 'medium'
-          ? '18px'
-          : '20px',
+        inputsize === "small"
+          ? "16px"
+          : inputsize === "medium"
+            ? "18px"
+            : "20px",
 
       // パディング調整
-      '& .MuiInputBase-input': {
+      "& .MuiInputBase-input": {
         padding:
-          inputsize === 'small'
-            ? '14px 16px'
-            : inputsize === 'medium'
-            ? '18px 20px'
-            : '22px 24px',
-        fontSize: 'inherit',
+          inputsize === "small"
+            ? "14px 16px"
+            : inputsize === "medium"
+              ? "18px 20px"
+              : "22px 24px",
+        fontSize: "inherit",
         lineHeight: 1.5,
       },
 
       // ボーダーラディウス
-      borderRadius: '8px',
+      borderRadius: "8px",
 
       // フォーカス時のスタイル強化
-      '&.Mui-focused': {
-        '& .MuiOutlinedInput-notchedOutline': {
-          borderWidth: '3px',
+      "&.Mui-focused": {
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderWidth: "3px",
           borderColor: theme.palette.primary.main,
         },
       },
 
       // エラー時のスタイル
-      '&.Mui-error': {
-        '& .MuiOutlinedInput-notchedOutline': {
+      "&.Mui-error": {
+        "& .MuiOutlinedInput-notchedOutline": {
           borderColor: theme.palette.error.main,
-          borderWidth: '2px',
+          borderWidth: "2px",
         },
       },
 
       // ホバー時のスタイル
-      '&:hover:not(.Mui-focused):not(.Mui-error)': {
-        '& .MuiOutlinedInput-notchedOutline': {
+      "&:hover:not(.Mui-focused):not(.Mui-error)": {
+        "& .MuiOutlinedInput-notchedOutline": {
           borderColor: theme.palette.primary.light,
-          borderWidth: '2px',
+          borderWidth: "2px",
         },
       },
     },
 
     // ラベルのスタイル
-    '& .MuiInputLabel-root': {
+    "& .MuiInputLabel-root": {
       fontSize:
-        inputsize === 'small'
-          ? '16px'
-          : inputsize === 'medium'
-          ? '18px'
-          : '20px',
+        inputsize === "small"
+          ? "16px"
+          : inputsize === "medium"
+            ? "18px"
+            : "20px",
       fontWeight: 500,
       color: theme.palette.text.primary,
 
-      '&.Mui-focused': {
+      "&.Mui-focused": {
         color: theme.palette.primary.main,
         fontWeight: 600,
       },
 
-      '&.Mui-error': {
+      "&.Mui-error": {
         color: theme.palette.error.main,
       },
     },
 
     // ヘルパーテキストのスタイル
-    '& .MuiFormHelperText-root': {
-      fontSize: '14px',
-      marginTop: '8px',
+    "& .MuiFormHelperText-root": {
+      fontSize: "14px",
+      marginTop: "8px",
       lineHeight: 1.4,
 
-      '&.Mui-error': {
+      "&.Mui-error": {
         color: theme.palette.error.main,
         fontWeight: 500,
       },
     },
-  })
+  }),
 );
 
 // カスタムプロパティの型定義
-interface CustomInputProps extends Omit<TextFieldProps, 'size'> {
-  inputsize?: 'small' | 'medium' | 'large';
+interface CustomInputProps extends Omit<TextFieldProps, "size"> {
+  inputsize?: "small" | "medium" | "large";
   showPassword?: boolean;
   onTogglePassword?: () => void;
   isPassword?: boolean;
@@ -116,14 +116,14 @@ export const Input = forwardRef<HTMLDivElement, CustomInputProps>(
       label,
       error,
       helperText,
-      inputsize = 'medium',
+      inputsize = "medium",
       showPassword = false,
       onTogglePassword,
       isPassword = false,
-      type = 'text',
+      type = "text",
       ...props
     },
-    ref
+    ref,
   ) => {
     const theme = useTheme();
 
@@ -133,21 +133,22 @@ export const Input = forwardRef<HTMLDivElement, CustomInputProps>(
         <div
           onClick={onTogglePassword}
           style={{
-            cursor: 'pointer',
-            padding: '8px',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            cursor: "pointer",
+            padding: "8px",
+            borderRadius: "4px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
           role="button"
           tabIndex={0}
-          aria-label={showPassword ? 'パスワードを非表示' : 'パスワードを表示'}
+          aria-label={showPassword ? "パスワードを非表示" : "パスワードを表示"}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (e.key === "Enter" || e.key === " ") {
               onTogglePassword?.();
             }
-          }}>
+          }}
+        >
           {showPassword ? <VisibilityOff /> : <Visibility />}
         </div>
       </InputAdornment>
@@ -170,7 +171,7 @@ export const Input = forwardRef<HTMLDivElement, CustomInputProps>(
         error={error}
         helperText={helperText}
         inputsize={inputsize}
-        type={isPassword ? (showPassword ? 'text' : 'password') : type}
+        type={isPassword ? (showPassword ? "text" : "password") : type}
         variant="outlined"
         fullWidth
         InputProps={{
@@ -179,23 +180,23 @@ export const Input = forwardRef<HTMLDivElement, CustomInputProps>(
         }}
         // アクセシビリティ属性
         inputProps={{
-          'aria-describedby': helperText
-            ? `${props.id || 'input'}-helper-text`
+          "aria-describedby": helperText
+            ? `${props.id || "input"}-helper-text`
             : undefined,
-          'aria-invalid': error ? 'true' : 'false',
+          "aria-invalid": error ? "true" : "false",
           ...props.inputProps,
         }}
         FormHelperTextProps={{
-          id: `${props.id || 'input'}-helper-text`,
+          id: `${props.id || "input"}-helper-text`,
           ...props.FormHelperTextProps,
         }}
         {...props}
       />
     );
-  }
+  },
 );
 
-Input.displayName = 'Input';
+Input.displayName = "Input";
 
 // 使用例のエクスポート
 export type { CustomInputProps as InputProps };

@@ -97,7 +97,7 @@ out/
 
 # CLAUDE
 CLAUDE.md
-
+.claude/
 # Database
 *.db
 *.db-journal

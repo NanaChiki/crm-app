@@ -30,6 +30,8 @@
  * - isSubmitting: 送信中状態管理
  */
 
+import React, { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ArrowBack as ArrowBackIcon,
   Business as BusinessIcon,
@@ -40,7 +42,7 @@ import {
   Person as PersonIcon,
   Phone as PhoneIcon,
   Save as SaveIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -51,22 +53,19 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from '@mui/material';
-import React, { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+} from "@mui/material";
 
-// Custom Components
-import { PageHeader } from '../components/layout/PageHeader';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
+import { PageHeader } from "../components/layout/PageHeader";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
 
 // Custom Hooks
-import { useApp } from '../contexts/AppContext';
-import { useCustomerForm } from '../hooks/useCustomerForm';
+import { useApp } from "../contexts/AppContext";
+import { useCustomerForm } from "../hooks/useCustomerForm";
 
 // Design System
-import { FONT_SIZES, SPACING, BUTTON_SIZE } from '../constants/uiDesignSystem';
+import { FONT_SIZES, SPACING, BUTTON_SIZE } from "../constants/uiDesignSystem";
 
 // ================================
 // 定数定義
@@ -101,45 +100,45 @@ const RESPONSIVE_SETTINGS = {
  * - ユーザーの不安を解消する表現
  */
 const MESSAGES = {
-  pageTitle: '新規顧客登録',
-  pageSubtitle: '新しい顧客（工務店）の情報を入力してください',
+  pageTitle: "新規顧客登録",
+  pageSubtitle: "新しい顧客（工務店）の情報を入力してください",
 
   success: {
-    created: '顧客情報を登録しました',
+    created: "顧客情報を登録しました",
   },
 
   error: {
     saveFailed:
-      '登録に失敗しました。入力内容を確認してもう一度お試しください。',
+      "登録に失敗しました。入力内容を確認してもう一度お試しください。",
   },
 
   info: {
-    requiredFields: '※ 必須の項目は必ず入力してください',
-    cancelConfirm: '入力内容が保存されていません。本当にキャンセルしますか？',
+    requiredFields: "※ 必須の項目は必ず入力してください",
+    cancelConfirm: "入力内容が保存されていません。本当にキャンセルしますか？",
   },
 
   labels: {
-    companyName: '会社名',
-    contactPerson: '担当者名',
-    phone: '電話番号',
-    email: 'メールアドレス',
-    address: '住所',
-    notes: '備考',
+    companyName: "会社名",
+    contactPerson: "担当者名",
+    phone: "電話番号",
+    email: "メールアドレス",
+    address: "住所",
+    notes: "備考",
   },
 
   placeholders: {
-    companyName: '例：山田工務店',
-    contactPerson: '例：山田太郎',
-    phone: '例：03-1234-5678',
-    email: '例：yamada@example.com',
-    address: '例：東京都新宿区○○1-2-3',
-    notes: '特記事項があれば入力してください',
+    companyName: "例：山田工務店",
+    contactPerson: "例：山田太郎",
+    phone: "例：03-1234-5678",
+    email: "例：yamada@example.com",
+    address: "例：東京都新宿区○○1-2-3",
+    notes: "特記事項があれば入力してください",
   },
 
   buttons: {
-    save: '登録する',
-    cancel: 'キャンセル',
-    back: '戻る',
+    save: "登録する",
+    cancel: "キャンセル",
+    back: "戻る",
   },
 };
 
@@ -181,7 +180,7 @@ export const CustomerFormPage: React.FC = () => {
   const navigate = useNavigate();
   const { showSnackbar } = useApp();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   /**
    * useCustomerFormフック
@@ -199,7 +198,7 @@ export const CustomerFormPage: React.FC = () => {
     handleSubmit,
     resetForm,
   } = useCustomerForm({
-    mode: 'create',
+    mode: "create",
   });
 
   // ================================
@@ -231,7 +230,7 @@ export const CustomerFormPage: React.FC = () => {
     }
 
     // 顧客一覧ページへ戻る
-    navigate('/customers');
+    navigate("/customers");
   }, [hasChanges, navigate]);
 
   /**
@@ -243,27 +242,26 @@ export const CustomerFormPage: React.FC = () => {
   const handleFormSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      console.log('📝 新規顧客登録フォーム送信開始');
 
       try {
         // フォーム送信
         await handleSubmit(e);
 
         // 成功メッセージ表示
-        showSnackbar(MESSAGES.success.created, 'success');
+        showSnackbar(MESSAGES.success.created, "success");
 
         // 顧客一覧ページに戻る
         // （新規作成した顧客のIDがない場合は一覧に戻る）
-        navigate('/customers');
+        navigate("/customers");
       } catch (error) {
         // エラーメッセージ表示
         const errorMessage =
           error instanceof Error ? error.message : MESSAGES.error.saveFailed;
-        showSnackbar(errorMessage, 'error');
-        console.error('❌ 顧客登録エラー:', error);
+        showSnackbar(errorMessage, "error");
+        console.error("❌ 顧客登録エラー:", error);
       }
     },
-    [handleSubmit, showSnackbar, navigate]
+    [handleSubmit, showSnackbar, navigate],
   );
 
   // ================================
@@ -278,7 +276,8 @@ export const CustomerFormPage: React.FC = () => {
           variant="outlined"
           onClick={handleCancel}
           startIcon={<ArrowBackIcon />}
-          sx={{ minHeight: BUTTON_SIZE.minHeight.desktop }}>
+          sx={{ minHeight: BUTTON_SIZE.minHeight.desktop }}
+        >
           {MESSAGES.buttons.back}
         </Button>
       </Box>
@@ -296,7 +295,8 @@ export const CustomerFormPage: React.FC = () => {
     <Alert severity="info" sx={{ mb: SPACING.gap.large }}>
       <Typography
         variant="body2"
-        sx={{ fontSize: responsiveSettings.fontSize }}>
+        sx={{ fontSize: responsiveSettings.fontSize }}
+      >
         {MESSAGES.info.requiredFields}
       </Typography>
     </Alert>
@@ -311,14 +311,22 @@ export const CustomerFormPage: React.FC = () => {
       {/* 会社名（必須） */}
       <Grid size={{ xs: 12, md: 6 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACING.gap.small,
+              mb: SPACING.gap.small,
+            }}
+          >
             <BusinessIcon color="primary" />
             <Typography
               variant="subtitle1"
               sx={{
                 fontSize: responsiveSettings.fontSize,
                 fontWeight: 600,
-              }}>
+              }}
+            >
               {MESSAGES.labels.companyName}
             </Typography>
             <Chip label="必須" size="small" color="error" />
@@ -326,8 +334,8 @@ export const CustomerFormPage: React.FC = () => {
           <Input
             fullWidth
             name="companyName"
-            value={formData.companyName || ''}
-            onChange={(e) => handleChange('companyName', e.target.value)}
+            value={formData.companyName || ""}
+            onChange={(e) => handleChange("companyName", e.target.value)}
             error={!!errors.companyName}
             helperText={errors.companyName}
             placeholder={MESSAGES.placeholders.companyName}
@@ -339,22 +347,30 @@ export const CustomerFormPage: React.FC = () => {
       {/* 担当者名 */}
       <Grid size={{ xs: 12, md: 6 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACING.gap.small,
+              mb: SPACING.gap.small,
+            }}
+          >
             <PersonIcon color="primary" />
             <Typography
               variant="subtitle1"
               sx={{
                 fontSize: responsiveSettings.fontSize,
                 fontWeight: 600,
-              }}>
+              }}
+            >
               {MESSAGES.labels.contactPerson}
             </Typography>
           </Box>
           <Input
             fullWidth
             name="contactPerson"
-            value={formData.contactPerson || ''}
-            onChange={(e) => handleChange('contactPerson', e.target.value)}
+            value={formData.contactPerson || ""}
+            onChange={(e) => handleChange("contactPerson", e.target.value)}
             error={!!errors.contactPerson}
             helperText={errors.contactPerson}
             placeholder={MESSAGES.placeholders.contactPerson}
@@ -366,14 +382,22 @@ export const CustomerFormPage: React.FC = () => {
       {/* 電話番号 */}
       <Grid size={{ xs: 12, md: 6 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACING.gap.small,
+              mb: SPACING.gap.small,
+            }}
+          >
             <PhoneIcon color="primary" />
             <Typography
               variant="subtitle1"
               sx={{
                 fontSize: responsiveSettings.fontSize,
                 fontWeight: 600,
-              }}>
+              }}
+            >
               {MESSAGES.labels.phone}
             </Typography>
           </Box>
@@ -381,8 +405,8 @@ export const CustomerFormPage: React.FC = () => {
             fullWidth
             name="phone"
             type="tel"
-            value={formData.phone || ''}
-            onChange={(e) => handleChange('phone', e.target.value)}
+            value={formData.phone || ""}
+            onChange={(e) => handleChange("phone", e.target.value)}
             error={!!errors.phone}
             helperText={errors.phone}
             placeholder={MESSAGES.placeholders.phone}
@@ -394,14 +418,22 @@ export const CustomerFormPage: React.FC = () => {
       {/* メールアドレス */}
       <Grid size={{ xs: 12, md: 6 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACING.gap.small,
+              mb: SPACING.gap.small,
+            }}
+          >
             <EmailIcon color="primary" />
             <Typography
               variant="subtitle1"
               sx={{
                 fontSize: responsiveSettings.fontSize,
                 fontWeight: 600,
-              }}>
+              }}
+            >
               {MESSAGES.labels.email}
             </Typography>
           </Box>
@@ -409,8 +441,8 @@ export const CustomerFormPage: React.FC = () => {
             fullWidth
             name="email"
             type="email"
-            value={formData.email || ''}
-            onChange={(e) => handleChange('email', e.target.value)}
+            value={formData.email || ""}
+            onChange={(e) => handleChange("email", e.target.value)}
             error={!!errors.email}
             helperText={errors.email}
             placeholder={MESSAGES.placeholders.email}
@@ -422,22 +454,30 @@ export const CustomerFormPage: React.FC = () => {
       {/* 住所 */}
       <Grid size={{ xs: 12 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACING.gap.small,
+              mb: SPACING.gap.small,
+            }}
+          >
             <LocationOnIcon color="primary" />
             <Typography
               variant="subtitle1"
               sx={{
                 fontSize: responsiveSettings.fontSize,
                 fontWeight: 600,
-              }}>
+              }}
+            >
               {MESSAGES.labels.address}
             </Typography>
           </Box>
           <Input
             fullWidth
             name="address"
-            value={formData.address || ''}
-            onChange={(e) => handleChange('address', e.target.value)}
+            value={formData.address || ""}
+            onChange={(e) => handleChange("address", e.target.value)}
             error={!!errors.address}
             helperText={errors.address}
             placeholder={MESSAGES.placeholders.address}
@@ -449,22 +489,30 @@ export const CustomerFormPage: React.FC = () => {
       {/* 備考 */}
       <Grid size={{ xs: 12 }}>
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: SPACING.gap.small, mb: SPACING.gap.small }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: SPACING.gap.small,
+              mb: SPACING.gap.small,
+            }}
+          >
             <NotesIcon color="primary" />
             <Typography
               variant="subtitle1"
               sx={{
                 fontSize: responsiveSettings.fontSize,
                 fontWeight: 600,
-              }}>
+              }}
+            >
               {MESSAGES.labels.notes}
             </Typography>
           </Box>
           <Input
             fullWidth
             name="notes"
-            value={formData.notes || ''}
-            onChange={(e) => handleChange('notes', e.target.value)}
+            value={formData.notes || ""}
+            onChange={(e) => handleChange("notes", e.target.value)}
             error={!!errors.notes}
             helperText={errors.notes}
             multiline
@@ -484,12 +532,13 @@ export const CustomerFormPage: React.FC = () => {
   const renderActionButtons = () => (
     <Box
       sx={{
-        display: 'flex',
+        display: "flex",
         gap: SPACING.gap.medium,
-        justifyContent: 'center',
-        flexDirection: isMobile ? 'column' : 'row',
+        justifyContent: "center",
+        flexDirection: isMobile ? "column" : "row",
         mt: SPACING.section.desktop,
-      }}>
+      }}
+    >
       {/* キャンセルボタン */}
       <Button
         variant="outlined"
@@ -498,10 +547,11 @@ export const CustomerFormPage: React.FC = () => {
         disabled={isSubmitting}
         startIcon={<CancelIcon />}
         sx={{
-          minWidth: isMobile ? '100%' : 200,
+          minWidth: isMobile ? "100%" : 200,
           minHeight: responsiveSettings.buttonHeight,
           fontSize: responsiveSettings.fontSize,
-        }}>
+        }}
+      >
         {MESSAGES.buttons.cancel}
       </Button>
 
@@ -513,11 +563,12 @@ export const CustomerFormPage: React.FC = () => {
         disabled={isSubmitting || !isValid}
         startIcon={isSubmitting ? <CircularProgress size={20} /> : <SaveIcon />}
         sx={{
-          minWidth: isMobile ? '100%' : 200,
+          minWidth: isMobile ? "100%" : 200,
           minHeight: responsiveSettings.buttonHeight,
           fontSize: responsiveSettings.fontSize,
-        }}>
-        {isSubmitting ? '登録中...' : MESSAGES.buttons.save}
+        }}
+      >
+        {isSubmitting ? "登録中..." : MESSAGES.buttons.save}
       </Button>
     </Box>
   );

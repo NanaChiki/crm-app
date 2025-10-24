@@ -225,12 +225,12 @@ export interface ServiceRecordSearchParams {
 
 export type ServiceRecordListItem = Pick<
   ServiceRecord,
-  | 'recordId'
-  | 'customerId'
-  | 'serviceDate'
-  | 'serviceType'
-  | 'amount'
-  | 'status'
+  | "recordId"
+  | "customerId"
+  | "serviceDate"
+  | "serviceType"
+  | "amount"
+  | "status"
 >;
 
 // =============================================================================

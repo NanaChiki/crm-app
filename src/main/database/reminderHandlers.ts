@@ -19,19 +19,26 @@
  * - トランザクション処理
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from "@prisma/client";
 
-// Prisma Clientインスタンスをキャッシュ
 let prismaInstance: PrismaClient | null = null;
 
 /**
  * Prisma Clientインスタンスを取得（遅延ロード）
+ *
+ * @returns {Promise<PrismaClient>} Prismaクライアントインスタンス
  */
 async function getPrisma(): Promise<PrismaClient> {
   if (!prismaInstance) {
-    const { PrismaClient: PrismaClientClass } = await import('@prisma/client');
-    prismaInstance = new PrismaClientClass();
-    console.log('✅ Prisma Client初期化完了');
+    const { PrismaClient: PrismaClientClass } = await import("@prisma/client");
+    prismaInstance = new PrismaClientClass({
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL,
+        },
+      },
+    });
+    console.log("✅ Prisma Client初期化完了");
   }
   return prismaInstance;
 }
@@ -39,12 +46,19 @@ async function getPrisma(): Promise<PrismaClient> {
 /**
  * PrismaオブジェクトをIPC送信可能なプレーンオブジェクトに変換
  * Decimal型、Date型などをシリアライズ可能な形式に変換
+ *
+ * @param {any} data - シリアライズするデータ
+ * @returns {any} シリアライズされたデータ
  */
 function serializeForIPC(data: any): any {
   return JSON.parse(
     JSON.stringify(data, (key, value) => {
       // Decimal型を数値文字列に変換
-      if (value && typeof value === 'object' && value.constructor?.name === 'Decimal') {
+      if (
+        value &&
+        typeof value === "object" &&
+        value.constructor?.name === "Decimal"
+      ) {
         return value.toString();
       }
       // Date型をISO文字列に変換
@@ -52,7 +66,7 @@ function serializeForIPC(data: any): any {
         return value.toISOString();
       }
       return value;
-    })
+    }),
   );
 }
 
@@ -100,15 +114,15 @@ interface UpdateReminderInput {
 /**
  * リマインダー一覧取得（フィルター対応）
  *
- * @param filters - フィルター条件
- * @returns リマインダー一覧（顧客情報付き）
+ * @param {ReminderFilters} [filters] - フィルター条件（顧客ID、ステータス、期間）
+ * @returns {Promise<DatabaseResult<any[]>>} リマインダー一覧（顧客情報・サービス履歴付き、送信予定日昇順）
+ * @throws {Error} データベース接続エラー時
  */
 export async function fetchReminders(
-  filters?: ReminderFilters
+  filters?: ReminderFilters,
 ): Promise<DatabaseResult<any[]>> {
   try {
     const prisma = await getPrisma();
-    console.log('📋 DB: リマインダー取得開始', filters);
 
     // where条件構築
     const where: any = {};
@@ -141,11 +155,9 @@ export async function fetchReminders(
         serviceRecord: true,
       },
       orderBy: {
-        reminderDate: 'asc', // 送信予定日の近い順
+        reminderDate: "asc", // 送信予定日の近い順
       },
     });
-
-    console.log(`✅ DB: ${reminders.length}件のリマインダーを取得`);
 
     const serializedReminders = serializeForIPC(reminders);
     return {
@@ -153,7 +165,7 @@ export async function fetchReminders(
       data: serializedReminders,
     };
   } catch (error: any) {
-    console.error('❌ DB: リマインダー取得エラー:', error);
+    console.error("❌ DB: リマインダー取得エラー:", error);
 
     return {
       success: false,
@@ -169,15 +181,15 @@ export async function fetchReminders(
 /**
  * 新規リマインダー作成
  *
- * @param input - リマインダー作成データ
- * @returns 作成されたリマインダー
+ * @param {CreateReminderInput} input - リマインダー作成データ（顧客ID、タイトル、メッセージ、送信予定日等）
+ * @returns {Promise<DatabaseResult<any>>} 作成されたリマインダー
+ * @throws {Error} 顧客が存在しない場合、またはサービス履歴が存在しない場合
  */
 export async function createReminder(
-  input: CreateReminderInput
+  input: CreateReminderInput,
 ): Promise<DatabaseResult<any>> {
   try {
     const prisma = await getPrisma();
-    console.log('📝 DB: リマインダー作成開始', input);
 
     // 顧客存在確認
     const customer = await prisma.customer.findUnique({
@@ -187,7 +199,7 @@ export async function createReminder(
     if (!customer) {
       return {
         success: false,
-        error: '指定された顧客が見つかりません',
+        error: "指定された顧客が見つかりません",
       };
     }
 
@@ -200,7 +212,7 @@ export async function createReminder(
       if (!serviceRecord) {
         return {
           success: false,
-          error: '指定されたサービス履歴が見つかりません',
+          error: "指定されたサービス履歴が見つかりません",
         };
       }
     }
@@ -213,13 +225,11 @@ export async function createReminder(
         title: input.title,
         message: input.message,
         reminderDate: new Date(input.reminderDate),
-        status: 'scheduled',
-        createdBy: input.createdBy || 'manual',
+        status: "scheduled",
+        createdBy: input.createdBy || "manual",
         notes: input.notes || null,
       },
     });
-
-    console.log('✅ DB: リマインダー作成成功', reminder.reminderId);
 
     const serializedReminder = serializeForIPC(reminder);
     return {
@@ -227,7 +237,7 @@ export async function createReminder(
       data: serializedReminder,
     };
   } catch (error: any) {
-    console.error('❌ DB: リマインダー作成エラー:', error);
+    console.error("❌ DB: リマインダー作成エラー:", error);
 
     return {
       success: false,
@@ -243,15 +253,15 @@ export async function createReminder(
 /**
  * リマインダー更新
  *
- * @param input - リマインダー更新データ
- * @returns 更新されたリマインダー
+ * @param {UpdateReminderInput} input - リマインダー更新データ（リマインダーID、タイトル、メッセージ、ステータス等）
+ * @returns {Promise<DatabaseResult<any>>} 更新されたリマインダー
+ * @throws {Error} リマインダーが存在しない場合
  */
 export async function updateReminder(
-  input: UpdateReminderInput
+  input: UpdateReminderInput,
 ): Promise<DatabaseResult<any>> {
   try {
     const prisma = await getPrisma();
-    console.log('📝 DB: リマインダー更新開始', input.reminderId);
 
     // リマインダー存在確認
     const existingReminder = await prisma.reminder.findUnique({
@@ -261,23 +271,31 @@ export async function updateReminder(
     if (!existingReminder) {
       return {
         success: false,
-        error: '指定されたリマインダーが見つかりません',
+        error: "指定されたリマインダーが見つかりません",
       };
     }
 
     // 更新データ構築
     const updateData: any = {};
 
-    if (input.title !== undefined) updateData.title = input.title;
-    if (input.message !== undefined) updateData.message = input.message;
+    if (input.title !== undefined) {
+      updateData.title = input.title;
+    }
+    if (input.message !== undefined) {
+      updateData.message = input.message;
+    }
     if (input.reminderDate !== undefined) {
       updateData.reminderDate = new Date(input.reminderDate);
     }
-    if (input.status !== undefined) updateData.status = input.status;
+    if (input.status !== undefined) {
+      updateData.status = input.status;
+    }
     if (input.sentAt !== undefined) {
       updateData.sentAt = input.sentAt ? new Date(input.sentAt) : null;
     }
-    if (input.notes !== undefined) updateData.notes = input.notes;
+    if (input.notes !== undefined) {
+      updateData.notes = input.notes;
+    }
 
     // リマインダー更新
     const reminder = await prisma.reminder.update({
@@ -285,15 +303,13 @@ export async function updateReminder(
       data: updateData,
     });
 
-    console.log('✅ DB: リマインダー更新成功', reminder.reminderId);
-
     const serializedReminder = serializeForIPC(reminder);
     return {
       success: true,
       data: serializedReminder,
     };
   } catch (error: any) {
-    console.error('❌ DB: リマインダー更新エラー:', error);
+    console.error("❌ DB: リマインダー更新エラー:", error);
 
     return {
       success: false,
@@ -309,15 +325,15 @@ export async function updateReminder(
 /**
  * リマインダー削除
  *
- * @param reminderId - リマインダーID
- * @returns 削除結果
+ * @param {number} reminderId - リマインダーID
+ * @returns {Promise<DatabaseResult<void>>} 削除結果
+ * @throws {Error} リマインダーが存在しない場合、またはデータベースエラー時
  */
 export async function deleteReminder(
-  reminderId: number
+  reminderId: number,
 ): Promise<DatabaseResult<void>> {
   try {
     const prisma = await getPrisma();
-    console.log('🗑️ DB: リマインダー削除開始', reminderId);
 
     // リマインダー存在確認
     const existingReminder = await prisma.reminder.findUnique({
@@ -327,7 +343,7 @@ export async function deleteReminder(
     if (!existingReminder) {
       return {
         success: false,
-        error: '指定されたリマインダーが見つかりません',
+        error: "指定されたリマインダーが見つかりません",
       };
     }
 
@@ -336,13 +352,11 @@ export async function deleteReminder(
       where: { reminderId },
     });
 
-    console.log('✅ DB: ��マインダー削除成功', reminderId);
-
     return {
       success: true,
     };
   } catch (error: any) {
-    console.error('❌ DB: リマインダー削除エラー:', error);
+    console.error("❌ DB: リマインダー削除エラー:", error);
 
     return {
       success: false,
@@ -356,64 +370,64 @@ export async function deleteReminder(
 // ================================
 
 /**
- * リマインダーを送信済みにする
+ * リマインダーを送信済みにする（ステータスを"sent"に変更し、送信日時を記録）
  *
- * @param reminderId - リマインダーID
- * @returns 更新されたリマインダー
+ * @param {number} reminderId - リマインダーID
+ * @returns {Promise<DatabaseResult<any>>} 更新されたリマインダー
  */
 export async function markReminderAsSent(
-  reminderId: number
+  reminderId: number,
 ): Promise<DatabaseResult<any>> {
   return updateReminder({
     reminderId,
-    status: 'sent',
+    status: "sent",
     sentAt: new Date(),
   });
 }
 
 /**
- * リマインダーをキャンセルする
+ * リマインダーをキャンセルする（ステータスを"cancelled"に変更）
  *
- * @param reminderId - リマインダーID
- * @returns 更新されたリマインダー
+ * @param {number} reminderId - リマインダーID
+ * @returns {Promise<DatabaseResult<any>>} 更新されたリマインダー
  */
 export async function cancelReminder(
-  reminderId: number
+  reminderId: number,
 ): Promise<DatabaseResult<any>> {
   return updateReminder({
     reminderId,
-    status: 'cancelled',
+    status: "cancelled",
   });
 }
 
 /**
- * リマインダーを再スケジュールする（キャンセル→予定）
+ * リマインダーを再スケジュールする（キャンセル→予定に戻す）
  *
- * @param reminderId - リマインダーID
- * @returns 更新されたリマインダー
+ * @param {number} reminderId - リマインダーID
+ * @returns {Promise<DatabaseResult<any>>} 更新されたリマインダー
  */
 export async function rescheduleReminder(
-  reminderId: number
+  reminderId: number,
 ): Promise<DatabaseResult<any>> {
   return updateReminder({
     reminderId,
-    status: 'scheduled',
+    status: "scheduled",
     sentAt: null,
   });
 }
 
 /**
- * リマインダーを下書き中にする
+ * リマインダーを下書き中にする（ステータスを"drafting"に変更）
  *
- * @param reminderId - リマインダーID
- * @returns 更新されたリマインダー
+ * @param {number} reminderId - リマインダーID
+ * @returns {Promise<DatabaseResult<any>>} 更新されたリマインダー
  */
 export async function markReminderAsDrafting(
-  reminderId: number
+  reminderId: number,
 ): Promise<DatabaseResult<any>> {
   return updateReminder({
     reminderId,
-    status: 'drafting',
+    status: "drafting",
   });
 }
 
@@ -423,11 +437,13 @@ export async function markReminderAsDrafting(
 
 /**
  * Prismaクライアントを適切に終了
+ *
+ * @returns {Promise<void>}
  */
 export async function disconnectPrisma(): Promise<void> {
   if (prismaInstance) {
     await prismaInstance.$disconnect();
     prismaInstance = null;
-    console.log('✅ Prismaクライアント切断完了');
+    console.log("✅ Prismaクライアント切断完了");
   }
 }

@@ -1,10 +1,17 @@
+import React from "react";
+import {
+  Link as RouterLink,
+  useLocation,
+  useNavigate,
+  type LinkProps,
+} from "react-router-dom";
 import {
   Assessment as AssessmentIcon,
   Home as HomeIcon,
   Notifications as NotificationsIcon,
   People as PeopleIcon,
   Settings as SettingsIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   AppBar,
   Box,
@@ -16,28 +23,21 @@ import {
   useTheme,
   type ButtonProps,
   type TypographyProps,
-} from '@mui/material';
-import React from 'react';
-import {
-  Link as RouterLink,
-  useLocation,
-  useNavigate,
-  type LinkProps,
-} from 'react-router-dom'; // ← useNavigateを追加
+} from "@mui/material";
 
 // AppBar styled for those in their 50s
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   // Set the header height bigger
-  '& .MuiToolbar-root': {
-    minHeight: '72px', // for those in their 50s
+  "& .MuiToolbar-root": {
+    minHeight: "72px", // for those in their 50s
     paddingLeft: theme.spacing(3),
     paddingRight: theme.spacing(3),
 
     // Mobile styles
-    [theme.breakpoints.down('md')]: {
+    [theme.breakpoints.down("md")]: {
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
-      minHeight: '64px',
+      minHeight: "64px",
     },
   },
 
@@ -60,11 +60,11 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
  */
 
 // React Router Link の主要プロパティを抽出（オプショナルに変更）
-type RouterLinkProps = Partial<Pick<LinkProps, 'to' | 'replace' | 'state'>>;
+type RouterLinkProps = Partial<Pick<LinkProps, "to" | "replace" | "state">>;
 
 // NavButton用の拡張型定義
 interface NavButtonProps
-  extends Omit<ButtonProps, 'href' | 'component'>,
+  extends Omit<ButtonProps, "href" | "component">,
     RouterLinkProps {
   isActive?: boolean;
   component?: React.ElementType; // componentプロパティを明示的に追加
@@ -72,18 +72,18 @@ interface NavButtonProps
 
 const NavButton = styled(Button, {
   shouldForwardProp: (prop) =>
-    prop !== 'isActive' && // カスタムprop
-    prop !== 'to' && // Router prop
-    prop !== 'replace' && // Router prop
-    prop !== 'state' && // Router prop
-    prop !== 'component', // React Router component prop
+    prop !== "isActive" && // カスタムprop
+    prop !== "to" && // Router prop
+    prop !== "replace" && // Router prop
+    prop !== "state" && // Router prop
+    prop !== "component", // React Router component prop
 })<NavButtonProps>(({ theme, isActive }) => ({
   // Basic styles - Always visible
-  minHeight: '48px',
-  minWidth: '120px',
-  fontSize: '16px',
+  minHeight: "48px",
+  minWidth: "120px",
+  fontSize: "16px",
   fontWeight: isActive ? 700 : 500, // Active = bold, inactive = medium
-  textTransform: 'none',
+  textTransform: "none",
   borderRadius: theme.spacing(1),
   padding: theme.spacing(1.5, 3),
   margin: theme.spacing(0, 0.5),
@@ -91,116 +91,116 @@ const NavButton = styled(Button, {
   // Default state - Faint but visible for 50代 users
   color: isActive
     ? theme.palette.primary.contrastText
-    : 'rgba(255, 255, 255, 0.7)', // Faint white
-  backgroundColor: isActive ? theme.palette.primary.dark : 'transparent',
+    : "rgba(255, 255, 255, 0.7)", // Faint white
+  backgroundColor: isActive ? theme.palette.primary.dark : "transparent",
 
   // Smooth transitions for better UX
   transition: theme.transitions.create(
-    ['background-color', 'color', 'transform', 'font-weight'],
+    ["background-color", "color", "transform", "font-weight"],
     {
       duration: theme.transitions.duration.short,
-    }
+    },
   ),
 
   // Icon and letter spacing
-  '& .MuiButton-startIcon': {
+  "& .MuiButton-startIcon": {
     marginRight: theme.spacing(1),
-    fontSize: '20px',
+    fontSize: "20px",
   },
 
   // Hover state - Expand slightly and become bold
-  '&:hover': {
+  "&:hover": {
     backgroundColor: isActive
       ? theme.palette.primary.main
-      : 'rgba(255, 255, 255, 0.1)', // Subtle background on hover
+      : "rgba(255, 255, 255, 0.1)", // Subtle background on hover
     color: theme.palette.primary.contrastText, // Full white on hover
     fontWeight: 700, // Bold on hover
-    transform: 'scale(1.05)', // Slight expand for 50代 users to notice
-    cursor: 'pointer',
+    transform: "scale(1.05)", // Slight expand for 50代 users to notice
+    cursor: "pointer",
   },
 
   // Focused state (accessibility)
-  '&:focus': {
+  "&:focus": {
     outline: `2px solid ${theme.palette.primary.contrastText}`,
-    outlineOffset: '2px',
+    outlineOffset: "2px",
   },
 
   // Mobile styles
-  [theme.breakpoints.down('md')]: {
-    minWidth: '100px',
-    fontSize: '14px',
+  [theme.breakpoints.down("md")]: {
+    minWidth: "100px",
+    fontSize: "14px",
     padding: theme.spacing(1, 2),
-    minHeight: '44px',
+    minHeight: "44px",
 
-    '& .MuiButton-startIcon': {
-      fontSize: '18px',
+    "& .MuiButton-startIcon": {
+      fontSize: "18px",
       marginRight: theme.spacing(0.5),
     },
   },
 
   // Hide texts on small screens
-  [theme.breakpoints.down('sm')]: {
-    minWidth: '44px',
+  [theme.breakpoints.down("sm")]: {
+    minWidth: "44px",
     padding: theme.spacing(1),
 
-    '& .MuiButton-startIcon': {
+    "& .MuiButton-startIcon": {
       marginRight: 0,
     },
 
-    '& .nav-text': {
-      display: 'none',
+    "& .nav-text": {
+      display: "none",
     },
   },
 }));
 
 // App Title
 const AppTitle = styled(Typography)<TypographyProps>(({ theme }) => ({
-  fontSize: '24px',
+  fontSize: "24px",
   fontWeight: 700,
-  letterSpacing: '0.5px',
+  letterSpacing: "0.5px",
   color: theme.palette.primary.contrastText,
   flexGrow: 1,
 
   // Mobile styles
-  [theme.breakpoints.down('md')]: {
-    fontSize: '18px',
+  [theme.breakpoints.down("md")]: {
+    fontSize: "18px",
   },
-  [theme.breakpoints.down('sm')]: {
-    fontSize: '16px',
+  [theme.breakpoints.down("sm")]: {
+    fontSize: "16px",
   },
 }));
 
 // Navigation Buttons
 const navigationItems = [
   {
-    path: '/',
-    label: 'ダッシュボード',
+    path: "/",
+    label: "ダッシュボード",
     icon: <HomeIcon />,
-    ariaLabel: 'ダッシュボードページへ移動',
+    ariaLabel: "ダッシュボードページへ移動",
   },
   {
-    path: '/customers',
-    label: '顧客管理',
+    path: "/customers",
+    label: "顧客管理",
     icon: <PeopleIcon />,
-    ariaLabel: '顧客管理ページへ移動',
+    ariaLabel: "顧客管理ページへ移動",
   },
   {
-    path: '/reminders',
-    label: 'リマインダー',
+    path: "/reminders",
+    label: "リマインダー",
     icon: <NotificationsIcon />,
-    ariaLabel: 'リマインダーページへ移動',
+    ariaLabel: "リマインダーページへ移動",
   },
   {
-    path: '/reports',
-    label: '集計レポート',
+    path: "/reports",
+    label: "集計レポート",
     icon: <AssessmentIcon />,
-    ariaLabel: '集計レポートページへ移動',
+    ariaLabel: "集計レポートページへ移動",
   },
   {
-    path: '/settings',
-    label: '設定',
+    path: "/settings",
+    label: "設定",
     icon: <SettingsIcon />,
-    ariaLabel: '設定ページへ移動',
+    ariaLabel: "設定ページへ移動",
   },
 ] as const;
 
@@ -218,7 +218,7 @@ const navigationItems = [
 
 export function Header() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -230,7 +230,6 @@ export function Header() {
    * useNavigate()フックを使った明示的なナビゲーションに変更
    */
   const handleNavigate = (path: string) => {
-    console.log(`🔗 Header ナビゲーション: ${path}`);
     navigate(path);
   };
 
@@ -243,21 +242,22 @@ export function Header() {
             component={RouterLink}
             to="/"
             sx={{
-              textDecoration: 'none',
-              color: 'inherit',
-              display: 'flex',
-              alignItems: 'center',
-              '&:hover': {
+              textDecoration: "none",
+              color: "inherit",
+              display: "flex",
+              alignItems: "center",
+              "&:hover": {
                 outline: `2px solid ${theme.palette.primary.main}`,
-                outlineOffset: '2px',
+                outlineOffset: "2px",
                 borderRadius: theme.spacing(0.5),
               },
             }}
-            aria-label="ホームページに戻る">
+            aria-label="ホームページに戻る"
+          >
             <HomeIcon
               sx={{
                 marginRight: 1,
-                fontSize: isMobile ? '20px' : '28px',
+                fontSize: isMobile ? "20px" : "28px",
               }}
             />
             建築事業者向けCRM
@@ -267,10 +267,11 @@ export function Header() {
         {/* Navigation Menu*/}
         <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
             gap: { xs: 0.5, md: 1 },
-          }}>
+          }}
+        >
           {navigationItems.map((item) => {
             const isActive = location.pathname === item.path;
 
@@ -280,8 +281,9 @@ export function Header() {
                 startIcon={item.icon}
                 isActive={isActive}
                 aria-label={item.ariaLabel}
-                aria-current={isActive ? 'page' : undefined}
-                onClick={() => handleNavigate(item.path)}>
+                aria-current={isActive ? "page" : undefined}
+                onClick={() => handleNavigate(item.path)}
+              >
                 <span className="nav-text">{item.label}</span>
               </NavButton>
             );

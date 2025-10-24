@@ -34,8 +34,9 @@ import React, {
   useCallback,
   useContext,
   useState,
-} from 'react';
-import { AppError, SnackbarMessage } from '../../types';
+} from "react";
+
+import type { AppError, SnackbarMessage } from "../../types";
 
 // =============================================================================
 // 🎯 Context型定義 - TypeScript型安全性の確保
@@ -108,8 +109,8 @@ export interface AppContextType {
    */
   showSnackbar: (
     message: string,
-    severity: SnackbarMessage['severity'],
-    duration?: number
+    severity: SnackbarMessage["severity"],
+    duration?: number,
   ) => void;
 
   /**
@@ -188,6 +189,10 @@ export function AppProvider({ children }: AppProviderProps) {
   const [snackbarMessage, setSnackbarMessage] =
     useState<SnackbarMessage | null>(null);
 
+  // スナックバーキュー管理（複数メッセージの順次表示）
+  const [snackbarQueue, setSnackbarQueue] = useState<SnackbarMessage[]>([]);
+  const [isProcessingQueue, setIsProcessingQueue] = useState<boolean>(false);
+
   // =============================
   // 🎬 アクション実装
   // =============================
@@ -203,13 +208,6 @@ export function AppProvider({ children }: AppProviderProps) {
    * */
   const setGlobalLoading = useCallback((loading: boolean) => {
     setGlobalLoadingState(loading);
-
-    // 50代向け配慮：ローディング開始時の安心メッセージ
-    if (loading) {
-      console.log('🔄 処理中です。しばらくお待ちください...');
-    } else {
-      console.log('🔄 処理が完了しました。');
-    }
   }, []);
 
   /**
@@ -218,16 +216,19 @@ export function AppProvider({ children }: AppProviderProps) {
    * 【50代向けの工夫】
    * - デフォルト表示時間を5秒に設定（読みやすい速度）
    * - メッセージ内容の検証とフォールバック
-   * - 自動非表示タイマーの設定
+   * - キューシステムによる順次表示で被りを防止
+   * - 重複メッセージの自動排除（同じメッセージが連続する場合）
+   *
+   * 【修正】依存配列を空にして、showSnackbarの再作成を防止
    */
   const showSnackbar = useCallback(
     (
       message: string,
-      severity: SnackbarMessage['severity'],
-      duration: number = 5000
+      severity: SnackbarMessage["severity"],
+      duration: number = 5000,
     ) => {
       // メッセージ内容の検証
-      const displayMessage = message.trim() || '操作が完了しました';
+      const displayMessage = message.trim() || "操作が完了しました";
 
       const newMessage: SnackbarMessage = {
         message: displayMessage,
@@ -235,19 +236,22 @@ export function AppProvider({ children }: AppProviderProps) {
         duration,
       };
 
-      setSnackbarMessage(newMessage);
+      // キューに追加（重複チェック）
+      setSnackbarQueue((prev) => {
+        // キュー内の最後のメッセージと同じ場合はスキップ
+        const lastInQueue = prev[prev.length - 1];
+        if (
+          lastInQueue &&
+          lastInQueue.message === newMessage.message &&
+          lastInQueue.severity === newMessage.severity
+        ) {
+          return prev;
+        }
 
-      // 自動非表示タイマー（50代向け: 十分な時間を確保）
-      if (duration > 0) {
-        setTimeout(() => {
-          setSnackbarMessage(null);
-        }, duration);
-      }
-
-      // デバッグログ（開発時の確認用）
-      console.log(`📢 [${severity.toUpperCase()}] ${displayMessage}`);
+        return [...prev, newMessage];
+      });
     },
-    []
+    [], // 空の依存配列でshowSnackbarの再作成を防止
   );
 
   /**
@@ -255,7 +259,33 @@ export function AppProvider({ children }: AppProviderProps) {
    */
   const hideSnackbar = useCallback(() => {
     setSnackbarMessage(null);
+    // 次のメッセージを表示
+    setIsProcessingQueue(false);
   }, []);
+
+  /**
+   * スナックバーキュー処理
+   *
+   * キューにメッセージがある場合、順次表示
+   * 1つのメッセージが完全に表示された後に次のメッセージを表示
+   */
+  React.useEffect(() => {
+    if (snackbarQueue.length > 0 && !isProcessingQueue && !snackbarMessage) {
+      const nextMessage = snackbarQueue[0];
+      setSnackbarQueue((prev) => prev.slice(1)); // キューから削除
+      setSnackbarMessage(nextMessage);
+      setIsProcessingQueue(true);
+
+      // 自動非表示タイマー
+      const duration = nextMessage.duration ?? 5000;
+      if (duration > 0) {
+        setTimeout(() => {
+          setSnackbarMessage(null);
+          setIsProcessingQueue(false);
+        }, duration);
+      }
+    }
+  }, [snackbarQueue, isProcessingQueue, snackbarMessage]);
 
   /**
    * 統一エラーハンドリングの実装
@@ -271,43 +301,43 @@ export function AppProvider({ children }: AppProviderProps) {
 
       // エラータイプ別の50代向けメッセージ変換 (Union型を使用)
       switch (error.type) {
-        case 'NETWORK_ERROR':
+        case "NETWORK_ERROR":
           userFriendlyMessage =
-            'インターネット接続を確認してください。少し時間をおいてからもう一度お試しください。';
+            "インターネット接続を確認してください。少し時間をおいてからもう一度お試しください。";
           break;
 
-        case 'VALIDATION_ERROR':
+        case "VALIDATION_ERROR":
           userFriendlyMessage =
-            '入力内容を確認してください。必要な項目が不足している可能性があります。';
+            "入力内容を確認してください。必要な項目が不足している可能性があります。";
           break;
 
-        case 'NOT_FOUND':
+        case "NOT_FOUND":
           userFriendlyMessage =
-            '情報が見つかりませんでした。すでに削除されている可能性があります。';
+            "情報が見つかりませんでした。すでに削除されている可能性があります。";
           break;
 
-        case 'PERMISSION_DENIED':
+        case "PERMISSION_DENIED":
           userFriendlyMessage =
-            'この操作を実行する権限がありません。管理者にお問い合わせください。';
+            "この操作を実行する権限がありません。管理者にお問い合わせください。";
           break;
 
-        case 'SERVER_ERROR':
+        case "SERVER_ERROR":
           userFriendlyMessage =
-            'サーバーでエラーが発生しました。しばらく時間をおいてからもう一度お試しください。';
+            "サーバーでエラーが発生しました。しばらく時間をおいてからもう一度お試しください。";
           break;
 
         default:
           // フォールバックメッセージまたはデフォルト
           userFriendlyMessage =
-            fallbackMessage || 'エラーが発生しました。もう一度お試しください。';
+            fallbackMessage || "エラーが発生しました。もう一度お試しください。";
       }
 
       // エラー情報をスナックバーに表示
-      showSnackbar(userFriendlyMessage, 'error', 8000); // エラーは8秒表示（通常より長め）
+      showSnackbar(userFriendlyMessage, "error", 8000); // エラーは8秒表示（通常より長め）
 
       // デバッグ情報（本番環境では非表示）
-      if (process.env.NODE_ENV === 'development') {
-        console.error('🚨 AppError Details:', {
+      if (process.env.NODE_ENV === "development") {
+        console.error("🚨 AppError Details:", {
           type: error.type,
           message: error.message,
           details: error.technical,
@@ -315,7 +345,7 @@ export function AppProvider({ children }: AppProviderProps) {
         });
       }
     },
-    [showSnackbar]
+    [showSnackbar],
   );
 
   // =============================
@@ -349,7 +379,7 @@ export function AppProvider({ children }: AppProviderProps) {
       showSnackbar,
       hideSnackbar,
       handleError,
-    ]
+    ],
   );
 
   return (
@@ -408,11 +438,11 @@ export function useApp(): AppContextType {
    */
   if (context === null) {
     throw new Error(
-      '🚨 useApp() はAppProvider内でのみ使用できます。\n\n' +
-        '解決方法:\n' +
-        '1. コンポーネントがAppProviderでラップされているか確認してください\n' +
-        '2. App.tsxでAppProviderが正しく設定されているか確認してください\n\n' +
-        '詳細はドキュメントを参照してください。'
+      "🚨 useApp() はAppProvider内でのみ使用できます。\n\n" +
+        "解決方法:\n" +
+        "1. コンポーネントがAppProviderでラップされているか確認してください\n" +
+        "2. App.tsxでAppProviderが正しく設定されているか確認してください\n\n" +
+        "詳細はドキュメントを参照してください。",
     );
   }
   return context;

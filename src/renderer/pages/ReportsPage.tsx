@@ -8,17 +8,18 @@
  * 確定申告準備に活用します。
  */
 
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Assessment as AssessmentIcon,
+  AttachMoney as MoneyIcon,
   CalendarToday as CalendarIcon,
   Download as DownloadIcon,
-  AttachMoney as MoneyIcon,
   People as PeopleIcon,
   Print as PrintIcon,
   Refresh as RefreshIcon,
   TrendingDown as TrendingDownIcon,
   TrendingUp as TrendingUpIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -39,8 +40,7 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from '@mui/material';
-import React, { useCallback, useMemo, useState } from 'react';
+} from "@mui/material";
 import {
   Bar,
   BarChart,
@@ -53,20 +53,19 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts';
+} from "recharts";
 
-// Custom Components
-import { PageHeader } from '../components/layout/PageHeader';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
+import { PageHeader } from "../components/layout/PageHeader";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
 
 // Custom Hooks
-import { useApp } from '../contexts/AppContext';
-import { useCustomer } from '../contexts/CustomerContext';
-import { useServiceRecords } from '../hooks/useServiceRecords';
+import { useApp } from "../contexts/AppContext";
+import { useCustomer } from "../contexts/CustomerContext";
+import { useServiceRecords } from "../hooks/useServiceRecords";
 
 // Design System Constants
-import { BUTTON_SIZE, FONT_SIZES, SPACING } from '../constants/uiDesignSystem';
+import { BUTTON_SIZE, FONT_SIZES, SPACING } from "../constants/uiDesignSystem";
 
 // ================================
 // 型定義
@@ -108,63 +107,63 @@ interface YearSummary {
 // ================================
 
 const COLORS = {
-  primary: '#1976d2',
-  success: '#2e7d32',
-  warning: '#ed6c02',
-  error: '#d32f2f',
-  info: '#0288d1',
+  primary: "#1976d2",
+  success: "#2e7d32",
+  warning: "#ed6c02",
+  error: "#d32f2f",
+  info: "#0288d1",
   chartColors: [
-    '#1976d2',
-    '#2e7d32',
-    '#ed6c02',
-    '#9c27b0',
-    '#d32f2f',
-    '#0288d1',
-    '#f57c00',
-    '#7b1fa2',
-    '#c62828',
-    '#0277bd',
+    "#1976d2",
+    "#2e7d32",
+    "#ed6c02",
+    "#9c27b0",
+    "#d32f2f",
+    "#0288d1",
+    "#f57c00",
+    "#7b1fa2",
+    "#c62828",
+    "#0277bd",
   ],
 };
 
 const MONTH_LABELS = [
-  '1月',
-  '2月',
-  '3月',
-  '4月',
-  '5月',
-  '6月',
-  '7月',
-  '8月',
-  '9月',
-  '10月',
-  '11月',
-  '12月',
+  "1月",
+  "2月",
+  "3月",
+  "4月",
+  "5月",
+  "6月",
+  "7月",
+  "8月",
+  "9月",
+  "10月",
+  "11月",
+  "12月",
 ];
 
 const MESSAGES = {
-  pageTitle: '集計レポート',
-  pageSubtitle: '年度別・顧客別の売上データを確認できます',
+  pageTitle: "集計レポート",
+  pageSubtitle: "年度別・顧客別の売上データを確認できます",
 
   sections: {
-    yearSummary: '年度サマリー',
-    monthlyTrend: '月別売上推移',
-    customerRanking: '顧客別売上ランキング',
-    serviceTypeAnalysis: 'サービス種別分析',
+    yearSummary: "年度サマリー",
+    monthlyTrend: "月別売上推移",
+    customerRanking: "顧客別売上ランキング",
+    serviceTypeAnalysis: "サービス種別分析",
   },
 
   labels: {
-    selectYear: '表示年度',
-    totalRevenue: '総売上',
-    totalCount: '総サービス件数',
-    averageRevenue: '平均単価',
-    customerCount: '顧客数',
-    exportCSV: 'CSV出力',
-    print: '印刷',
+    selectYear: "表示年度",
+    totalRevenue: "総売上",
+    totalCount: "総サービス件数",
+    averageRevenue: "平均単価",
+    customerCount: "顧客数",
+    exportCSV: "CSV出力",
+    print: "印刷",
   },
 
   info: {
-    noData: '選択した年度のデータがありません',
+    noData: "選択した年度のデータがありません",
   },
 };
 
@@ -184,11 +183,11 @@ const RESPONSIVE_SETTINGS = {
 // ================================
 
 const formatCurrency = (amount: number): string => {
-  return `¥${amount.toLocaleString('ja-JP')}`;
+  return `¥${amount.toLocaleString("ja-JP")}`;
 };
 
 const formatPercentage = (value: number): string => {
-  const sign = value >= 0 ? '+' : '';
+  const sign = value >= 0 ? "+" : "";
   return `${sign}${value.toFixed(1)}%`;
 };
 
@@ -207,7 +206,7 @@ const getYearOptions = (): number[] => {
 
 export const ReportsPage: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { showSnackbar } = useApp();
   const { customers } = useCustomer();
 
@@ -220,7 +219,7 @@ export const ReportsPage: React.FC = () => {
   const handleRefreshData = useCallback(async () => {
     // サイレントモード（silent=true）で更新してメッセージ重複を防ぐ
     await refreshServiceRecords(true);
-    showSnackbar('データを更新しました。', 'success');
+    showSnackbar("データを更新しました。", "success");
   }, [refreshServiceRecords, showSnackbar]);
 
   const currentYear = new Date().getFullYear();
@@ -237,7 +236,7 @@ export const ReportsPage: React.FC = () => {
   const yearServiceRecords = useMemo(() => {
     return serviceRecords.filter((record) => {
       const dateObj =
-        typeof record.serviceDate === 'string'
+        typeof record.serviceDate === "string"
           ? new Date(record.serviceDate)
           : record.serviceDate;
       const recordYear = dateObj.getFullYear();
@@ -251,7 +250,7 @@ export const ReportsPage: React.FC = () => {
   const lastYearServiceRecords = useMemo(() => {
     return serviceRecords.filter((record) => {
       const dateObj =
-        typeof record.serviceDate === 'string'
+        typeof record.serviceDate === "string"
           ? new Date(record.serviceDate)
           : record.serviceDate;
       const recordYear = dateObj.getFullYear();
@@ -265,14 +264,14 @@ export const ReportsPage: React.FC = () => {
   const yearSummary = useMemo((): YearSummary => {
     const totalRevenue = yearServiceRecords.reduce(
       (sum, record) => sum + (Number(record.amount) || 0),
-      0
+      0,
     );
 
     const totalCount = yearServiceRecords.length;
     const averageRevenue = totalCount > 0 ? totalRevenue / totalCount : 0;
 
     const customerIds = new Set(
-      yearServiceRecords.map((record) => record.customerId)
+      yearServiceRecords.map((record) => record.customerId),
     );
     const customerCount = customerIds.size;
 
@@ -291,7 +290,7 @@ export const ReportsPage: React.FC = () => {
   const yearComparison = useMemo(() => {
     const lastYearRevenue = lastYearServiceRecords.reduce(
       (sum, record) => sum + (Number(record.amount) || 0),
-      0
+      0,
     );
 
     if (lastYearRevenue === 0) {
@@ -317,7 +316,7 @@ export const ReportsPage: React.FC = () => {
     return months.map((month) => {
       const monthRecords = yearServiceRecords.filter((record) => {
         const dateObj =
-          typeof record.serviceDate === 'string'
+          typeof record.serviceDate === "string"
             ? new Date(record.serviceDate)
             : record.serviceDate;
         const recordMonth = dateObj.getMonth() + 1;
@@ -326,11 +325,11 @@ export const ReportsPage: React.FC = () => {
 
       const revenue = monthRecords.reduce(
         (sum, record) => sum + (Number(record.amount) || 0),
-        0
+        0,
       );
 
       return {
-        month: month.toString().padStart(2, '0'),
+        month: month.toString().padStart(2, "0"),
         monthLabel: MONTH_LABELS[month - 1],
         revenue,
         count: monthRecords.length,
@@ -351,7 +350,7 @@ export const ReportsPage: React.FC = () => {
         const customer = customers.find((c) => c.customerId === customerId);
         summaryMap.set(customerId, {
           customerId,
-          companyName: customer?.companyName || '不明',
+          companyName: customer?.companyName || "不明",
           totalRevenue: 0,
           serviceCount: 0,
           lastServiceDate: null,
@@ -363,7 +362,7 @@ export const ReportsPage: React.FC = () => {
       summary.serviceCount += 1;
 
       const serviceDate =
-        typeof record.serviceDate === 'string'
+        typeof record.serviceDate === "string"
           ? new Date(record.serviceDate)
           : record.serviceDate;
       if (!summary.lastServiceDate || serviceDate > summary.lastServiceDate) {
@@ -385,7 +384,7 @@ export const ReportsPage: React.FC = () => {
     const totalRevenue = yearSummary.totalRevenue;
 
     yearServiceRecords.forEach((record) => {
-      const serviceType = record.serviceType || 'その他';
+      const serviceType = record.serviceType || "その他";
 
       if (!summaryMap.has(serviceType)) {
         summaryMap.set(serviceType, {
@@ -407,7 +406,7 @@ export const ReportsPage: React.FC = () => {
     });
 
     return Array.from(summaryMap.values()).sort(
-      (a, b) => b.revenue - a.revenue
+      (a, b) => b.revenue - a.revenue,
     );
   }, [yearServiceRecords, yearSummary.totalRevenue]);
 
@@ -430,13 +429,13 @@ export const ReportsPage: React.FC = () => {
    */
   const handleExportCSV = useCallback(() => {
     try {
-      let csv = '';
+      let csv = "";
 
       // ===========================================
       // 1. タイトルと基本情報
       // ===========================================
       csv += `年度別売上レポート（確定申告用）\n`;
-      csv += `作成日,${new Date().toLocaleDateString('ja-JP')}\n`;
+      csv += `作成日,${new Date().toLocaleDateString("ja-JP")}\n`;
       csv += `対象年度,${selectedYear}年\n\n`;
 
       // ===========================================
@@ -447,13 +446,13 @@ export const ReportsPage: React.FC = () => {
       csv += `総売上,${formatCurrency(yearSummary.totalRevenue)}\n`;
       csv += `総サービス件数,${yearSummary.totalCount}件\n`;
       csv += `平均単価,${formatCurrency(
-        Math.round(yearSummary.averageRevenue)
+        Math.round(yearSummary.averageRevenue),
       )}\n`;
       csv += `取引顧客数,${yearSummary.customerCount}社\n`;
 
       if (yearComparison) {
         csv += `前年度総売上,${formatCurrency(
-          yearComparison.lastYearRevenue
+          yearComparison.lastYearRevenue,
         )}\n`;
         csv += `前年比,${formatPercentage(yearComparison.changePercentage)}\n`;
       }
@@ -484,12 +483,12 @@ export const ReportsPage: React.FC = () => {
         const percentage =
           yearSummary.totalRevenue > 0
             ? ((summary.totalRevenue / yearSummary.totalRevenue) * 100).toFixed(
-                1
+                1,
               )
-            : '0.0';
+            : "0.0";
         const lastDate = summary.lastServiceDate
-          ? new Date(summary.lastServiceDate).toLocaleDateString('ja-JP')
-          : '-';
+          ? new Date(summary.lastServiceDate).toLocaleDateString("ja-JP")
+          : "-";
 
         csv += `${index + 1},${
           summary.companyName
@@ -512,7 +511,7 @@ export const ReportsPage: React.FC = () => {
         csv += `${
           summary.serviceType
         },${summary.revenue.toLocaleString()},${summary.percentage.toFixed(
-          1
+          1,
         )}%,${summary.count},${avgAmount.toLocaleString()}\n`;
       });
       csv += `\n\n`;
@@ -526,33 +525,33 @@ export const ReportsPage: React.FC = () => {
       yearServiceRecords
         .sort((a, b) => {
           const dateA =
-            typeof a.serviceDate === 'string'
+            typeof a.serviceDate === "string"
               ? new Date(a.serviceDate)
               : a.serviceDate;
           const dateB =
-            typeof b.serviceDate === 'string'
+            typeof b.serviceDate === "string"
               ? new Date(b.serviceDate)
               : b.serviceDate;
           return dateA.getTime() - dateB.getTime();
         })
         .forEach((record, index) => {
           const dateObj =
-            typeof record.serviceDate === 'string'
+            typeof record.serviceDate === "string"
               ? new Date(record.serviceDate)
               : record.serviceDate;
-          const date = dateObj.toLocaleDateString('ja-JP');
+          const date = dateObj.toLocaleDateString("ja-JP");
           const customer = customers.find(
-            (c) => c.customerId === record.customerId
+            (c) => c.customerId === record.customerId,
           );
-          const companyName = customer?.companyName || '不明';
-          const serviceType = record.serviceType || 'その他';
-          const description = (record.serviceDescription || '')
-            .replace(/,/g, '，')
-            .replace(/\n/g, ' ');
+          const companyName = customer?.companyName || "不明";
+          const serviceType = record.serviceType || "その他";
+          const description = (record.serviceDescription || "")
+            .replace(/,/g, "，")
+            .replace(/\n/g, " ");
           const amount = record.amount
             ? Number(record.amount).toLocaleString()
-            : '0';
-          const status = record.status || 'completed';
+            : "0";
+          const status = record.status || "completed";
 
           csv += `${
             index + 1
@@ -565,20 +564,20 @@ export const ReportsPage: React.FC = () => {
 
       // BOM付きUTF-8でエンコード（Excel対応）
       const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
-      const blob = new Blob([bom, csv], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([bom, csv], { type: "text/csv;charset=utf-8;" });
 
       // ダウンロード
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = `売上レポート_${selectedYear}年_${
-        new Date().toISOString().split('T')[0]
+        new Date().toISOString().split("T")[0]
       }.csv`;
       link.click();
 
-      showSnackbar('確定申告用CSVファイルをダウンロードしました。', 'success');
+      showSnackbar("確定申告用CSVファイルをダウンロードしました。", "success");
     } catch (error) {
-      console.error('CSV出力エラー:', error);
-      showSnackbar('CSV出力に失敗しました。', 'error');
+      console.error("CSV出力エラー:", error);
+      showSnackbar("CSV出力に失敗しました。", "error");
     }
   }, [
     selectedYear,
@@ -655,7 +654,7 @@ export const ReportsPage: React.FC = () => {
     `;
 
     // スタイルを一時的に追加
-    const styleElement = document.createElement('style');
+    const styleElement = document.createElement("style");
     styleElement.textContent = printStyles;
     document.head.appendChild(styleElement);
 
@@ -681,34 +680,38 @@ export const ReportsPage: React.FC = () => {
       subtitle={MESSAGES.pageSubtitle}
       breadcrumbs={[
         {
-          label: '集計レポート',
-          path: '/reports',
+          label: "集計レポート",
+          path: "/reports",
           icon: <AssessmentIcon />,
         },
       ]}
       actions={
         <Box
-          sx={{ display: 'flex', gap: SPACING.gap.medium, flexWrap: 'wrap' }}
-          className="no-print">
+          sx={{ display: "flex", gap: SPACING.gap.medium, flexWrap: "wrap" }}
+          className="no-print"
+        >
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
             onClick={handleRefreshData}
-            disabled={loading}>
-            {loading ? 'データ更新中...' : 'データ更新'}
+            disabled={loading}
+          >
+            {loading ? "データ更新中..." : "データ更新"}
           </Button>
           <Button
             variant="outlined"
             startIcon={<DownloadIcon />}
             onClick={handleExportCSV}
-            disabled={yearServiceRecords.length === 0}>
+            disabled={yearServiceRecords.length === 0}
+          >
             {MESSAGES.labels.exportCSV}
           </Button>
           <Button
             variant="outlined"
             startIcon={<PrintIcon />}
             onClick={handlePrint}
-            disabled={yearServiceRecords.length === 0}>
+            disabled={yearServiceRecords.length === 0}
+          >
             {MESSAGES.labels.print}
           </Button>
         </Box>
@@ -776,10 +779,11 @@ export const ReportsPage: React.FC = () => {
           label={MESSAGES.labels.selectYear}
           sx={{
             fontSize: responsiveSettings.fontSize,
-            '& .MuiSelect-select': {
+            "& .MuiSelect-select": {
               minHeight: BUTTON_SIZE.minHeight.tablet,
             },
-          }}>
+          }}
+        >
           {getYearOptions().map((year) => (
             <MenuItem key={year} value={year}>
               {year}年
@@ -800,11 +804,12 @@ export const ReportsPage: React.FC = () => {
         sx={{
           mb: SPACING.gap.large,
           fontSize: FONT_SIZES.cardTitle.desktop,
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
+          fontWeight: "bold",
+          display: "flex",
+          alignItems: "center",
           gap: SPACING.gap.small,
-        }}>
+        }}
+      >
         <AssessmentIcon />
         {MESSAGES.sections.yearSummary}
       </Typography>
@@ -812,23 +817,25 @@ export const ReportsPage: React.FC = () => {
       <Grid container spacing={SPACING.gap.large}>
         {/* 総売上 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box sx={{ textAlign: 'center' }}>
+          <Box sx={{ textAlign: "center" }}>
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{ mb: SPACING.gap.small }}>
+              sx={{ mb: SPACING.gap.small }}
+            >
               {MESSAGES.labels.totalRevenue}
             </Typography>
             <Typography
               variant="h4"
               sx={{
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 color: COLORS.primary,
                 fontSize: {
                   xs: FONT_SIZES.pageTitle.mobile,
                   md: FONT_SIZES.pageTitle.desktop,
                 },
-              }}>
+              }}
+            >
               {formatCurrency(yearSummary.totalRevenue)}
             </Typography>
             {yearComparison && (
@@ -841,7 +848,7 @@ export const ReportsPage: React.FC = () => {
                   )
                 }
                 label={formatPercentage(yearComparison.changePercentage)}
-                color={yearComparison.isIncrease ? 'success' : 'error'}
+                color={yearComparison.isIncrease ? "success" : "error"}
                 size="small"
                 sx={{ mt: SPACING.gap.small }}
               />
@@ -851,23 +858,25 @@ export const ReportsPage: React.FC = () => {
 
         {/* 総件数 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box sx={{ textAlign: 'center' }}>
+          <Box sx={{ textAlign: "center" }}>
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{ mb: SPACING.gap.small }}>
+              sx={{ mb: SPACING.gap.small }}
+            >
               {MESSAGES.labels.totalCount}
             </Typography>
             <Typography
               variant="h4"
               sx={{
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 color: COLORS.success,
                 fontSize: {
                   xs: FONT_SIZES.pageTitle.mobile,
                   md: FONT_SIZES.pageTitle.desktop,
                 },
-              }}>
+              }}
+            >
               {yearSummary.totalCount}件
             </Typography>
           </Box>
@@ -875,23 +884,25 @@ export const ReportsPage: React.FC = () => {
 
         {/* 平均単価 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box sx={{ textAlign: 'center' }}>
+          <Box sx={{ textAlign: "center" }}>
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{ mb: SPACING.gap.small }}>
+              sx={{ mb: SPACING.gap.small }}
+            >
               {MESSAGES.labels.averageRevenue}
             </Typography>
             <Typography
               variant="h4"
               sx={{
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 color: COLORS.warning,
                 fontSize: {
                   xs: FONT_SIZES.pageTitle.mobile,
                   md: FONT_SIZES.pageTitle.desktop,
                 },
-              }}>
+              }}
+            >
               {formatCurrency(Math.round(yearSummary.averageRevenue))}
             </Typography>
           </Box>
@@ -899,23 +910,25 @@ export const ReportsPage: React.FC = () => {
 
         {/* 顧客数 */}
         <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box sx={{ textAlign: 'center' }}>
+          <Box sx={{ textAlign: "center" }}>
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{ mb: SPACING.gap.small }}>
+              sx={{ mb: SPACING.gap.small }}
+            >
               {MESSAGES.labels.customerCount}
             </Typography>
             <Typography
               variant="h4"
               sx={{
-                fontWeight: 'bold',
+                fontWeight: "bold",
                 color: COLORS.info,
                 fontSize: {
                   xs: FONT_SIZES.pageTitle.mobile,
                   md: FONT_SIZES.pageTitle.desktop,
                 },
-              }}>
+              }}
+            >
               {yearSummary.customerCount}社
             </Typography>
           </Box>
@@ -933,11 +946,12 @@ export const ReportsPage: React.FC = () => {
         sx={{
           mb: SPACING.gap.large,
           fontSize: FONT_SIZES.cardTitle.desktop,
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
+          fontWeight: "bold",
+          display: "flex",
+          alignItems: "center",
           gap: SPACING.gap.small,
-        }}>
+        }}
+      >
         <CalendarIcon />
         {MESSAGES.sections.monthlyTrend}
       </Typography>
@@ -976,11 +990,12 @@ export const ReportsPage: React.FC = () => {
         sx={{
           mb: SPACING.gap.large,
           fontSize: FONT_SIZES.cardTitle.desktop,
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
+          fontWeight: "bold",
+          display: "flex",
+          alignItems: "center",
           gap: SPACING.gap.small,
-        }}>
+        }}
+      >
         <PeopleIcon />
         {MESSAGES.sections.customerRanking}
       </Typography>
@@ -990,21 +1005,25 @@ export const ReportsPage: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell
-                sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
+                sx={{ fontWeight: "bold", fontSize: FONT_SIZES.body.desktop }}
+              >
                 順位
               </TableCell>
               <TableCell
-                sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
+                sx={{ fontWeight: "bold", fontSize: FONT_SIZES.body.desktop }}
+              >
                 会社名
               </TableCell>
               <TableCell
                 align="right"
-                sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
+                sx={{ fontWeight: "bold", fontSize: FONT_SIZES.body.desktop }}
+              >
                 売上
               </TableCell>
               <TableCell
                 align="right"
-                sx={{ fontWeight: 'bold', fontSize: FONT_SIZES.body.desktop }}>
+                sx={{ fontWeight: "bold", fontSize: FONT_SIZES.body.desktop }}
+              >
                 件数
               </TableCell>
             </TableRow>
@@ -1015,8 +1034,8 @@ export const ReportsPage: React.FC = () => {
                 <TableCell sx={{ fontSize: FONT_SIZES.body.desktop }}>
                   <Chip
                     label={index + 1}
-                    color={index < 3 ? 'primary' : 'default'}
-                    sx={{ fontWeight: 'bold' }}
+                    color={index < 3 ? "primary" : "default"}
+                    sx={{ fontWeight: "bold" }}
                   />
                 </TableCell>
                 <TableCell sx={{ fontSize: FONT_SIZES.body.desktop }}>
@@ -1026,13 +1045,15 @@ export const ReportsPage: React.FC = () => {
                   align="right"
                   sx={{
                     fontSize: FONT_SIZES.body.desktop,
-                    fontWeight: 'bold',
-                  }}>
+                    fontWeight: "bold",
+                  }}
+                >
                   {formatCurrency(summary.totalRevenue)}
                 </TableCell>
                 <TableCell
                   align="right"
-                  sx={{ fontSize: FONT_SIZES.body.desktop }}>
+                  sx={{ fontSize: FONT_SIZES.body.desktop }}
+                >
                   {summary.serviceCount}件
                 </TableCell>
               </TableRow>
@@ -1042,7 +1063,7 @@ export const ReportsPage: React.FC = () => {
       </TableContainer>
 
       {customerSummaries.length === 0 && (
-        <Box sx={{ textAlign: 'center', py: 4 }}>
+        <Box sx={{ textAlign: "center", py: 4 }}>
           <Typography color="text.secondary">データがありません</Typography>
         </Box>
       )}
@@ -1059,11 +1080,12 @@ export const ReportsPage: React.FC = () => {
         sx={{
           mb: SPACING.gap.large,
           fontSize: FONT_SIZES.cardTitle.desktop,
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
+          fontWeight: "bold",
+          display: "flex",
+          alignItems: "center",
           gap: SPACING.gap.small,
-        }}>
+        }}
+      >
         <MoneyIcon />
         {MESSAGES.sections.serviceTypeAnalysis}
       </Typography>
@@ -1083,7 +1105,8 @@ export const ReportsPage: React.FC = () => {
                 label={(props: any) => {
                   const data = props as ServiceTypeSummary;
                   return `${data.serviceType} (${data.percentage.toFixed(1)}%)`;
-                }}>
+                }}
+              >
                 {serviceTypeSummaries.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
@@ -1102,11 +1125,11 @@ export const ReportsPage: React.FC = () => {
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold' }}>種別</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                  <TableCell sx={{ fontWeight: "bold" }}>種別</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: "bold" }}>
                     売上
                   </TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                  <TableCell align="right" sx={{ fontWeight: "bold" }}>
                     割合
                   </TableCell>
                 </TableRow>
@@ -1117,15 +1140,16 @@ export const ReportsPage: React.FC = () => {
                     <TableCell>
                       <Box
                         sx={{
-                          display: 'flex',
-                          alignItems: 'center',
+                          display: "flex",
+                          alignItems: "center",
                           gap: SPACING.gap.small,
-                        }}>
+                        }}
+                      >
                         <Box
                           sx={{
                             width: parseInt(FONT_SIZES.body.desktop),
                             height: parseInt(FONT_SIZES.body.desktop),
-                            borderRadius: '50%',
+                            borderRadius: "50%",
                             backgroundColor:
                               COLORS.chartColors[
                                 index % COLORS.chartColors.length
@@ -1135,7 +1159,7 @@ export const ReportsPage: React.FC = () => {
                         {summary.serviceType}
                       </Box>
                     </TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 'bold' }}>
+                    <TableCell align="right" sx={{ fontWeight: "bold" }}>
                       {formatCurrency(summary.revenue)}
                     </TableCell>
                     <TableCell align="right">
@@ -1175,10 +1199,11 @@ export const ReportsPage: React.FC = () => {
       {yearServiceRecords.length > 0 ? (
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
+            display: "flex",
+            flexDirection: "column",
             gap: SPACING.gap.large,
-          }}>
+          }}
+        >
           {/* 年度サマリー */}
           {renderYearSummary()}
 
