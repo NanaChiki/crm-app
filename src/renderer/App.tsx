@@ -1,18 +1,15 @@
-import { Alert, CssBaseline, Snackbar } from '@mui/material';
-import { ThemeProvider } from '@mui/material/styles';
-import { BrowserRouter } from 'react-router-dom';
-import { MainLayout } from './components/layout/MainLayout';
-import { AppRouter } from './routes/AppRouter';
-import { theme } from './styles/theme';
+import { BrowserRouter } from "react-router-dom";
+import { Alert, CssBaseline, Snackbar } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
 
-// =============================
-// 🆕 Context Providers のインポート
-// =============================
-import { AppProvider, useApp } from './contexts/AppContext';
-import { BackupProvider } from './contexts/BackupContext';
-import { CSVProvider } from './contexts/CSVContext';
-import { CustomerProvider } from './contexts/CustomerContext';
-import { ReminderProvider } from './contexts/ReminderContext';
+import { MainLayout } from "./components/layout/MainLayout";
+import { AppProvider, useApp } from "./contexts/AppContext";
+import { BackupProvider } from "./contexts/BackupContext";
+import { CSVProvider } from "./contexts/CSVContext";
+import { CustomerProvider } from "./contexts/CustomerContext";
+import { ReminderProvider } from "./contexts/ReminderContext";
+import { AppRouter } from "./routes/AppRouter";
+import { theme } from "./styles/theme";
 
 /**
  * 🎯 App Component - アプリケーションのルートコンポーネント
@@ -78,7 +75,7 @@ function AppContent() {
         open={!!snackbarMessage}
         autoHideDuration={snackbarMessage?.duration || 5000}
         onClose={hideSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         sx={{
           // 50代向け：下部に余白を確保（ボタンと重ならない）
           bottom: { xs: 80, sm: 24 },
@@ -91,8 +88,8 @@ function AppContent() {
             variant="filled"
             sx={{
               // 50代向け：大きめのフォントと余白
-              fontSize: '16px',
-              minWidth: '300px',
+              fontSize: "16px",
+              minWidth: "300px",
               boxShadow: 3,
             }}
           >

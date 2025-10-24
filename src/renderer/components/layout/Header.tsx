@@ -1,3 +1,10 @@
+import React from "react";
+import {
+  Link as RouterLink,
+  useLocation,
+  useNavigate,
+  type LinkProps,
+} from "react-router-dom";
 import {
   Assessment as AssessmentIcon,
   Home as HomeIcon,
@@ -17,13 +24,6 @@ import {
   type ButtonProps,
   type TypographyProps,
 } from "@mui/material";
-import React from "react";
-import {
-  Link as RouterLink,
-  useLocation,
-  useNavigate,
-  type LinkProps,
-} from "react-router-dom"; // ← useNavigateを追加
 
 // AppBar styled for those in their 50s
 const StyledAppBar = styled(AppBar)(({ theme }) => ({

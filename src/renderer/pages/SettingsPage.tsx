@@ -13,6 +13,11 @@
  * - 視覚的なフィードバック（ローディング表示）
  */
 
+import React, { useState } from "react";
+import BackupIcon from "@mui/icons-material/Backup";
+import DownloadIcon from "@mui/icons-material/Download";
+import RestoreIcon from "@mui/icons-material/Restore";
+import SettingsIcon from "@mui/icons-material/Settings";
 import {
   Box,
   CircularProgress,
@@ -24,25 +29,13 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import React, { useState } from "react";
 
-// Icons
-import BackupIcon from "@mui/icons-material/Backup";
-import DownloadIcon from "@mui/icons-material/Download";
-import RestoreIcon from "@mui/icons-material/Restore";
-import SettingsIcon from "@mui/icons-material/Settings";
-
-// Components
 import { DataStatistics } from "../components/backup/DataStatistics";
 import PageHeader from "../components/layout/PageHeader";
 import { Button } from "../components/ui/Button";
-
-// Contexts
+import { BUTTON_SIZE, FONT_SIZES, SPACING } from "../constants/uiDesignSystem";
 import { useBackup } from "../contexts/BackupContext";
 import { useCSV } from "../contexts/CSVContext";
-
-// Design System
-import { BUTTON_SIZE, FONT_SIZES, SPACING } from "../constants/uiDesignSystem";
 
 /**
  * 設定ページメインコンポーネント

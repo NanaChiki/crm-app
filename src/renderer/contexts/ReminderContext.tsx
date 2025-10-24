@@ -26,17 +26,6 @@ import React, {
   useState,
 } from "react";
 
-// Contexts
-import { useApp } from "./AppContext";
-
-// OutLook API
-import {
-  createReminderEvent as createEventAPI,
-  getOutlookErrorGuidance,
-  sendReminderEmail as sendEmailAPI,
-} from "../utils/outlookAPI";
-
-// Types
 import type {
   CreateReminderInput,
   Reminder,
@@ -44,6 +33,12 @@ import type {
   ReminderWithCustomer,
   UpdateReminderInput,
 } from "../../types";
+import { useApp } from "./AppContext";
+import {
+  createReminderEvent as createEventAPI,
+  getOutlookErrorGuidance,
+  sendReminderEmail as sendEmailAPI,
+} from "../utils/outlookAPI";
 
 // ================================
 // ReminderAPI型定義

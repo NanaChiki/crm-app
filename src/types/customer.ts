@@ -176,5 +176,5 @@ export interface CustomerSearchParams {
 
 export type CustomerListItem = Pick<
   Customer,
-  'customerId' | 'companyName' | 'contactPerson' | 'phone' | 'createdAt'
+  "customerId" | "companyName" | "contactPerson" | "phone" | "createdAt"
 >;

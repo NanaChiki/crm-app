@@ -6,10 +6,10 @@
  */
 
 // Prismaから生成された型をインポート
-import type { Reminder, Customer, ServiceRecord } from '@prisma/client';
+import type { Reminder, Customer, ServiceRecord } from "@prisma/client";
 
 // 他の型をインポート
-export type { Reminder } from '@prisma/client';
+export type { Reminder } from "@prisma/client";
 
 // ================================
 // リマインダー状態
@@ -23,7 +23,7 @@ export type { Reminder } from '@prisma/client';
  * - sent: 送信済み
  * - cancelled: キャンセル（送信しない）
  */
-export type ReminderStatus = 'scheduled' | 'drafting' | 'sent' | 'cancelled';
+export type ReminderStatus = "scheduled" | "drafting" | "sent" | "cancelled";
 
 /**
  * リマインダーの作成元
@@ -31,7 +31,7 @@ export type ReminderStatus = 'scheduled' | 'drafting' | 'sent' | 'cancelled';
  * - system: システムが自動生成
  * - manual: ユーザーが手動作成
  */
-export type ReminderSource = 'system' | 'manual';
+export type ReminderSource = "system" | "manual";
 
 // ================================
 // フォーム・入力型

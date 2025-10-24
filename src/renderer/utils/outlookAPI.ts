@@ -48,15 +48,22 @@ declare global {
 // ================================
 
 /**
- * リマインダーメール送信
+ * リマインダーメール送信（既定のメールアプリを起動）
  *
  * 既定のメールアプリを起動し、リマインダー内容を事前入力します。
  * ユーザーは内容を確認・編集してから送信できます。
  *
- * @param to - 送信先メールアドレス
- * @param subject - 件名
- * @param body - 本文
- * @returns 送信結果
+ * @param {string} to - 送信先メールアドレス
+ * @param {string} subject - 件名
+ * @param {string} body - 本文
+ * @returns {Promise<OutlookAPIResult>} 送信結果（success, message, error）
+ *
+ * @example
+ * const result = await sendReminderEmail(
+ *   'customer@example.com',
+ *   'メンテナンスのご案内',
+ *   'そろそろ外壁塗装のメンテナンス時期です...'
+ * );
  */
 export async function sendReminderEmail(
   to: string,
@@ -109,10 +116,19 @@ export async function sendReminderEmail(
 }
 
 /**
- * OutLookカレンダー予定作成
+ * OutLookカレンダー予定作成（ICS形式でダウンロード）
  *
- * @param eventData - カレンダー予定データ
- * @returns 作成結果
+ * @param {OutlookEventData} eventData - カレンダー予定データ（件名、本文、開始日時、終了日時、場所）
+ * @returns {Promise<OutlookAPIResult>} 作成結果（success, message, error）
+ *
+ * @example
+ * const result = await createReminderEvent({
+ *   subject: '田中建設様 外壁塗装',
+ *   body: 'メンテナンス予定',
+ *   start: new Date('2024-11-01T10:00:00'),
+ *   end: new Date('2024-11-01T11:00:00'),
+ *   location: '東京都〇〇区'
+ * });
  */
 export async function createReminderEvent(
   eventData: OutlookEventData,
@@ -133,7 +149,10 @@ export async function createReminderEvent(
 }
 
 /**
- * エラーメッセージを50代向けに変換
+ * エラーメッセージを50代向けに変換（具体的な解決方法を提示）
+ *
+ * @param {string} error - エラーメッセージ
+ * @returns {string} 50代向けの分かりやすいエラーメッセージ
  */
 export function getOutlookErrorGuidance(error: string): string {
   if (error.includes("INVALID_EMAIL")) {

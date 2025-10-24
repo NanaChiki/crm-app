@@ -29,6 +29,8 @@
  * - 親切な日本語メッセージ
  */
 
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Add as AddIcon,
   List as ListIcon,
@@ -52,10 +54,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
-// // Custom Hooks
 import { useApp } from "../contexts/AppContext";
 import { useCustomer } from "../contexts/CustomerContext";
 

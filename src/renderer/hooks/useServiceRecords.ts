@@ -28,7 +28,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
+
+import type {
   CreateServiceRecordInput,
   ServiceRecord,
   ServiceRecordWithCustomer,
@@ -1127,7 +1128,6 @@ export const useServiceRecords = (
     if (autoLoad && !isInitialized) {
       loadServiceRecords();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoLoad, isInitialized]); // loadServiceRecordsは除外して無限ループ防止
 
   /**
@@ -1156,7 +1156,6 @@ export const useServiceRecords = (
         dataChangeListeners.splice(index, 1);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 空の依存配列で初回のみ登録
 
   /**

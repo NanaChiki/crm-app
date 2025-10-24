@@ -24,6 +24,7 @@
  * - 操作確認ダイアログ
  */
 
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AccountBalance as AccountBalanceIcon,
   Business as BusinessIcon,
@@ -48,16 +49,12 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-// // Custom Hooks & Contexts
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 import { useApp } from "../../contexts/AppContext";
 import { useCustomer } from "../../contexts/CustomerContext";
 import { useCustomerForm } from "../../hooks/useCustomerForm";
-
-// // Components
-import { Button } from "../ui/Button";
-import { Card } from "../ui/Card";
 import { Input } from "../ui/Input";
 import { Modal } from "../ui/Modal";
 
@@ -289,7 +286,10 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
     try {
       await deleteCustomer(customer?.customerId);
       showSnackbar(MESSAGES.success.delete, "success");
-      // 削除成功時は親コンポーネント（ページ）がナビゲーション処理を行う
+      // 削除成功後は顧客一覧にナビゲート
+      setTimeout(() => {
+        window.location.href = "/customers";
+      }, 500); // スナックバー表示後にナビゲート
     } catch (error) {
       showSnackbar(MESSAGES.error.delete, "error");
     }

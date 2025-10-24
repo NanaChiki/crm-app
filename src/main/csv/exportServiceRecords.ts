@@ -49,8 +49,9 @@ type ServiceRecordWithCustomer = ServiceRecord & {
 
 /**
  * 日付をYYYY-MM-DD形式にフォーマット
- * @param date Date型またはISO文字列
- * @returns YYYY-MM-DD形式の文字列
+ *
+ * @param {Date | string} date - Date型またはISO文字列
+ * @returns {string} YYYY-MM-DD形式の文字列
  */
 function formatDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
@@ -69,8 +70,9 @@ function formatDate(date: Date | string): string {
 
 /**
  * 金額を数値文字列にフォーマット
- * @param amount Decimal型、数値、または文字列
- * @returns 数値文字列（例: "500000"）
+ *
+ * @param {any} amount - Decimal型、数値、または文字列
+ * @returns {string} 数値文字列（例: "500000"）
  */
 function formatAmount(amount: any): string {
   if (!amount) {
@@ -98,15 +100,17 @@ function formatAmount(amount: any): string {
 }
 
 /**
- * サービス履歴をジョブカン互換CSV形式で生成
+ * サービス履歴をジョブカン請求書用CSV形式で生成（顧客情報を自動結合）
  *
- * @returns CSV文字列（BOM付きUTF-8）
- * @throws エラー時にエラーメッセージを含む例外
+ * @returns {Promise<string>} CSV文字列（BOM付きUTF-8、Windows改行コード）
+ * @throws {Error} サービス履歴が0件の場合、またはデータベースエラー時
+ *
+ * @example
+ * const csv = await generateServiceRecordsCSV();
+ * // 返り値: "日付,顧客名,サービス種別,サービス内容,金額,備考\r\n2024-10-15,山田工務店,外壁塗装,..."
  */
 export async function generateServiceRecordsCSV(): Promise<string> {
   try {
-    console.log("📤 サービス履歴CSV生成開始");
-
     const prisma = getPrismaClient();
 
     // 全サービス履歴を取得（顧客情報含む、日付降順）
@@ -118,8 +122,6 @@ export async function generateServiceRecordsCSV(): Promise<string> {
         serviceDate: "desc",
       },
     });
-
-    console.log(`📊 取得したサービス履歴数: ${serviceRecords.length}件`);
 
     // サービス履歴が0件の場合
     if (serviceRecords.length === 0) {
@@ -138,15 +140,12 @@ export async function generateServiceRecordsCSV(): Promise<string> {
       }),
     );
 
-    console.log("📋 CSVデータマッピング完了");
-
     // CSV文字列に変換
     const csv = Papa.unparse(csvData, {
       header: true,
       newline: "\r\n", // Windows互換の改行コード
     });
 
-    console.log("✅ CSV生成完了");
     return csv;
   } catch (error) {
     console.error("❌ CSV生成エラー:", error);

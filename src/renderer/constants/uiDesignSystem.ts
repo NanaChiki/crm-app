@@ -14,51 +14,51 @@
 export const FONT_SIZES = {
   // ページタイトル
   pageTitle: {
-    desktop: '32px',
-    tablet: '28px',
-    mobile: '24px',
+    desktop: "32px",
+    tablet: "28px",
+    mobile: "24px",
   },
 
   // サブタイトル
   subtitle: {
-    desktop: '18px',
-    tablet: '18px',
-    mobile: '16px',
+    desktop: "18px",
+    tablet: "18px",
+    mobile: "16px",
   },
 
   // パンくずリスト
   breadcrumbs: {
-    desktop: '18px',
-    tablet: '18px',
-    mobile: '16px',
+    desktop: "18px",
+    tablet: "18px",
+    mobile: "16px",
   },
 
   // カードタイトル
   cardTitle: {
-    desktop: '20px',
-    tablet: '18px',
-    mobile: '18px',
+    desktop: "20px",
+    tablet: "18px",
+    mobile: "18px",
   },
 
   // 本文
   body: {
-    desktop: '16px',
-    tablet: '16px',
-    mobile: '14px',
+    desktop: "16px",
+    tablet: "16px",
+    mobile: "14px",
   },
 
   // ラベル
   label: {
-    desktop: '14px',
-    tablet: '14px',
-    mobile: '12px',
+    desktop: "14px",
+    tablet: "14px",
+    mobile: "12px",
   },
 
   // ボタンテキスト
   button: {
-    large: '16px',
-    medium: '14px',
-    small: '12px',
+    large: "16px",
+    medium: "14px",
+    small: "12px",
   },
 } as const;
 
@@ -150,9 +150,9 @@ export const BUTTON_SIZE = {
 
   // パディング
   padding: {
-    large: '12px 24px',
-    medium: '10px 20px',
-    small: '8px 16px',
+    large: "12px 24px",
+    medium: "10px 20px",
+    small: "8px 16px",
   },
 } as const;
 
@@ -203,9 +203,9 @@ export const GRID_LAYOUT = {
 // ================================
 
 export const BREAKPOINTS = {
-  mobile: 'sm', // 0-600px
-  tablet: 'md', // 600-900px
-  desktop: 'lg', // 900px+
+  mobile: "sm", // 0-600px
+  tablet: "md", // 600-900px
+  desktop: "lg", // 900px+
 } as const;
 
 // ================================
@@ -215,13 +215,13 @@ export const BREAKPOINTS = {
 export const ANIMATION = {
   // トランジション時間
   duration: {
-    fast: '0.15s',
-    normal: '0.2s',
-    slow: '0.3s',
+    fast: "0.15s",
+    normal: "0.2s",
+    slow: "0.3s",
   },
 
   // イージング
-  easing: 'ease-in-out',
+  easing: "ease-in-out",
 
   // ホバー時の拡大率
   hoverScale: 1.02,
@@ -233,10 +233,10 @@ export const ANIMATION = {
 // ================================
 
 export const ICON_SIZE = {
-  large: '28px',
-  medium: '20px',
-  small: '16px',
-  tiny: '14px',
+  large: "28px",
+  medium: "20px",
+  small: "16px",
+  tiny: "14px",
 } as const;
 
 // ================================
@@ -247,40 +247,40 @@ export const ICON_SIZE = {
  * レスポンシブフォントサイズを取得
  */
 export const getResponsiveFontSize = (
-  type: Exclude<keyof typeof FONT_SIZES, 'button'>,
-  breakpoint: keyof typeof BREAKPOINTS
+  type: Exclude<keyof typeof FONT_SIZES, "button">,
+  breakpoint: keyof typeof BREAKPOINTS,
 ): string => {
   const sizes = FONT_SIZES[type];
-  if ('mobile' in sizes && 'tablet' in sizes && 'desktop' in sizes) {
+  if ("mobile" in sizes && "tablet" in sizes && "desktop" in sizes) {
     switch (breakpoint) {
-      case 'mobile':
+      case "mobile":
         return sizes.mobile;
-      case 'tablet':
+      case "tablet":
         return sizes.tablet;
-      case 'desktop':
+      case "desktop":
         return sizes.desktop;
       default:
         return sizes.desktop;
     }
   }
-  return '16px'; // fallback
+  return "16px"; // fallback
 };
 
 /**
  * レスポンシブスペーシングを取得
  */
 export const getResponsiveSpacing = (
-  type: Exclude<keyof typeof SPACING, 'gap'>,
-  breakpoint: keyof typeof BREAKPOINTS
+  type: Exclude<keyof typeof SPACING, "gap">,
+  breakpoint: keyof typeof BREAKPOINTS,
 ): number => {
   const spacing = SPACING[type];
-  if ('mobile' in spacing && 'tablet' in spacing && 'desktop' in spacing) {
+  if ("mobile" in spacing && "tablet" in spacing && "desktop" in spacing) {
     switch (breakpoint) {
-      case 'mobile':
+      case "mobile":
         return spacing.mobile;
-      case 'tablet':
+      case "tablet":
         return spacing.tablet;
-      case 'desktop':
+      case "desktop":
         return spacing.desktop;
       default:
         return spacing.desktop;

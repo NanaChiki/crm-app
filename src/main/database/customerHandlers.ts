@@ -18,19 +18,19 @@
  * - わかりやすいログ出力
  */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from "@prisma/client";
 
-// Prisma Clientインスタンスをキャッシュ
 let prismaInstance: PrismaClient | null = null;
 
 /**
  * Prisma Clientインスタンスを取得（遅延ロード）
+ *
+ * @returns {Promise<PrismaClient>} Prismaクライアントインスタンス
  */
 async function getPrisma(): Promise<PrismaClient> {
   if (!prismaInstance) {
-    const { PrismaClient: PrismaClientClass } = await import('@prisma/client');
+    const { PrismaClient: PrismaClientClass } = await import("@prisma/client");
     prismaInstance = new PrismaClientClass();
-    console.log('✅ Prisma Client初期化完了 (customerHandlers)');
   }
   return prismaInstance;
 }
@@ -38,12 +38,19 @@ async function getPrisma(): Promise<PrismaClient> {
 /**
  * PrismaオブジェクトをIPC送信可能なプレーンオブジェクトに変換
  * Decimal型、Date型などをシリアライズ可能な形式に変換
+ *
+ * @param {any} data - シリアライズするデータ
+ * @returns {any} シリアライズされたデータ
  */
 function serializeForIPC(data: any): any {
   return JSON.parse(
     JSON.stringify(data, (key, value) => {
       // Decimal型を数値文字列に変換
-      if (value && typeof value === 'object' && value.constructor?.name === 'Decimal') {
+      if (
+        value &&
+        typeof value === "object" &&
+        value.constructor?.name === "Decimal"
+      ) {
         return value.toString();
       }
       // Date型をISO文字列に変換
@@ -51,7 +58,7 @@ function serializeForIPC(data: any): any {
         return value.toISOString();
       }
       return value;
-    })
+    }),
   );
 }
 
@@ -98,15 +105,15 @@ interface UpdateCustomerInput {
 /**
  * 顧客一覧取得（検索・フィルター対応）
  *
- * @param filters - フィルター条件
- * @returns 顧客一覧
+ * @param {CustomerFilters} [filters] - フィルター条件（会社名、担当者名、電話番号、メールアドレス）
+ * @returns {Promise<DatabaseResult<any[]>>} 顧客一覧データ（サービス履歴・リマインダー含む）
+ * @throws {Error} データベース接続エラー時
  */
 export async function fetchCustomers(
-  filters?: CustomerFilters
+  filters?: CustomerFilters,
 ): Promise<DatabaseResult<any[]>> {
   try {
     const prisma = await getPrisma();
-    console.log('📋 DB: 顧客取得開始', filters);
 
     // where条件構築
     const where: any = {};
@@ -143,11 +150,9 @@ export async function fetchCustomers(
         reminders: true,
       },
       orderBy: {
-        updatedAt: 'desc',
+        updatedAt: "desc",
       },
     });
-
-    console.log(`✅ ${customers.length}件の顧客を取得しました`);
 
     // IPC送信用にシリアライズ
     const serializedCustomers = serializeForIPC(customers);
@@ -157,10 +162,10 @@ export async function fetchCustomers(
       data: serializedCustomers,
     };
   } catch (error: any) {
-    console.error('❌ 顧客取得エラー:', error);
+    console.error("❌ 顧客取得エラー:", error);
     return {
       success: false,
-      error: '顧客情報の取得に失敗しました',
+      error: "顧客情報の取得に失敗しました",
     };
   }
 }
@@ -172,31 +177,31 @@ export async function fetchCustomers(
 /**
  * 新規顧客作成
  *
- * @param input - 顧客作成データ
- * @returns 作成された顧客
+ * @param {CreateCustomerInput} input - 顧客作成データ（会社名、担当者名、連絡先等）
+ * @returns {Promise<DatabaseResult<any>>} 作成された顧客データ
+ * @throws {Error} 会社名が空の場合、またはメールアドレス形式が不正な場合
  */
 export async function createCustomer(
-  input: CreateCustomerInput
+  input: CreateCustomerInput,
 ): Promise<DatabaseResult<any>> {
   try {
     const prisma = await getPrisma();
-    console.log('📝 DB: 顧客作成開始', input.companyName);
 
     // バリデーション
-    if (!input.companyName || input.companyName.trim() === '') {
+    if (!input.companyName || input.companyName.trim() === "") {
       return {
         success: false,
-        error: '会社名は必須です',
+        error: "会社名は必須です",
       };
     }
 
     // メールアドレス形式チェック（入力がある場合のみ）
-    if (input.email && input.email.trim() !== '') {
+    if (input.email && input.email.trim() !== "") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(input.email)) {
         return {
           success: false,
-          error: '正しいメールアドレスを入力してください',
+          error: "正しいメールアドレスを入力してください",
         };
       }
     }
@@ -217,8 +222,6 @@ export async function createCustomer(
       },
     });
 
-    console.log(`✅ 顧客作成成功: ${customer.companyName} (ID: ${customer.customerId})`);
-
     // IPC送信用にシリアライズ
     const serializedCustomer = serializeForIPC(customer);
 
@@ -227,10 +230,10 @@ export async function createCustomer(
       data: serializedCustomer,
     };
   } catch (error: any) {
-    console.error('❌ 顧客作成エラー:', error);
+    console.error("❌ 顧客作成エラー:", error);
     return {
       success: false,
-      error: '顧客情報の登録に失敗しました',
+      error: "顧客情報の登録に失敗しました",
     };
   }
 }
@@ -242,15 +245,15 @@ export async function createCustomer(
 /**
  * 顧客情報更新
  *
- * @param input - 更新データ
- * @returns 更新された顧客
+ * @param {UpdateCustomerInput} input - 更新データ（顧客ID、会社名、連絡先等）
+ * @returns {Promise<DatabaseResult<any>>} 更新された顧客データ
+ * @throws {Error} 顧客が存在しない場合、または会社名が空の場合
  */
 export async function updateCustomer(
-  input: UpdateCustomerInput
+  input: UpdateCustomerInput,
 ): Promise<DatabaseResult<any>> {
   try {
     const prisma = await getPrisma();
-    console.log('✏️ DB: 顧客更新開始', input.customerId);
 
     // 顧客存在確認
     const existingCustomer = await prisma.customer.findUnique({
@@ -260,25 +263,25 @@ export async function updateCustomer(
     if (!existingCustomer) {
       return {
         success: false,
-        error: '指定された顧客が見つかりません',
+        error: "指定された顧客が見つかりません",
       };
     }
 
     // バリデーション
-    if (input.companyName !== undefined && input.companyName.trim() === '') {
+    if (input.companyName !== undefined && input.companyName.trim() === "") {
       return {
         success: false,
-        error: '会社名は必須です',
+        error: "会社名は必須です",
       };
     }
 
     // メールアドレス形式チェック（更新がある場合のみ）
-    if (input.email !== undefined && input.email.trim() !== '') {
+    if (input.email !== undefined && input.email.trim() !== "") {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(input.email)) {
         return {
           success: false,
-          error: '正しいメールアドレスを入力してください',
+          error: "正しいメールアドレスを入力してください",
         };
       }
     }
@@ -315,8 +318,6 @@ export async function updateCustomer(
       },
     });
 
-    console.log(`✅ 顧客更新成功: ${customer.companyName} (ID: ${customer.customerId})`);
-
     // IPC送信用にシリアライズ
     const serializedCustomer = serializeForIPC(customer);
 
@@ -325,10 +326,10 @@ export async function updateCustomer(
       data: serializedCustomer,
     };
   } catch (error: any) {
-    console.error('❌ 顧客更新エラー:', error);
+    console.error("❌ 顧客更新エラー:", error);
     return {
       success: false,
-      error: '顧客情報の更新に失敗しました',
+      error: "顧客情報の更新に失敗しました",
     };
   }
 }
@@ -338,17 +339,17 @@ export async function updateCustomer(
 // ================================
 
 /**
- * 顧客削除
+ * 顧客削除（関連するサービス履歴・リマインダーも自動削除）
  *
- * @param customerId - 顧客ID
- * @returns 削除結果
+ * @param {number} customerId - 顧客ID
+ * @returns {Promise<DatabaseResult<void>>} 削除結果
+ * @throws {Error} 顧客が存在しない場合、またはデータベースエラー時
  */
 export async function deleteCustomer(
-  customerId: number
+  customerId: number,
 ): Promise<DatabaseResult<void>> {
   try {
     const prisma = await getPrisma();
-    console.log('🗑️ DB: 顧客削除開始', customerId);
 
     // 顧客存在確認
     const existingCustomer = await prisma.customer.findUnique({
@@ -362,7 +363,7 @@ export async function deleteCustomer(
     if (!existingCustomer) {
       return {
         success: false,
-        error: '指定された顧客が見つかりません',
+        error: "指定された顧客が見つかりません",
       };
     }
 
@@ -371,21 +372,14 @@ export async function deleteCustomer(
       where: { customerId },
     });
 
-    console.log(
-      `✅ 顧客削除成功: ${existingCustomer.companyName} (ID: ${customerId})`
-    );
-    console.log(
-      `   削除された関連データ: サービス履歴${existingCustomer.serviceRecords.length}件, リマインダー${existingCustomer.reminders.length}件`
-    );
-
     return {
       success: true,
     };
   } catch (error: any) {
-    console.error('❌ 顧客削除エラー:', error);
+    console.error("❌ 顧客削除エラー:", error);
     return {
       success: false,
-      error: '顧客情報の削除に失敗しました',
+      error: "顧客情報の削除に失敗しました",
     };
   }
 }
@@ -396,11 +390,13 @@ export async function deleteCustomer(
 
 /**
  * Prismaクライアントを適切に終了
+ *
+ * @returns {Promise<void>}
  */
 export async function disconnectPrismaCustomer(): Promise<void> {
   if (prismaInstance) {
     await prismaInstance.$disconnect();
     prismaInstance = null;
-    console.log('✅ Prismaクライアント切断完了 (customerHandlers)');
+    console.log("✅ Prismaクライアント切断完了 (customerHandlers)");
   }
 }

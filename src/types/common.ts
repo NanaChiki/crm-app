@@ -115,11 +115,11 @@ export interface AppError {
    * 【PERMISSION_DENIED】「この操作を行う権限がありません」
    * 【SERVER_ERROR】「一時的な問題が発生しています」 */
   type:
-    | 'NETWORK_ERROR'
-    | 'VALIDATION_ERROR'
-    | 'NOT_FOUND'
-    | 'PERMISSION_DENIED'
-    | 'SERVER_ERROR';
+    | "NETWORK_ERROR"
+    | "VALIDATION_ERROR"
+    | "NOT_FOUND"
+    | "PERMISSION_DENIED"
+    | "SERVER_ERROR";
 
   /** 解決方法の提案（50代向けの具体的な手順）
    * 【例】「ページを再読み込みしてもう一度お試しください」 */
@@ -161,7 +161,7 @@ export interface FormState<T> {
   isSubmitting: boolean;
 
   /** フォーム送信後の状態 */
-  submitStatus: 'idle' | 'success' | 'error';
+  submitStatus: "idle" | "success" | "error";
 
   /** バリデーションエラー（フィールド別）
    * 【型安全】フォームの各フィールドに対応したエラー管理 */
@@ -190,7 +190,7 @@ export interface ValidationError {
   message: string;
 
   /** エラーの種類 */
-  type: 'required' | 'minLength' | 'length' | 'custom';
+  type: "required" | "minLength" | "length" | "custom";
 
   /** 修正方法の説明（任意）
    * 【例】「電話番号は「090-1234-5678」の形式で入力してください」 */
@@ -300,7 +300,7 @@ export interface SortOrder {
   /** ソート方向
    * 【asc】昇順「あいうえお順」「古い順」「安い順」
    * 【desc】降順「んをわ順」「新しい順」「高い順」 */
-  direction: 'asc' | 'desc';
+  direction: "asc" | "desc";
 
   /** ソート項目の表示名（50代向け分かりやすい表現）
    * 【例】field: 'createdAt' → label: '登録日時' */
@@ -331,7 +331,7 @@ export interface SnackbarMessage {
    * 【error】赤色、警告アイコン「⚠ エラーが発生しました」
    * 【warning】黄色、注意アイコン「⚠ ご注意ください」
    * 【info】青色、情報アイコン「ℹ お知らせ」 */
-  severity: 'success' | 'error' | 'warning' | 'info';
+  severity: "success" | "error" | "warning" | "info";
 
   /** 表示時間（ミリ秒）
    * 【デフォルト】4000ms（4秒）- 50代が読むのに十分な時間 */

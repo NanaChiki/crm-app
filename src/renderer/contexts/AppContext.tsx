@@ -35,7 +35,8 @@ import React, {
   useContext,
   useState,
 } from "react";
-import { AppError, SnackbarMessage } from "../../types";
+
+import type { AppError, SnackbarMessage } from "../../types";
 
 // =============================================================================
 // 🎯 Context型定義 - TypeScript型安全性の確保
@@ -239,9 +240,11 @@ export function AppProvider({ children }: AppProviderProps) {
       setSnackbarQueue((prev) => {
         // キュー内の最後のメッセージと同じ場合はスキップ
         const lastInQueue = prev[prev.length - 1];
-        if (lastInQueue &&
-            lastInQueue.message === newMessage.message &&
-            lastInQueue.severity === newMessage.severity) {
+        if (
+          lastInQueue &&
+          lastInQueue.message === newMessage.message &&
+          lastInQueue.severity === newMessage.severity
+        ) {
           return prev;
         }
 

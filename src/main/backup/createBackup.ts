@@ -15,30 +15,28 @@ function getPrismaClient(): PrismaClient {
 }
 
 /**
- * バックアップを作成
- * @param outputPath 出力先パス
+ * バックアップを作成（全データをJSON形式とデータベースファイルでZIP圧縮）
+ *
+ * @param {string} outputPath - 出力先パス（ZIPファイルの保存先）
+ * @returns {Promise<void>}
+ * @throws {Error} データベース接続エラー、またはファイル書き込みエラー時
+ *
+ * @example
+ * await createBackup('/Users/name/Desktop/CRMバックアップ_2024-10-23.zip');
  */
 export async function createBackup(outputPath: string): Promise<void> {
   const tempDir = path.join(require("os").tmpdir(), "crm-backup-" + Date.now());
 
   try {
-    console.log("📤 バックアップ作成開始");
-    console.log("一時ディレクトリ:", tempDir);
-
     // 一時ディレクトリ作成
     await fs.mkdir(tempDir, { recursive: true });
 
     const prisma = getPrismaClient();
 
     // 1. 全データを取得
-    console.log("📊 データベースからデータ取得中...");
     const customers = await prisma.customer.findMany();
     const serviceRecords = await prisma.serviceRecord.findMany();
     const reminders = await prisma.reminder.findMany();
-
-    console.log(`顧客: ${customers.length}件`);
-    console.log(`サービス履歴: ${serviceRecords.length}件`);
-    console.log(`リマインダー: ${reminders.length}件`);
 
     // 2. JSON形式で保存
     const data = {
@@ -52,7 +50,6 @@ export async function createBackup(outputPath: string): Promise<void> {
       JSON.stringify(data, null, 2),
       "utf-8",
     );
-    console.log("✅ data.json作成完了");
 
     // 3. データベースファイルをコピー
     const dbPath = path.join(process.cwd(), "src", "database", "dev.db");
@@ -63,9 +60,6 @@ export async function createBackup(outputPath: string): Promise<void> {
 
     if (dbExists) {
       await fs.copyFile(dbPath, path.join(tempDir, "database.db"));
-      console.log("✅ database.db コピー完了");
-    } else {
-      console.log("⚠️ database.db が見つかりません:", dbPath);
     }
 
     // 4. バックアップ情報を作成
@@ -82,16 +76,12 @@ export async function createBackup(outputPath: string): Promise<void> {
       JSON.stringify(backupInfo, null, 2),
       "utf-8",
     );
-    console.log("✅ backup-info.json作成完了");
 
     // 5. ZIPファイルに圧縮
-    console.log("🗜️ ZIPファイル作成中...");
     await createZipFile(tempDir, outputPath);
-    console.log("✅ ZIPファイル作成完了:", outputPath);
 
     // 6. 一時ディレクトリを削除
     await fs.rm(tempDir, { recursive: true, force: true });
-    console.log("✅ 一時ディレクトリ削除完了");
   } catch (error) {
     console.error("❌ バックアップ作成エラー:", error);
 
@@ -106,7 +96,12 @@ export async function createBackup(outputPath: string): Promise<void> {
 }
 
 /**
- * ZIPファイルを作成
+ * ZIPファイルを作成（最高圧縮レベル9）
+ *
+ * @param {string} sourceDir - 圧縮元ディレクトリ
+ * @param {string} outputPath - 出力先パス
+ * @returns {Promise<void>}
+ * @throws {Error} ZIP作成エラー時
  */
 async function createZipFile(
   sourceDir: string,
@@ -119,7 +114,6 @@ async function createZipFile(
     });
 
     output.on("close", () => {
-      console.log(`📦 バックアップサイズ: ${archive.pointer()} bytes`);
       resolve();
     });
 

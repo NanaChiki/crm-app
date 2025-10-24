@@ -22,18 +22,18 @@
  * - ブックマーク・URL共有サポート
  */
 
-import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import React from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 // Pages - Phase 5A, 5B, 5C完成
-import CustomerDetailPage from '../pages/CustomerDetailPage';
-import CustomerFormPage from '../pages/CustomerFormPage';
-import CustomerListPage from '../pages/CustomerListPage';
-import Dashboard from '../pages/Dashboard';
-import NotFoundPage from '../pages/NotFoundPage';
-import ReminderListPage from '../pages/ReminderListPage';
-import ReportsPage from '../pages/ReportsPage';
-import SettingsPage from '../pages/SettingsPage';
+import CustomerDetailPage from "../pages/CustomerDetailPage";
+import CustomerFormPage from "../pages/CustomerFormPage";
+import CustomerListPage from "../pages/CustomerListPage";
+import Dashboard from "../pages/Dashboard";
+import NotFoundPage from "../pages/NotFoundPage";
+import ReminderListPage from "../pages/ReminderListPage";
+import ReportsPage from "../pages/ReportsPage";
+import SettingsPage from "../pages/SettingsPage";
 // ================================
 // 未実装ページ用プレースホルダー
 // ================================
@@ -53,18 +53,19 @@ import SettingsPage from '../pages/SettingsPage';
 const ComingSoonPage: React.FC<{ pageName: string }> = ({ pageName }) => (
   <div
     style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '70vh',
-      padding: '20px',
-    }}>
-    <h1 style={{ fontSize: '48px', marginBottom: '16px' }}>🚧</h1>
-    <h2 style={{ fontSize: '24px', marginBottom: '8px', fontWeight: 'bold' }}>
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "70vh",
+      padding: "20px",
+    }}
+  >
+    <h1 style={{ fontSize: "48px", marginBottom: "16px" }}>🚧</h1>
+    <h2 style={{ fontSize: "24px", marginBottom: "8px", fontWeight: "bold" }}>
       {pageName}は準備中です
     </h2>
-    <p style={{ fontSize: '16px', color: '#666', textAlign: 'center' }}>
+    <p style={{ fontSize: "16px", color: "#666", textAlign: "center" }}>
       このページは現在開発中です。
       <br />
       もうしばらくお待ちください。

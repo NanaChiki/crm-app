@@ -41,13 +41,15 @@ interface JobkanCustomerRow {
 /**
  * 顧客データをジョブカン互換CSV形式で生成
  *
- * @returns CSV文字列（BOM付きUTF-8）
- * @throws エラー時にエラーメッセージを含む例外
+ * @returns {Promise<string>} CSV文字列（BOM付きUTF-8、Windows改行コード）
+ * @throws {Error} 顧客データが0件の場合、またはデータベースエラー時
+ *
+ * @example
+ * const csv = await generateCustomersCSV();
+ * // 返り値: "会社名,担当者,電話番号,メールアドレス,住所,備考\r\n田中建設,田中太郎,..."
  */
 export async function generateCustomersCSV(): Promise<string> {
   try {
-    console.log("📤 顧客データCSV生成開始");
-
     const prisma = getPrismaClient();
 
     // 全顧客データを取得（会社名昇順）
@@ -56,8 +58,6 @@ export async function generateCustomersCSV(): Promise<string> {
         companyName: "asc",
       },
     });
-
-    console.log(`📊 取得した顧客数: ${customers.length}件`);
 
     // 顧客データが0件の場合
     if (customers.length === 0) {
@@ -82,7 +82,6 @@ export async function generateCustomersCSV(): Promise<string> {
       newline: "\r\n", // Windows互換の改行コード
     });
 
-    console.log("✅ CSV生成完了");
     return csv;
   } catch (error) {
     console.error("❌ CSV生成エラー:", error);
