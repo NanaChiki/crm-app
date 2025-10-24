@@ -20,7 +20,13 @@ let prismaInstance: PrismaClient | null = null;
  */
 function getPrismaClient(): PrismaClient {
   if (!prismaInstance) {
-    prismaInstance = new PrismaClient();
+    prismaInstance = new PrismaClient({
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL,
+        },
+      },
+    });
     console.log("✅ Prisma Client初期化完了 (exportCustomers)");
   }
   return prismaInstance;

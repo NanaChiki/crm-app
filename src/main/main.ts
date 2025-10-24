@@ -1,4 +1,5 @@
 import * as fs from "fs/promises";
+import * as fsSync from "fs";
 import * as os from "os";
 import * as path from "path";
 import { app, BrowserWindow, Menu, dialog, ipcMain } from "electron";
@@ -37,6 +38,45 @@ import {
   getFriendlyErrorMessage,
   sendOutlookEmail,
 } from "./outlook";
+
+// ================================
+// データベースパス設定
+// ================================
+
+/**
+ * データベースファイルパスを設定する
+ * 開発環境: src/database/dev.db
+ * 本番環境: userData/dev.db（書き込み可能）
+ */
+function setupDatabasePath(): void {
+  const isDev = process.env.NODE_ENV === "development" || !app.isPackaged;
+
+  if (isDev) {
+    // 開発環境: プロジェクトルートのsrc/database/dev.dbを使用
+    const dbPath = path.join(__dirname, "../../src/database/dev.db");
+    process.env.DATABASE_URL = `file:${dbPath}`;
+  } else {
+    // 本番環境: userDataディレクトリにデータベースを配置
+    const userDataPath = app.getPath("userData");
+    const dbPath = path.join(userDataPath, "dev.db");
+    process.env.DATABASE_URL = `file:${dbPath}`;
+
+    // 初回起動時: データベースファイルをコピー
+    if (!fsSync.existsSync(dbPath)) {
+      const sourceDbPath = path.join(
+        process.resourcesPath,
+        "database",
+        "dev.db",
+      );
+      if (fsSync.existsSync(sourceDbPath)) {
+        fsSync.copyFileSync(sourceDbPath, dbPath);
+      }
+    }
+  }
+}
+
+// アプリ起動時にデータベースパスを設定
+setupDatabasePath();
 
 /**
  * メインウィンドウを作成する

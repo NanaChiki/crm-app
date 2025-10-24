@@ -31,7 +31,13 @@ let prismaInstance: PrismaClient | null = null;
 async function getPrisma(): Promise<PrismaClient> {
   if (!prismaInstance) {
     const { PrismaClient: PrismaClientClass } = await import("@prisma/client");
-    prismaInstance = new PrismaClientClass();
+    prismaInstance = new PrismaClientClass({
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL,
+        },
+      },
+    });
     console.log("✅ Prisma Client初期化完了");
   }
   return prismaInstance;
