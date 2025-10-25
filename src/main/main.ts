@@ -78,6 +78,12 @@ function setupDatabasePath(): void {
 // アプリ起動時にデータベースパスを設定
 setupDatabasePath();
 
+// 開発環境でのセキュリティ警告を抑制
+// 本番環境（パッケージ化後）では警告は表示されないため、開発環境のみ抑制
+if (process.env.NODE_ENV === "development" || !app.isPackaged) {
+  process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
+}
+
 /**
  * メインウィンドウを作成する
  *

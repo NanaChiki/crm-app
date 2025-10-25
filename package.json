@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development concurrently --kill-others-on-fail \"npm run dev:renderer\" \"npm run dev:main\"",
     "dev:renderer": "vite --port 5174",
-    "dev:main": "cross-env NODE_ENV=development npm run build:main && npx electron .",
+    "dev:main": "cross-env NODE_ENV=development ELECTRON_DISABLE_SECURITY_WARNINGS=true npm run build:main && npx electron .",
     "build": "npm run build:renderer && npm run build:main",
     "build:renderer": "vite build",
     "build:main": "tsc --project tsconfig.main.json && tsc --project tsconfig.preload.json",
