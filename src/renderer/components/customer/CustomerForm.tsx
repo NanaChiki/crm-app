@@ -744,8 +744,8 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
         </Alert>
       )}
 
-      {/* バリデーションエラー表示 */}
-      {editState.isEditing && Object.keys(errors).length > 0 && (
+      {/* バリデーションエラー表示（入力済みフィールドにエラーがある場合のみ） */}
+      {editState.isEditing && !isValid && hasChanges && (
         <Alert severity="error" sx={{ mb: 3 }}>
           <Typography variant="body2" sx={{ fontWeight: "bold" }}>
             {MESSAGES.error.required}
