@@ -57,7 +57,13 @@ export async function restoreBackup(backupFilePath: string): Promise<void> {
 
   try {
     // 1. ZIPファイルを解凍
-    await extract(backupFilePath, { dir: tempDir });
+    try {
+      await extract(backupFilePath, { dir: tempDir });
+    } catch (extractError) {
+      throw new Error(
+        "バックアップファイルの解凍に失敗しました。正しいZIPファイルを選択してください。",
+      );
+    }
 
     // 2. backup-info.json で整合性チェック
     const backupInfoPath = path.join(tempDir, "backup-info.json");
@@ -73,7 +79,21 @@ export async function restoreBackup(backupFilePath: string): Promise<void> {
     }
 
     const backupInfoContent = await fs.readFile(backupInfoPath, "utf-8");
-    const backupInfo: BackupInfo = JSON.parse(backupInfoContent);
+    let backupInfo: BackupInfo;
+    try {
+      backupInfo = JSON.parse(backupInfoContent);
+      // 必須フィールドの存在チェック
+      if (
+        !backupInfo.version ||
+        typeof backupInfo.customerCount !== "number"
+      ) {
+        throw new Error("Invalid backup-info.json structure");
+      }
+    } catch (parseError) {
+      throw new Error(
+        "バックアップファイルの形式が不正です（backup-info.jsonが壊れています）",
+      );
+    }
 
     // 3. data.json を読み込み
     const dataPath = path.join(tempDir, "data.json");
@@ -89,7 +109,22 @@ export async function restoreBackup(backupFilePath: string): Promise<void> {
     }
 
     const dataContent = await fs.readFile(dataPath, "utf-8");
-    const data: BackupData = JSON.parse(dataContent);
+    let data: BackupData;
+    try {
+      data = JSON.parse(dataContent);
+      // 必須フィールドの存在チェック
+      if (
+        !Array.isArray(data.customers) ||
+        !Array.isArray(data.serviceRecords) ||
+        !Array.isArray(data.reminders)
+      ) {
+        throw new Error("Invalid data.json structure");
+      }
+    } catch (parseError) {
+      throw new Error(
+        "バックアップファイルの形式が不正です（data.jsonが壊れています）",
+      );
+    }
 
     // 4. トランザクションで既存データを削除してバックアップデータを投入
     const prisma = getPrismaClient();
