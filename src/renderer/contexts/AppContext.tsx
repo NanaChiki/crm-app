@@ -276,14 +276,8 @@ export function AppProvider({ children }: AppProviderProps) {
       setSnackbarMessage(nextMessage);
       setIsProcessingQueue(true);
 
-      // 自動非表示タイマー
-      const duration = nextMessage.duration ?? 5000;
-      if (duration > 0) {
-        setTimeout(() => {
-          setSnackbarMessage(null);
-          setIsProcessingQueue(false);
-        }, duration);
-      }
+      // Material-UIのautoHideDurationに任せるため、setTimeoutは削除
+      // hideSnackbar()が呼ばれたときにisProcessingQueueをfalseにする
     }
   }, [snackbarQueue, isProcessingQueue, snackbarMessage]);
 
