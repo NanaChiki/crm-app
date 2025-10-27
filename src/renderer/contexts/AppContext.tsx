@@ -276,7 +276,7 @@ export function AppProvider({ children }: AppProviderProps) {
       setSnackbarMessage(nextMessage);
       setIsProcessingQueue(true);
 
-      // Material-UIのautoHideDurationに任せるため、setTimeoutは削除
+      // 注：自動非表示はApp.tsxの独自タイマーで制御
       // hideSnackbar()が呼ばれたときにisProcessingQueueをfalseにする
     }
   }, [snackbarQueue, isProcessingQueue, snackbarMessage]);
