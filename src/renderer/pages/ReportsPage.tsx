@@ -443,18 +443,14 @@ export const ReportsPage: React.FC = () => {
       // ===========================================
       csv += `【年度サマリー】\n`;
       csv += `項目,金額・件数\n`;
-      csv += `総売上,${formatCurrency(yearSummary.totalRevenue)}\n`;
-      csv += `総サービス件数,${yearSummary.totalCount}件\n`;
-      csv += `平均単価,${formatCurrency(
-        Math.round(yearSummary.averageRevenue),
-      )}\n`;
-      csv += `取引顧客数,${yearSummary.customerCount}社\n`;
+      csv += `総売上,${yearSummary.totalRevenue}\n`;
+      csv += `総サービス件数,${yearSummary.totalCount}\n`;
+      csv += `平均単価,${Math.round(yearSummary.averageRevenue)}\n`;
+      csv += `取引顧客数,${yearSummary.customerCount}\n`;
 
       if (yearComparison) {
-        csv += `前年度総売上,${formatCurrency(
-          yearComparison.lastYearRevenue,
-        )}\n`;
-        csv += `前年比,${formatPercentage(yearComparison.changePercentage)}\n`;
+        csv += `前年度総売上,${yearComparison.lastYearRevenue}\n`;
+        csv += `前年比,${yearComparison.changePercentage.toFixed(1)}%\n`;
       }
       csv += `\n\n`;
 
@@ -467,9 +463,7 @@ export const ReportsPage: React.FC = () => {
       let cumulativeRevenue = 0;
       monthlyData.forEach((month) => {
         cumulativeRevenue += month.revenue;
-        csv += `${month.monthLabel},${month.revenue.toLocaleString()},${
-          month.count
-        },${cumulativeRevenue.toLocaleString()}\n`;
+        csv += `${month.monthLabel},${month.revenue},${month.count},${cumulativeRevenue}\n`;
       });
       csv += `\n\n`;
 
@@ -490,11 +484,7 @@ export const ReportsPage: React.FC = () => {
           ? new Date(summary.lastServiceDate).toLocaleDateString("ja-JP")
           : "-";
 
-        csv += `${index + 1},${
-          summary.companyName
-        },${summary.totalRevenue.toLocaleString()},${percentage}%,${
-          summary.serviceCount
-        },${lastDate}\n`;
+        csv += `${index + 1},${summary.companyName},${summary.totalRevenue},${percentage}%,${summary.serviceCount},${lastDate}\n`;
       });
       csv += `\n\n`;
 
@@ -508,11 +498,7 @@ export const ReportsPage: React.FC = () => {
         const avgAmount =
           summary.count > 0 ? Math.round(summary.revenue / summary.count) : 0;
 
-        csv += `${
-          summary.serviceType
-        },${summary.revenue.toLocaleString()},${summary.percentage.toFixed(
-          1,
-        )}%,${summary.count},${avgAmount.toLocaleString()}\n`;
+        csv += `${summary.serviceType},${summary.revenue},${summary.percentage.toFixed(1)}%,${summary.count},${avgAmount}\n`;
       });
       csv += `\n\n`;
 
@@ -548,9 +534,7 @@ export const ReportsPage: React.FC = () => {
           const description = (record.serviceDescription || "")
             .replace(/,/g, "，")
             .replace(/\n/g, " ");
-          const amount = record.amount
-            ? Number(record.amount).toLocaleString()
-            : "0";
+          const amount = record.amount ? Number(record.amount) : 0;
           const status = record.status || "completed";
 
           csv += `${

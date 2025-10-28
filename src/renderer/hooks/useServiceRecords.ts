@@ -1138,7 +1138,7 @@ export const useServiceRecords = (
    * これにより、Dashboard等の別コンポーネントで新しいサービス履歴が追加されても
    * 即座に反映される。
    *
-   * 【修正】loadServiceRecordsを依存配列から除外して無限ループを防止
+   * 【修正】loadServiceRecordsを依存配列に含めて、最新の関数参照を使用
    */
   useEffect(() => {
     const handleDataChange = () => {
@@ -1156,7 +1156,7 @@ export const useServiceRecords = (
         dataChangeListeners.splice(index, 1);
       }
     };
-  }, []); // 空の依存配列で初回のみ登録
+  }, [loadServiceRecords]); // loadServiceRecordsを依存配列に含める
 
   /**
    * 選択中顧客変更時の自動フィルター適用

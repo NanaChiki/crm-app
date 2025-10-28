@@ -19,6 +19,13 @@ export const FONT_SIZES = {
     mobile: "24px",
   },
 
+  // セクションタイトル（ページ内の大きな区分）
+  sectionTitle: {
+    desktop: "24px",
+    tablet: "22px",
+    mobile: "20px",
+  },
+
   // サブタイトル
   subtitle: {
     desktop: "18px",

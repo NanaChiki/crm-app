@@ -54,7 +54,11 @@ import { Card } from "../ui/Card";
 import { useServiceRecords } from "../../hooks/useServiceRecords";
 
 // Design System
-import { CARD_MIN_HEIGHT, GRID_LAYOUT } from "../../constants/uiDesignSystem";
+import {
+  CARD_MIN_HEIGHT,
+  FONT_SIZES,
+  GRID_LAYOUT,
+} from "../../constants/uiDesignSystem";
 
 // Types
 import { ServiceRecordWithCustomer } from "../../../types";
@@ -707,7 +711,10 @@ export const MaintenancePrediction: React.FC<MaintenancePredictionProps> = ({
         <Typography
           variant="h5"
           sx={{
-            fontSize: responsiveSettings.titleFontSize,
+            fontSize: {
+              xs: FONT_SIZES.sectionTitle.mobile,
+              md: FONT_SIZES.sectionTitle.desktop,
+            },
             fontWeight: "bold",
             textAlign: isMobile ? "center" : "left",
             mb: 1,
