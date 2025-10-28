@@ -153,3 +153,19 @@ contextBridge.exposeInMainWorld("backupAPI", {
    */
   restoreBackup: () => ipcRenderer.invoke("backup:restore"),
 });
+
+// ================================
+// アプリ情報API公開
+// ================================
+
+contextBridge.exposeInMainWorld("appAPI", {
+  /**
+   * アプリバージョン情報取得
+   */
+  getVersions: () => ipcRenderer.invoke("app:get-versions"),
+
+  /**
+   * 外部URLをシステムデフォルトブラウザで開く
+   */
+  openExternal: (url: string) => ipcRenderer.invoke("app:open-external", url),
+});

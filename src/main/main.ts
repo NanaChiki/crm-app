@@ -2,7 +2,7 @@ import * as fs from "fs/promises";
 import * as fsSync from "fs";
 import * as os from "os";
 import * as path from "path";
-import { app, BrowserWindow, Menu, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from "electron";
 
 import { createBackup } from "./backup/createBackup";
 import { restoreBackup } from "./backup/restoreBackup";
@@ -720,6 +720,62 @@ ipcMain.handle("backup:create", async () => {
     return {
       success: false,
       error: error.message || "バックアップの作成に失敗しました",
+    };
+  }
+});
+
+/**
+ * アプリバージョン情報取得
+ *
+ * 【機能】
+ * - アプリケーションバージョン（package.json）
+ * - Electronバージョン
+ * - Node.jsバージョン
+ * - Chromiumバージョン
+ *
+ * 【用途】
+ * - 設定画面のアプリ情報表示
+ * - デバッグ情報提供
+ */
+ipcMain.handle("app:get-versions", () => {
+  return {
+    app: app.getVersion(), // package.jsonのversion
+    electron: process.versions.electron,
+    node: process.versions.node,
+    chrome: process.versions.chrome,
+  };
+});
+
+/**
+ * 外部URLをシステムデフォルトブラウザで開く
+ *
+ * 【機能】
+ * - shell.openExternalでシステムブラウザ起動
+ * - GitHub、ウェブサイト、メールリンク等に対応
+ *
+ * 【セキュリティ】
+ * - httpまたはhttps、mailto:のみ許可
+ * - 悪意のあるプロトコル（file:、javascript:等）はブロック
+ */
+ipcMain.handle("app:open-external", async (_event: any, url: string) => {
+  try {
+    // セキュリティチェック: 許可されたプロトコルのみ
+    const allowedProtocols = ["http:", "https:", "mailto:"];
+    const urlObj = new URL(url);
+
+    if (!allowedProtocols.includes(urlObj.protocol)) {
+      throw new Error(`許可されていないプロトコルです: ${urlObj.protocol}`);
+    }
+
+    // システムデフォルトブラウザで開く
+    await shell.openExternal(url);
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("外部URLを開けませんでした:", error);
+    return {
+      success: false,
+      error: error.message || "URLを開けませんでした",
     };
   }
 });
