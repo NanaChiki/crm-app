@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { Alert, CssBaseline, Snackbar } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
@@ -42,6 +43,34 @@ import { theme } from "./styles/theme";
  */
 function AppContent() {
   const { snackbarMessage, hideSnackbar } = useApp();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // スナックバーの表示時間（デフォルト5秒、カスタマイズ可能）
+  const snackbarDuration = snackbarMessage?.duration ?? 5000;
+
+  // 独自タイマーでスナックバーを自動非表示
+  // Material-UIのautoHideDurationが正しく動作しないため、独自実装
+  useEffect(() => {
+    // 既存のタイマーをクリア
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (snackbarMessage && snackbarDuration > 0) {
+      timerRef.current = setTimeout(() => {
+        hideSnackbar();
+      }, snackbarDuration);
+    }
+
+    // クリーンアップ
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [snackbarMessage, snackbarDuration, hideSnackbar]);
 
   return (
     <>
@@ -68,20 +97,27 @@ function AppContent() {
         【50代向けUI配慮】
         - 画面下部中央に表示（見やすい位置）
         - 大きめのフォントサイズ（16px以上）
-        - 自動非表示（5秒デフォルト）
+        - 自動非表示（デフォルト5秒、カスタマイズ可能）
         - 手動で閉じることも可能
       */}
-      <Snackbar
-        open={!!snackbarMessage}
-        autoHideDuration={snackbarMessage?.duration || 5000}
-        onClose={hideSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-        sx={{
-          // 50代向け：下部に余白を確保（ボタンと重ならない）
-          bottom: { xs: 80, sm: 24 },
-        }}
-      >
-        {snackbarMessage ? (
+      {snackbarMessage && (
+        <Snackbar
+          key={snackbarMessage.message}
+          open={true}
+          autoHideDuration={null}
+          onClose={(event, reason) => {
+            // clickawayでは閉じない（ユーザーが誤って外をクリックしても閉じない）
+            if (reason === "clickaway") {
+              return;
+            }
+            hideSnackbar();
+          }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          sx={{
+            // 50代向け：下部に余白を確保（ボタンと重ならない）
+            bottom: { xs: 80, sm: 24 },
+          }}
+        >
           <Alert
             onClose={hideSnackbar}
             severity={snackbarMessage.severity}
@@ -91,12 +127,14 @@ function AppContent() {
               fontSize: "16px",
               minWidth: "300px",
               boxShadow: 3,
+              // 改行を正しく表示するため
+              whiteSpace: "pre-line",
             }}
           >
             {snackbarMessage.message}
           </Alert>
-        ) : undefined}
-      </Snackbar>
+        </Snackbar>
+      )}
     </>
   );
 }
