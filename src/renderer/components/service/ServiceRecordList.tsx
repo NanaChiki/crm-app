@@ -325,10 +325,40 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
   // ================================
 
   /**
+   * サービス種別ごとの最新履歴取得（メンテナンス予測と同じロジック）
+   * 同じサービスタイプの場合は最新のもののみを保持
+   */
+  const latestServicesByType = useMemo(() => {
+    const serviceMap = new Map<string, ServiceRecordWithCustomer>();
+
+    serviceRecords.forEach((record) => {
+      const serviceType = record.serviceType || "その他";
+      const existingRecord = serviceMap.get(serviceType);
+
+      const recordDate =
+        typeof record.serviceDate === "string"
+          ? new Date(record.serviceDate)
+          : record.serviceDate;
+      const existingDate = existingRecord
+        ? typeof existingRecord.serviceDate === "string"
+          ? new Date(existingRecord.serviceDate)
+          : existingRecord.serviceDate
+        : null;
+
+      // 同じサービスタイプの場合は最新のもののみを保持
+      if (!existingRecord || (existingDate && recordDate > existingDate)) {
+        serviceMap.set(serviceType, record);
+      }
+    });
+
+    return Array.from(serviceMap.values());
+  }, [serviceRecords]);
+
+  /**
    * フィルタリング済みサービス履歴
    */
   const filteredRecords = useMemo(() => {
-    let filtered = [...serviceRecords];
+    let filtered = [...latestServicesByType];
 
     // 年度別フィルタ
     if (filterState.selectedYear !== "all") {
@@ -362,7 +392,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
     }
 
     return filtered;
-  }, [serviceRecords, filterState]);
+  }, [latestServicesByType, filterState]);
 
   /**
    * フィルタリング済み履歴の年度別グループ化
@@ -1092,12 +1122,15 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
           <Typography
             variant="h5"
             sx={{
-              fontSize: responsiveSettings.fontSize,
+              fontSize: {
+                xs: FONT_SIZES.sectionTitle.mobile,
+                md: FONT_SIZES.sectionTitle.desktop,
+              },
               fontWeight: "bold",
               textAlign: isMobile ? "center" : "left",
             }}
           >
-            📊 サービス履歴
+            📝 サービス履歴
           </Typography>
           <Button
             variant="contained"

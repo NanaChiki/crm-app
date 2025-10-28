@@ -352,7 +352,7 @@ function Dashboard() {
                   >
                     {record.serviceType || "サービス"} -{" "}
                     {record.amount
-                      ? `¥${record.amount.toLocaleString()}`
+                      ? `¥${Number(record.amount).toLocaleString()}`
                       : "金額未設定"}
                   </Typography>
                   <Typography
@@ -727,7 +727,10 @@ function Dashboard() {
               sx={{
                 mb: 2,
                 fontWeight: "bold",
-                fontSize: FONT_SIZES.pageTitle.desktop,
+                fontSize: {
+                  xs: FONT_SIZES.sectionTitle.mobile,
+                  md: FONT_SIZES.sectionTitle.desktop,
+                },
               }}
             >
               ⚡ よく使う機能
@@ -792,7 +795,10 @@ function Dashboard() {
               sx={{
                 mb: 2,
                 fontWeight: "bold",
-                fontSize: FONT_SIZES.pageTitle.desktop,
+                fontSize: {
+                  xs: FONT_SIZES.sectionTitle.mobile,
+                  md: FONT_SIZES.sectionTitle.desktop,
+                },
               }}
             >
               📊 今月の事業サマリー
