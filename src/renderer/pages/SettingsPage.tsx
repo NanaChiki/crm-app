@@ -516,7 +516,7 @@ export default function SettingsPage() {
           />
           <Tab
             label="アプリ情報"
-            icon={<SettingsIcon />}
+            icon={<InfoIcon />}
           />
         </Tabs>
 
