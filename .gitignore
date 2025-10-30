@@ -110,3 +110,12 @@ out/
 # Security audit reports (temporary files)
 audit-report.json
 /tmp/audit-report.json
+
+# Electron Builder
+release/
+dist-electron/
+*.exe
+*.dmg
+*.zip
+*.blockmap
+*.AppImage

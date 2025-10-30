@@ -10,6 +10,11 @@ export default defineConfig({
   ],
   root: '.',
   publicDir: 'public',
+  base: './',
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
   server: {
     port: 5174,
     host: 'localhost',
