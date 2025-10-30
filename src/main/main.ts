@@ -128,7 +128,16 @@ function createWindow(): void {
       },
     );
   } else {
-    mainWindow.loadFile(path.join(__dirname, "../renderer/index.html"));
+    // 本番環境: app.asar内のdist/index.htmlをロード
+    // __dirname = app.asar/dist/main なので、../index.html が正しい
+    const indexPath = path.join(__dirname, "../index.html");
+    console.log("Production mode - Loading file:", indexPath);
+    console.log("__dirname:", __dirname);
+    console.log("File exists:", fsSync.existsSync(indexPath));
+
+    mainWindow.loadFile(indexPath).catch((err: any) => {
+      console.error("Failed to load file:", err);
+    });
   }
 
   mainWindow.once("ready-to-show", () => {

@@ -1,9 +1,19 @@
 {
-  "name": "crm-app",
-  "productName": "crm-app",
+  "name": "mainte-mate",
+  "productName": "メンテメイト",
   "version": "1.0.0",
-  "description": "小規模建築事業者向けCRMツール - React + Vite + Electron with HMR",
+  "description": "建築業界向け顧客管理パートナー - メンテナンス時期を自動予測",
   "main": "dist/main/main.js",
+  "author": {
+    "name": "山本大翔",
+    "email": "crm.tool.construction@gmail.com"
+  },
+  "license": "MIT",
+  "homepage": "https://crm-landing-page-ten.vercel.app/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NanaChiki/crm-app"
+  },
   "scripts": {
     "dev": "cross-env NODE_ENV=development concurrently --kill-others-on-fail \"npm run dev:renderer\" \"npm run dev:main\"",
     "dev:renderer": "vite --port 5174",
@@ -12,7 +22,10 @@
     "build:renderer": "vite build",
     "build:main": "tsc --project tsconfig.main.json && tsc --project tsconfig.preload.json",
     "start": "electron .",
-    "package": "electron-builder",
+    "electron:build": "npm run prisma:generate && npm run build && electron-builder",
+    "electron:build:win": "npm run prisma:generate && npm run build && electron-builder --win",
+    "electron:build:mac": "npm run prisma:generate && npm run build && electron-builder --mac",
+    "electron:build:all": "npm run prisma:generate && npm run build && electron-builder --win --mac",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
@@ -25,13 +38,88 @@
     "electron",
     "react",
     "crm",
-    "typescript"
+    "typescript",
+    "建築",
+    "メンテナンス"
   ],
-  "author": {
-    "name": "Daito",
-    "email": "nanachiki256@gmail.com"
+  "build": {
+    "appId": "com.maintemate.app",
+    "productName": "メンテメイト",
+    "copyright": "Copyright © 2025 山本大翔",
+    "asar": false,
+    "afterPack": "./scripts/afterPack.js",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "src/database/schema.prisma",
+        "to": "prisma/schema.prisma"
+      },
+      {
+        "from": "src/database/dev.db",
+        "to": "database/dev.db"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "${productName}-${version}-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "メンテメイト",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "license": "LICENSE"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "category": "public.app-category.business",
+      "icon": "build/icon.icns",
+      "artifactName": "${productName}-${version}.${ext}",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "title": "メンテメイト ${version}",
+      "icon": "build/icon.icns"
+    }
   },
-  "license": "MIT",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -72,6 +160,7 @@
     "concurrently": "^9.2.0",
     "cross-env": "^7.0.3",
     "electron": "37.3.1",
+    "electron-builder": "^26.0.12",
     "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",

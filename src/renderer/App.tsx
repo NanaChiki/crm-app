@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import { Alert, CssBaseline, Snackbar } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
 
@@ -24,7 +24,7 @@ import { theme } from "./styles/theme";
  * 4. CSVProvider               - CSV出力機能
  * 5. BackupProvider            - バックアップ・リストア機能
  * 6. ThemeProvider             - Material-UI テーマ設定
- * 7. BrowserRouter             - React Router ナビゲーション
+ * 7. HashRouter                - React Router ナビゲーション（Electron用）
  * 8. MainLayout                - レイアウト構造
  * 9. AppRouter                 - ページルーティング
  *
@@ -80,11 +80,11 @@ function AppContent() {
             <BackupProvider>
               <ThemeProvider theme={theme}>
                 <CssBaseline />
-                <BrowserRouter>
+                <HashRouter>
                   <MainLayout>
                     <AppRouter />
                   </MainLayout>
-                </BrowserRouter>
+                </HashRouter>
               </ThemeProvider>
             </BackupProvider>
           </CSVProvider>
