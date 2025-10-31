@@ -27,6 +27,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import React, { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Custom Components
 import { Button } from '../ui/Button';
@@ -85,6 +86,7 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
   defaultMessage,
   defaultDate,
 }) => {
+  const navigate = useNavigate();
   const { showSnackbar } = useApp();
   const { customers } = useCustomer();
   const { createReminder, updateReminder } = useReminder();
@@ -169,16 +171,21 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
     setSubmitting(true);
     try {
       if (reminder) {
+        // 既存リマインダーの更新
         await updateReminder({
           reminderId: reminder.reminderId,
           ...formData,
         });
         showSnackbar('リマインダーを更新しました', 'success');
+        onClose();
       } else {
+        // 新規リマインダーの作成
         await createReminder(formData);
         showSnackbar('リマインダーを作成しました', 'success');
+        onClose();
+        // リマインダーページに遷移（50代配慮：作成後すぐに確認できる）
+        navigate('/reminders');
       }
-      onClose();
     } catch (error) {
       showSnackbar('保存に失敗しました', 'error');
     } finally {
@@ -192,6 +199,7 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
     updateReminder,
     showSnackbar,
     onClose,
+    navigate,
   ]);
 
   // ================================
