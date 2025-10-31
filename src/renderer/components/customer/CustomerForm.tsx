@@ -290,7 +290,8 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
       await deleteCustomer(customer?.customerId);
       showSnackbar(MESSAGES.success.delete, 'success');
       // 削除成功後は顧客一覧にナビゲート（50代配慮：即座に一覧画面に戻る）
-      navigate('/customers');
+      // replace: true で履歴を置き換え、削除済み顧客ページへの戻るを防止
+      navigate('/customers', { replace: true });
     } catch (error) {
       showSnackbar(MESSAGES.error.delete, 'error');
     }
