@@ -292,26 +292,26 @@ export const CustomerDetailPage: React.FC = () => {
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : MESSAGES.error.loadFailed;
+
+        console.error("❌ 顧客詳細ページエラー:", error);
+
+        // 顧客が見つからない場合は即座に顧客一覧にリダイレクト（エラーUI表示なし）
+        if (errorMessage.includes("見つかりません")) {
+          navigate("/customers", { replace: true });
+          return; // エラーUIを表示せずに即座にリダイレクト
+        }
+
+        // その他のエラーの場合のみエラーUIを表示
         setPageState((prev) => ({
           ...prev,
           loading: false,
           error: errorMessage,
         }));
 
-        // handleError の引数を修正（AppError型に準拠）
         handleError({
           message: errorMessage,
           type: "NOT_FOUND",
         });
-
-        console.error("❌ 顧客詳細ページエラー:", error);
-
-        // 顧客が見つからない場合は顧客一覧にリダイレクト
-        if (errorMessage.includes("見つかりません")) {
-          setTimeout(() => {
-            navigate("/customers");
-          }, 2000); // エラーメッセージ表示後にリダイレクト
-        }
       }
     };
 

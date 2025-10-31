@@ -24,7 +24,6 @@ import HelpIcon from '@mui/icons-material/Help';
 import InfoIcon from '@mui/icons-material/Info';
 import LanguageIcon from '@mui/icons-material/Language';
 import RestoreIcon from '@mui/icons-material/Restore';
-import SettingsIcon from '@mui/icons-material/Settings';
 import {
   Box,
   Card,
@@ -130,7 +129,7 @@ function AppSettingsTab() {
             <Typography
               variant="body1"
               sx={{ mb: 1, fontSize: FONT_SIZES.body.desktop }}>
-              <strong>アプリ名:</strong> 建築事業者向けCRM
+              <strong>アプリ名:</strong> メンテメイト
             </Typography>
             <Typography
               variant="body1"
@@ -506,18 +505,9 @@ export default function SettingsPage() {
               minHeight: BUTTON_SIZE.minHeight.tablet,
             },
           }}>
-          <Tab
-            label="データ連携"
-            icon={<DownloadIcon />}
-          />
-          <Tab
-            label="バックアップ"
-            icon={<BackupIcon />}
-          />
-          <Tab
-            label="アプリ情報"
-            icon={<InfoIcon />}
-          />
+          <Tab label="データ連携" icon={<DownloadIcon />} />
+          <Tab label="バックアップ" icon={<BackupIcon />} />
+          <Tab label="アプリ情報" icon={<InfoIcon />} />
         </Tabs>
 
         {/* タブ1: データ連携 */}

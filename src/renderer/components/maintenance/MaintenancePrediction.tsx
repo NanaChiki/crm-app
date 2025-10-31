@@ -115,32 +115,32 @@ const URGENCY_CONFIG = {
   low: {
     label: "余裕あり",
     color: "success" as const,
-    bgColor: "#e8f5e8",
-    textColor: "#2e7d32",
+    bgColor: "#e8f5e8", // 緑（薄い）
+    textColor: "#2e7d32", // 緑（濃い）
     icon: <CheckCircleIcon />,
     message: "まだ余裕があります",
   },
   medium: {
     label: "検討時期",
     color: "warning" as const,
-    bgColor: "#fff3e0",
-    textColor: "#f57c00",
+    bgColor: "#fff8e1", // 黄色（薄い）
+    textColor: "#f57f17", // 黄色（濃い）
     icon: <ScheduleIcon />,
     message: "そろそろ検討時期です",
   },
   high: {
     label: "推奨時期",
-    color: "error" as const,
-    bgColor: "#ffebee",
-    textColor: "#d32f2f",
+    color: "warning" as const,
+    bgColor: "#ffe0b2", // オレンジ（薄い）
+    textColor: "#e65100", // オレンジ（濃い）
     icon: <WarningIcon />,
     message: "メンテナンス推奨時期です",
   },
   overdue: {
     label: "要対応",
     color: "error" as const,
-    bgColor: "#ffcdd2",
-    textColor: "#c62828",
+    bgColor: "#ffcdd2", // 赤（薄い）
+    textColor: "#b71c1c", // 赤（最も濃い）
     icon: <ErrorIcon />,
     message: "早急な対応が必要です",
   },

@@ -75,7 +75,7 @@ const ITEMS_PER_PAGE = 10;
 // ソートオプション定義
 const SORT_OPTIONS: SortOrder[] = [
   { field: "updatedAt", direction: "desc", label: "更新日（新しい順）" },
-  { field: "companyName", direction: "asc", label: "会社名（あいうえお順）" },
+  { field: "companyName", direction: "asc", label: "会社名順" },
   { field: "createdAt", direction: "desc", label: "登録日（新しい順）" },
 ];
 
@@ -133,13 +133,26 @@ export const CustomerListPage: React.FC = () => {
 
     // ソート処理
     const sortedData = [...baseData].sort((a, b) => {
-      const fieldA = a[selectedSort.field as keyof Customer] || "";
-      const fieldB = b[selectedSort.field as keyof Customer] || "";
+      const fieldA = a[selectedSort.field as keyof Customer];
+      const fieldB = b[selectedSort.field as keyof Customer];
+
+      // 日付型の場合
+      if (fieldA instanceof Date && fieldB instanceof Date) {
+        if (selectedSort.direction === "desc") {
+          return fieldB.getTime() - fieldA.getTime();
+        } else {
+          return fieldA.getTime() - fieldB.getTime();
+        }
+      }
+
+      // 文字列型の場合（日本語対応 - Unicode文字コード順）
+      const strA = String(fieldA || "");
+      const strB = String(fieldB || "");
 
       if (selectedSort.direction === "desc") {
-        return fieldB > fieldA ? 1 : -1;
+        return strB.localeCompare(strA, "ja-JP", { sensitivity: "base" });
       } else {
-        return fieldA > fieldB ? 1 : -1;
+        return strA.localeCompare(strB, "ja-JP", { sensitivity: "base" });
       }
     });
 

@@ -49,6 +49,7 @@ import {
   useTheme,
 } from '@mui/material';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { FONT_SIZES } from '../../constants/uiDesignSystem';
 import { useApp } from '../../contexts/AppContext';
@@ -151,8 +152,9 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
   });
 
   // ================================
-  // Context API連携
+  // Context API連携 & Hooks
   // ================================
+  const navigate = useNavigate();
   const { updateCustomer, deleteCustomer } = useCustomer();
   const { showSnackbar } = useApp();
 
@@ -287,15 +289,14 @@ export const CustomerForm: React.FC<CustomerFormProps> = ({
     try {
       await deleteCustomer(customer?.customerId);
       showSnackbar(MESSAGES.success.delete, 'success');
-      // 削除成功後は顧客一覧にナビゲート
-      setTimeout(() => {
-        window.location.href = '/customers';
-      }, 500); // スナックバー表示後にナビゲート
+      // 削除成功後は顧客一覧にナビゲート（50代配慮：即座に一覧画面に戻る）
+      // replace: true で履歴を置き換え、削除済み顧客ページへの戻るを防止
+      navigate('/customers', { replace: true });
     } catch (error) {
       showSnackbar(MESSAGES.error.delete, 'error');
     }
     setEditState((prev) => ({ ...prev, showDeleteDialog: false }));
-  }, [deleteCustomer, customer?.customerId, showSnackbar]);
+  }, [deleteCustomer, customer?.customerId, showSnackbar, navigate]);
 
   // ================================
   // サブコンポーネント定義
