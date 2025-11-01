@@ -6,8 +6,8 @@
 
 ## 📱 ダウンロード
 
-- **Windows版:** [メンテメイト-1.0.0-Setup.exe](https://github.com/NanaChiki/crm-app/releases/download/v1.0.0/-1.0.0-Setup.exe)
-- **macOS版:** [メンテメイト-1.0.0.dmg](https://github.com/NanaChiki/crm-app/releases/download/v1.0.0/-1.0.0.dmg)
+- **Windows版:** [MainteMate-1.0.0-Setup.exe](https://github.com/NanaChiki/crm-app/releases/download/v1.0.0/MainteMate-1.0.0-Setup.exe)
+- **macOS版:** [MainteMate-1.0.0.dmg](https://github.com/NanaChiki/crm-app/releases/download/v1.0.0/MainteMate-1.0.0.dmg)
 
 ---
 
