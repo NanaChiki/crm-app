@@ -99,6 +99,9 @@ out/
 # CLAUDE
 CLAUDE.md
 .claude/
+
+# 顧客フィードバック（機密情報含む）
+after-MVP-1.md
 # Database
 *.db
 *.db-journal

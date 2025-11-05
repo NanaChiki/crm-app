@@ -1,5 +1,6 @@
 import {
   Assessment as AssessmentIcon,
+  Construction as ConstructionIcon,
   Home as HomeIcon,
   Notifications as NotificationsIcon,
   People as PeopleIcon,
@@ -183,6 +184,12 @@ const navigationItems = [
     label: '顧客管理',
     icon: <PeopleIcon />,
     ariaLabel: '顧客管理ページへ移動',
+  },
+  {
+    path: '/site-list',
+    label: '物件リスト',
+    icon: <ConstructionIcon />,
+    ariaLabel: '物件リストページへ移動',
   },
   {
     path: '/reminders',

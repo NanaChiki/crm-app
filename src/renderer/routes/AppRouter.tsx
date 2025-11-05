@@ -34,6 +34,7 @@ import NotFoundPage from "../pages/NotFoundPage";
 import ReminderListPage from "../pages/ReminderListPage";
 import ReportsPage from "../pages/ReportsPage";
 import SettingsPage from "../pages/SettingsPage";
+import { SiteListPage } from "../pages/SiteListPage"; // Phase 4追加
 // ================================
 // 未実装ページ用プレースホルダー
 // ================================
@@ -130,6 +131,12 @@ export const AppRouter: React.FC = () => {
         path="/service/new"
         element={<ComingSoonPage pageName="サービス履歴登録" />}
       />
+
+      {/* ================================
+          物件管理（Phase 4）
+          ================================ */}
+      {/* 物件リストページ - Phase 4完成 */}
+      <Route path="/site-list" element={<SiteListPage />} />
 
       {/* ================================
           集計・レポート
