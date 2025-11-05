@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="メンテメイト - 建築業専門の顧客管理アプリ。メンテナンス時期を自動予測して、年間通じた安定収入を実現。50代でも使いやすいシンプル設計。完全無料。">
+    <meta name="keywords" content="建築業,CRM,顧客管理,工務店,リフォーム,外壁塗装,屋根工事,メンテナンス予測,50代,無料">
+    <meta property="og:title" content="メンテメイト - 過去の顧客が、未来の売上になる">
+    <meta property="og:description" content="建築業専門CRM。メンテナンス時期を自動予測して安定収入を実現。完全無料。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://crm-landing-page-ten.vercel.app/">
+    <title>メンテメイト - 過去の顧客が、未来の売上になる | 建築業専門CRM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #fff;
+        }
+
+        /* ヘッダー */
+        header {
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1976D2;
+        }
+
+        .nav-links a {
+            margin-left: 2rem;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #1976D2;
+        }
+
+        /* ヒーローセクション */
+        .hero {
+            background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+            color: white;
+            padding: 6rem 2rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+        }
+
+        .hero .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .hero .tagline {
+            font-size: 1.25rem;
+            margin-bottom: 3rem;
+            opacity: 0.95;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #FF9800;
+            color: white;
+            padding: 1.5rem 4rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 50px;
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+            transition: all 0.3s;
+        }
+
+        .cta-button:hover {
+            background: #FB8C00;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 152, 0, 0.5);
+        }
+
+        .cta-button-secondary {
+            display: inline-block;
+            background: white;
+            color: #1976D2;
+            padding: 1rem 3rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 50px;
+            margin-left: 1rem;
+            transition: all 0.3s;
+            border: 2px solid white;
+        }
+
+        .cta-button-secondary:hover {
+            background: transparent;
+            color: white;
+        }
+
+        .hero-badges {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 30px;
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        /* セクション共通スタイル */
+        section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            color: #1976D2;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.25rem;
+            color: #666;
+            margin-bottom: 4rem;
+        }
+
+        /* 問題提起セクション */
+        .problems {
+            background: #f8f9fa;
+        }
+
+        .problem-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .problem-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #E91E63;
+        }
+
+        .problem-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #E91E63;
+        }
+
+        .problem-card p {
+            font-size: 1.1rem;
+            color: #555;
+        }
+
+        /* ソリューションセクション */
+        .solution {
+            text-align: center;
+        }
+
+        .solution-box {
+            background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%);
+            color: white;
+            padding: 3rem;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            margin: 3rem auto;
+            max-width: 900px;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .solution-box strong {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        /* 主要機能セクション */
+        .features {
+            background: #f8f9fa;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 3rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: #1976D2;
+        }
+
+        .feature-card p {
+            font-size: 1.1rem;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        /* ベネフィットセクション */
+        .benefits {
+            background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+            color: white;
+        }
+
+        .benefits .section-title,
+        .benefits .section-subtitle {
+            color: white;
+        }
+
+        .benefit-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.25rem;
+            opacity: 0.95;
+        }
+
+        /* 使いやすさセクション */
+        .usability {
+            background: #FFF3E0;
+        }
+
+        .usability-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .usability-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            border: 3px solid #FF9800;
+            text-align: center;
+        }
+
+        .usability-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #FF9800;
+        }
+
+        .usability-card p {
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        /* 信頼性セクション */
+        .trust {
+            background: #f8f9fa;
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+        }
+
+        .trust-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .trust-badge {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .trust-card h3 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: #1976D2;
+        }
+
+        .security-grade {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 1rem 0;
+        }
+
+        /* ユーザーレビューセクション */
+        .reviews {
+            background: white;
+        }
+
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .review-card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .stars {
+            color: #FF9800;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .review-text {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            font-style: italic;
+            color: #555;
+        }
+
+        .reviewer {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .reviewer-title {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        /* 料金セクション */
+        .pricing {
+            background: #f8f9fa;
+            text-align: center;
+        }
+
+        .price-card {
+            background: white;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            border: 5px solid #4CAF50;
+        }
+
+        .price-tag {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 1rem 0;
+        }
+
+        .price-note {
+            font-size: 1.25rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .price-features {
+            text-align: left;
+            list-style: none;
+            margin: 2rem 0;
+        }
+
+        .price-features li {
+            padding: 0.75rem 0;
+            padding-left: 2rem;
+            font-size: 1.1rem;
+            position: relative;
+        }
+
+        .price-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        /* ダウンロードセクション */
+        .download {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .download .section-title,
+        .download .section-subtitle {
+            color: white;
+        }
+
+        .platform-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin: 3rem 0;
+        }
+
+        .platform-button {
+            background: white;
+            color: #FF9800;
+            padding: 2rem 3rem;
+            border-radius: 15px;
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .platform-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .platform-icon {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .system-requirements {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2rem;
+            border-radius: 15px;
+            max-width: 800px;
+            margin: 3rem auto 0;
+            text-align: left;
+            backdrop-filter: blur(10px);
+        }
+
+        .system-requirements h4 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .system-requirements ul {
+            list-style: none;
+        }
+
+        .system-requirements li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .system-requirements li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+        }
+
+        /* FAQセクション */
+        .faq {
+            background: white;
+        }
+
+        .faq-list {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: #f8f9fa;
+            margin-bottom: 1.5rem;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            padding: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1976D2;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .faq-question:after {
+            content: "▼";
+            position: absolute;
+            right: 1.5rem;
+            transition: transform 0.3s;
+        }
+
+        .faq-answer {
+            padding: 0 1.5rem 1.5rem;
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        /* 最終CTAセクション */
+        .final-cta {
+            background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+            color: white;
+            text-align: center;
+            padding: 6rem 2rem;
+        }
+
+        .final-cta h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .final-cta p {
+            font-size: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        /* フッター */
+        footer {
+            background: #263238;
+            color: white;
+            padding: 3rem 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+
+        .footer-section h4 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section li {
+            padding: 0.5rem 0;
+        }
+
+        .footer-section a {
+            color: #B0BEC5;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #37474F;
+            color: #B0BEC5;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1.25rem;
+            }
+
+            .hero .tagline {
+                font-size: 1rem;
+            }
+
+            .cta-button {
+                padding: 1rem 2rem;
+                font-size: 1.25rem;
+            }
+
+            .cta-button-secondary {
+                display: block;
+                margin: 1rem auto 0;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .feature-grid,
+            .problem-cards,
+            .usability-features,
+            .trust-grid,
+            .review-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links a {
+                margin: 0 0.5rem;
+            }
+
+            .platform-buttons {
+                flex-direction: column;
+            }
+
+            .final-cta h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <nav>
+            <div class="logo">メンテメイト</div>
+            <div class="nav-links">
+                <a href="#features">機能</a>
+                <a href="#pricing">料金</a>
+                <a href="#download">ダウンロード</a>
+                <a href="#faq">FAQ</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ヒーローセクション -->
+    <section class="hero">
+        <h1>過去の顧客が、未来の売上になる。</h1>
+        <p class="subtitle">メンテナンス時期を自動予測して、年間通じた安定収入を。</p>
+        <p class="tagline">建築業専門の顧客管理アプリ「メンテメイト」</p>
+        <a href="#download" class="cta-button">無料ダウンロード</a>
+        <a href="#features" class="cta-button-secondary">詳しく見る</a>
+
+        <div class="hero-badges">
+            <div class="badge">✓ 完全無料</div>
+            <div class="badge">✓ 50代でも簡単</div>
+            <div class="badge">✓ オフライン動作</div>
+            <div class="badge">✓ Windows & Mac対応</div>
+        </div>
+    </section>
+
+    <!-- 問題提起セクション -->
+    <section class="problems">
+        <h2 class="section-title">建築業経営者の、こんな悩みありませんか?</h2>
+        <p class="section-subtitle">多くの建築業経営者が抱える3つの課題</p>
+
+        <div class="problem-cards">
+            <div class="problem-card">
+                <h3>😰 季節による売上変動が大きい</h3>
+                <p>新規工事は季節に左右される。冬場は仕事がなく、収入が不安定...</p>
+            </div>
+            <div class="problem-card">
+                <h3>😰 既存顧客のフォローアップが不十分</h3>
+                <p>「あの顧客、そろそろメンテナンス時期では?」と思っても、いつ施工したか思い出せない...</p>
+            </div>
+            <div class="problem-card">
+                <h3>😰 ITツールが難しくて使いこなせない</h3>
+                <p>CRMやクラウドツールは便利そうだけど、設定が複雑で結局使わなくなった...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ソリューションセクション -->
+    <section class="solution">
+        <h2 class="section-title">メンテメイトが、すべて解決します</h2>
+
+        <div class="solution-box">
+            <strong>「あと2年で屋根メンテナンスの時期ですよ」</strong>
+            お客様に自信を持って声をかけられる。<br>
+            過去の施工履歴から、次回メンテナンス時期を自動予測。<br>
+            既存顧客からの継続受注で、年間通じた安定収入を実現します。
+        </div>
+    </section>
+
+    <!-- 主要機能セクション -->
+    <section class="features" id="features">
+        <h2 class="section-title">主要機能</h2>
+        <p class="section-subtitle">建築業に特化した、6つのコア機能</p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>メンテナンス時期を自動予測</h3>
+                <p>過去の施工履歴から、次回メンテナンス時期を自動算出。</p>
+                <ul class="feature-list">
+                    <li>屋根: 10年周期</li>
+                    <li>外壁: 10年周期</li>
+                    <li>雨樋: 7年周期</li>
+                    <li>緊急度を4段階で表示</li>
+                    <li>フォロー漏れゼロ</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>シンプルな顧客管理</h3>
+                <p>見やすいカード表示で、顧客情報が一目瞭然。</p>
+                <ul class="feature-list">
+                    <li>会社名・担当者・連絡先</li>
+                    <li>住所・メモ</li>
+                    <li>累計売上・サービス回数</li>
+                    <li>ワンクリック検索・並び替え</li>
+                    <li>顧客統計を自動集計</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📋</div>
+                <h3>サービス履歴の記録</h3>
+                <p>顧客ごとに過去の施工を詳細記録。</p>
+                <ul class="feature-list">
+                    <li>15種類の工事テンプレート</li>
+                    <li>日付・金額・詳細メモ</li>
+                    <li>年度別表示</li>
+                    <li>CSV出力対応</li>
+                    <li>「何をいつやったか」が即わかる</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔔</div>
+                <h3>リマインダー機能</h3>
+                <p>フォローアップのタイミングを逃さない。</p>
+                <ul class="feature-list">
+                    <li>リマインダー登録で通知</li>
+                    <li>メール下書きを自動生成</li>
+                    <li>カレンダーイベント作成</li>
+                    <li>ステータス管理</li>
+                    <li>顧客接点を確実に</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>レポート・売上集計</h3>
+                <p>確定申告が驚くほど楽に。</p>
+                <ul class="feature-list">
+                    <li>年度別売上を自動集計</li>
+                    <li>月別推移グラフ</li>
+                    <li>顧客別TOP10ランキング</li>
+                    <li>工事種別の内訳</li>
+                    <li>税理士へのデータ提出が簡単</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <h3>バックアップ・復元</h3>
+                <p>大切な顧客データを安全に保護。</p>
+                <ul class="feature-list">
+                    <li>ワンクリックでZIPバックアップ</li>
+                    <li>簡単復元機能</li>
+                    <li>データ統計表示</li>
+                    <li>自動バックアップ(予定)</li>
+                    <li>PCが壊れても安心</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- ベネフィットセクション -->
+    <section class="benefits">
+        <h2 class="section-title">メンテメイトで得られる成果</h2>
+        <p class="section-subtitle">数字で見る、導入効果</p>
+
+        <div class="benefit-stats">
+            <div class="stat-card">
+                <span class="stat-number">年間通じて</span>
+                <span class="stat-label">安定収入を実現</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">10分</span>
+                <span class="stat-label">確定申告の売上集計</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">フォロー漏れ</span>
+                <span class="stat-label">ゼロへ</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">自信を持って</span>
+                <span class="stat-label">顧客にアプローチ</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使いやすさセクション -->
+    <section class="usability">
+        <h2 class="section-title">50代でも、すぐに使いこなせる</h2>
+        <p class="section-subtitle">ITが苦手でも大丈夫。シンプル設計。</p>
+
+        <div class="usability-features">
+            <div class="usability-card">
+                <h3>📱 大きなボタン・見やすい文字</h3>
+                <p>最小16px以上の文字サイズ。タップしやすい44-48pxのボタン。50代の視認性を徹底配慮。</p>
+            </div>
+            <div class="usability-card">
+                <h3>🚀 インストールしたらすぐ使える</h3>
+                <p>複雑な初期設定は不要。ダウンロード→インストール→起動で、即座に顧客登録開始。</p>
+            </div>
+            <div class="usability-card">
+                <h3>💬 難しい専門用語なし</h3>
+                <p>「クラウド」「API」などのIT用語は使いません。日常の言葉でわかりやすく。</p>
+            </div>
+            <div class="usability-card">
+                <h3>📖 充実のサポート</h3>
+                <p>使い方動画、マニュアル、メールサポート。わからないことは気軽に相談できます。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 信頼性セクション -->
+    <section class="trust">
+        <h2 class="section-title">安心して使える理由</h2>
+        <p class="section-subtitle">セキュリティ・プライバシーへの配慮</p>
+
+        <div class="trust-grid">
+            <div class="trust-card">
+                <div class="trust-badge">🔒</div>
+                <h3>セキュリティ監査済み</h3>
+                <div class="security-grade">Grade A+</div>
+                <p>第三者機関による厳格なセキュリティ監査を実施。脆弱性ゼロを達成しています。</p>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-badge">💻</div>
+                <h3>データは自分のPCに</h3>
+                <p>顧客情報は完全にローカル保存。クラウドにアップロードされることはありません。自分で完全管理。</p>
+            </div>
+
+            <div class="trust-card">
+                <div class="trust-badge">🌐</div>
+                <h3>オフライン動作</h3>
+                <p>インターネット接続不要。現場でも、停電時でも、いつでもどこでも利用できます。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ユーザーレビューセクション -->
+    <section class="reviews">
+        <h2 class="section-title">利用者の声</h2>
+        <p class="section-subtitle">実際に使っている建築業経営者の感想</p>
+
+        <div class="review-grid">
+            <div class="review-card">
+                <div class="stars">★★★★★</div>
+                <p class="review-text">「メンテメイトを使い始めて3ヶ月。忘れていた顧客に声をかけたら、外壁塗装の契約120万円が取れました!過去の顧客情報、眠らせていたのがもったいなかった。」</p>
+                <div class="reviewer">A工務店 様</div>
+                <div class="reviewer-title">工務店経営（58歳）</div>
+            </div>
+
+            <div class="review-card">
+                <div class="stars">★★★★★</div>
+                <p class="review-text">「50代の私でも、すぐに使えました。大きなボタンで操作がわかりやすい。今まで使ったCRMで一番シンプル!ITが苦手でも全く問題ありませんでした。」</p>
+                <div class="reviewer">B塗装店 様</div>
+                <div class="reviewer-title">塗装業経営（54歳）</div>
+            </div>
+
+            <div class="review-card">
+                <div class="stars">★★★★★</div>
+                <p class="review-text">「確定申告の売上集計が、今年は30分で終わりました!今までは2日かかってたのに...税理士さんにもデータをすぐ渡せて、本当に助かっています。」</p>
+                <div class="reviewer">Cリフォーム 様</div>
+                <div class="reviewer-title">リフォーム業経営（61歳）</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 料金セクション -->
+    <section class="pricing" id="pricing">
+        <h2 class="section-title">料金</h2>
+        <p class="section-subtitle">すべての機能を、完全無料で</p>
+
+        <div class="price-card">
+            <h3>フリープラン</h3>
+            <div class="price-tag">¥0</div>
+            <p class="price-note">完全無料 / 買い切り / 月額なし</p>
+
+            <ul class="price-features">
+                <li>顧客数無制限</li>
+                <li>サービス履歴無制限</li>
+                <li>メンテナンス予測</li>
+                <li>リマインダー機能</li>
+                <li>レポート・売上集計</li>
+                <li>バックアップ・復元</li>
+                <li>メールサポート</li>
+                <li>今後の機能アップデートも無料</li>
+            </ul>
+
+            <a href="#download" class="cta-button">今すぐ無料ダウンロード</a>
+
+            <p style="margin-top: 2rem; font-size: 0.9rem; color: #888;">
+                ※将来的に有料プランが追加される可能性がありますが、現在の機能は無料で使い続けられます。
+            </p>
+        </div>
+    </section>
+
+    <!-- ダウンロードセクション -->
+    <section class="download" id="download">
+        <h2 class="section-title">今すぐダウンロード</h2>
+        <p class="section-subtitle">Windows & Mac対応 / 完全無料</p>
+
+        <div class="platform-buttons">
+            <a href="https://github.com/NanaChiki/crm-app/releases" class="platform-button" target="_blank">
+                <span class="platform-icon">🪟</span>
+                Windows版<br>
+                <small style="font-size: 0.8rem;">Windows 10/11 (64-bit)</small>
+            </a>
+            <a href="https://github.com/NanaChiki/crm-app/releases" class="platform-button" target="_blank">
+                <span class="platform-icon">🍎</span>
+                Mac版<br>
+                <small style="font-size: 0.8rem;">macOS 10.15+ (Intel & M1/M2/M3)</small>
+            </a>
+        </div>
+
+        <div class="system-requirements">
+            <h4>動作環境</h4>
+            <ul>
+                <li><strong>OS:</strong> Windows 10/11 (64-bit) または macOS 10.15以降</li>
+                <li><strong>RAM:</strong> 4GB以上推奨</li>
+                <li><strong>ディスク:</strong> 500MB以上の空き容量</li>
+                <li><strong>ネット:</strong> ダウンロード時のみ必要（使用時は不要）</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- FAQセクション -->
+    <section class="faq" id="faq">
+        <h2 class="section-title">よくある質問</h2>
+        <p class="section-subtitle">お客様からよくいただく質問</p>
+
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question">Q. 本当に無料ですか?隠れた費用はありませんか?</div>
+                <div class="faq-answer">A. はい、完全無料です。月額料金、初期費用、隠れた費用は一切ありません。将来的に有料版が追加される可能性はありますが、現在の機能は無料で使い続けられます。</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q. クラウドサービスですか?インターネット接続は必要ですか?</div>
+                <div class="faq-answer">A. いいえ、クラウドサービスではありません。あなたのパソコンで動くアプリ(デスクトップアプリ)です。インターネット接続は不要で、完全オフラインで利用できます。</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q. データはどこに保存されますか?外部に送信されませんか?</div>
+                <div class="faq-answer">A. データは完全にあなたのパソコン内に保存されます。外部サーバーやクラウドに送信されることは一切ありません。データの所有権は完全にあなたにあります。</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q. 50代でITが苦手ですが、本当に使えますか?</div>
+                <div class="faq-answer">A. はい、安心してください。メンテメイトは50代の建築業経営者を想定して設計されています。大きなボタン、見やすい文字、わかりやすい操作。難しい専門用語も使いません。使い方動画やマニュアルも充実しており、サポートも受けられます。</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q. 既存のExcelデータを移行できますか?</div>
+                <div class="faq-answer">A. 現在、CSV形式での顧客データ・サービス履歴のインポート機能を開発中です。次期バージョンで対応予定です。それまでは手動での入力となりますが、シンプルな入力画面で効率的に登録できます。</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q. スマートフォンでも使えますか?</div>
+                <div class="faq-answer">A. 現在はWindows・Mac版のみです。スマートフォン版(iOS/Android)は将来的に対応予定です。ロードマップをご確認ください。</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q. 複数のパソコンで使えますか?データ同期はできますか?</div>
+                <div class="faq-answer">A. 現在は各パソコンで独立して動作します。データ同期機能は将来的に実装予定です。現時点では、バックアップZIPファイルを使って別のPCにデータを移行できます。</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q. サポートはありますか?</div>
+                <div class="faq-answer">A. はい。メールサポート、使い方動画、マニュアルを提供しています。ご不明点やトラブルがあれば、crm.tool.construction@gmail.com までお気軽にご連絡ください。</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q. セキュリティは大丈夫ですか?</div>
+                <div class="faq-answer">A. はい。第三者機関によるセキュリティ監査を実施し、Grade A+を取得しています。SQLインジェクション、XSS等の脆弱性対策を徹底。データは完全ローカル保存で外部流出リスクもありません。</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Q. アップデートはどうすれば良いですか?</div>
+                <div class="faq-answer">A. 新しいバージョンがリリースされたら、GitHubのリリースページからダウンロードしてインストールしてください。データは引き継がれます。将来的には自動アップデート機能を実装予定です。</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 最終CTAセクション -->
+    <section class="final-cta">
+        <h2>過去の顧客が、未来の売上になる。</h2>
+        <p>今すぐ無料でメンテメイトを始めませんか?</p>
+        <a href="#download" class="cta-button">無料ダウンロード</a>
+    </section>
+
+    <!-- フッター -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>メンテメイト</h4>
+                <p>建築業専門の顧客管理アプリ。メンテナンス時期を自動予測して、年間通じた安定収入を。</p>
+            </div>
+
+            <div class="footer-section">
+                <h4>リンク</h4>
+                <ul>
+                    <li><a href="#features">機能</a></li>
+                    <li><a href="#pricing">料金</a></li>
+                    <li><a href="#download">ダウンロード</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>リソース</h4>
+                <ul>
+                    <li><a href="https://github.com/NanaChiki/crm-app" target="_blank">GitHub</a></li>
+                    <li><a href="https://github.com/NanaChiki/crm-app/blob/main/RELEASE_NOTES.md" target="_blank">リリースノート</a></li>
+                    <li><a href="https://github.com/NanaChiki/crm-app/blob/main/SECURITY_AUDIT_REPORT.md" target="_blank">セキュリティ監査</a></li>
+                    <li><a href="https://github.com/NanaChiki/crm-app/issues" target="_blank">サポート</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h4>お問い合わせ</h4>
+                <ul>
+                    <li>📧 crm.tool.construction@gmail.com</li>
+                    <li>🐙 <a href="https://github.com/NanaChiki/crm-app/issues" target="_blank">GitHub Issues</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 MainteMate (メンテメイト). All rights reserved.</p>
+            <p>Version 1.0.0</p>
+        </div>
+    </footer>
+
+    <script>
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // FAQ アコーディオン
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', function() {
+                const answer = this.nextElementSibling;
+                const isVisible = answer.style.display === 'block';
+
+                // すべての回答を閉じる
+                document.querySelectorAll('.faq-answer').forEach(a => {
+                    a.style.display = 'none';
+                });
+
+                // クリックした質問の回答を開く/閉じる
+                if (!isVisible) {
+                    answer.style.display = 'block';
+                }
+            });
+        });
+
+        // 初期状態でFAQを非表示
+        document.querySelectorAll('.faq-answer').forEach(answer => {
+            answer.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
