@@ -102,6 +102,13 @@ CLAUDE.md
 
 # 顧客フィードバック（機密情報含む）
 after-MVP-1.md
+
+# マーケティング戦略（メモ用・ローカルのみ）
+LEAN_MARKETING_PLAN.md
+MARKETING_STRATEGY.md
+SNS_TWEET_TEMPLATES.md
+WEEK1_ACTION_CHECKLIST.md
+landing-page.html
 # Database
 *.db
 *.db-journal
