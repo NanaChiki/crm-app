@@ -65,6 +65,11 @@ export interface ServiceRecord {
    * 【必須にする理由】サービスの進行状況は必須情報 */
   status: string;
 
+  /** 写真ファイルパス（任意項目）
+   * 【nullを許可する理由】写真がない場合もある
+   * 【保存先】app.getPath('userData')/photos/ に保存 */
+  photoPath: string | null;
+
   /** 作成日時（自動設定） */
   createdAt: Date;
 
@@ -122,6 +127,11 @@ export interface CreateServiceRecordInput {
    * 【任意にする理由】Prismaでデフォルト"completed"が設定される
    * 【カスタム値】"pending", "in-progress"等も設定可能 */
   status?: string;
+
+  /** 写真ファイルパス（任意）
+   * 【任意にする理由】写真は後から追加可能
+   * 【保存先】app.getPath('userData')/photos/ に保存 */
+  photoPath?: string;
 }
 
 // =============================================================================
@@ -225,12 +235,12 @@ export interface ServiceRecordSearchParams {
 
 export type ServiceRecordListItem = Pick<
   ServiceRecord,
-  | "recordId"
-  | "customerId"
-  | "serviceDate"
-  | "serviceType"
-  | "amount"
-  | "status"
+  | 'recordId'
+  | 'customerId'
+  | 'serviceDate'
+  | 'serviceType'
+  | 'amount'
+  | 'status'
 >;
 
 // =============================================================================
@@ -259,6 +269,9 @@ export interface ServiceRecordWithCustomer extends ServiceRecord {
     customerId: number;
     companyName: string;
     contactPerson: string | null;
+    phone: string | null;
+    email: string | null;
+    address: string | null;
   };
 }
 

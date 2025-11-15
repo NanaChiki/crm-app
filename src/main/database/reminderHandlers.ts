@@ -19,7 +19,7 @@
  * - トランザクション処理
  */
 
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from '@prisma/client';
 
 let prismaInstance: PrismaClient | null = null;
 
@@ -30,7 +30,7 @@ let prismaInstance: PrismaClient | null = null;
  */
 async function getPrisma(): Promise<PrismaClient> {
   if (!prismaInstance) {
-    const { PrismaClient: PrismaClientClass } = await import("@prisma/client");
+    const { PrismaClient: PrismaClientClass } = await import('@prisma/client');
     prismaInstance = new PrismaClientClass({
       datasources: {
         db: {
@@ -38,7 +38,7 @@ async function getPrisma(): Promise<PrismaClient> {
         },
       },
     });
-    console.log("✅ Prisma Client初期化完了");
+    console.log('✅ Prisma Client初期化完了');
   }
   return prismaInstance;
 }
@@ -56,8 +56,8 @@ function serializeForIPC(data: any): any {
       // Decimal型を数値文字列に変換
       if (
         value &&
-        typeof value === "object" &&
-        value.constructor?.name === "Decimal"
+        typeof value === 'object' &&
+        value.constructor?.name === 'Decimal'
       ) {
         return value.toString();
       }
@@ -66,7 +66,7 @@ function serializeForIPC(data: any): any {
         return value.toISOString();
       }
       return value;
-    }),
+    })
   );
 }
 
@@ -93,6 +93,7 @@ interface CreateReminderInput {
   title: string;
   message: string;
   reminderDate: string | Date;
+  status?: string; // scheduled, drafting, sent, cancelled, notification
   createdBy?: string;
   notes?: string;
 }
@@ -119,7 +120,7 @@ interface UpdateReminderInput {
  * @throws {Error} データベース接続エラー時
  */
 export async function fetchReminders(
-  filters?: ReminderFilters,
+  filters?: ReminderFilters
 ): Promise<DatabaseResult<any[]>> {
   try {
     const prisma = await getPrisma();
@@ -155,7 +156,7 @@ export async function fetchReminders(
         serviceRecord: true,
       },
       orderBy: {
-        reminderDate: "asc", // 送信予定日の近い順
+        reminderDate: 'asc', // 送信予定日の近い順
       },
     });
 
@@ -165,7 +166,7 @@ export async function fetchReminders(
       data: serializedReminders,
     };
   } catch (error: any) {
-    console.error("❌ DB: リマインダー取得エラー:", error);
+    console.error('❌ DB: リマインダー取得エラー:', error);
 
     return {
       success: false,
@@ -186,7 +187,7 @@ export async function fetchReminders(
  * @throws {Error} 顧客が存在しない場合、またはサービス履歴が存在しない場合
  */
 export async function createReminder(
-  input: CreateReminderInput,
+  input: CreateReminderInput
 ): Promise<DatabaseResult<any>> {
   try {
     const prisma = await getPrisma();
@@ -199,7 +200,7 @@ export async function createReminder(
     if (!customer) {
       return {
         success: false,
-        error: "指定された顧客が見つかりません",
+        error: '指定された顧客が見つかりません',
       };
     }
 
@@ -212,7 +213,7 @@ export async function createReminder(
       if (!serviceRecord) {
         return {
           success: false,
-          error: "指定されたサービス履歴が見つかりません",
+          error: '指定されたサービス履歴が見つかりません',
         };
       }
     }
@@ -225,8 +226,8 @@ export async function createReminder(
         title: input.title,
         message: input.message,
         reminderDate: new Date(input.reminderDate),
-        status: "scheduled",
-        createdBy: input.createdBy || "manual",
+        status: input.status || 'scheduled',
+        createdBy: input.createdBy || 'manual',
         notes: input.notes || null,
       },
     });
@@ -237,7 +238,7 @@ export async function createReminder(
       data: serializedReminder,
     };
   } catch (error: any) {
-    console.error("❌ DB: リマインダー作成エラー:", error);
+    console.error('❌ DB: リマインダー作成エラー:', error);
 
     return {
       success: false,
@@ -258,7 +259,7 @@ export async function createReminder(
  * @throws {Error} リマインダーが存在しない場合
  */
 export async function updateReminder(
-  input: UpdateReminderInput,
+  input: UpdateReminderInput
 ): Promise<DatabaseResult<any>> {
   try {
     const prisma = await getPrisma();
@@ -271,7 +272,7 @@ export async function updateReminder(
     if (!existingReminder) {
       return {
         success: false,
-        error: "指定されたリマインダーが見つかりません",
+        error: '指定されたリマインダーが見つかりません',
       };
     }
 
@@ -309,7 +310,7 @@ export async function updateReminder(
       data: serializedReminder,
     };
   } catch (error: any) {
-    console.error("❌ DB: リマインダー更新エラー:", error);
+    console.error('❌ DB: リマインダー更新エラー:', error);
 
     return {
       success: false,
@@ -330,7 +331,7 @@ export async function updateReminder(
  * @throws {Error} リマインダーが存在しない場合、またはデータベースエラー時
  */
 export async function deleteReminder(
-  reminderId: number,
+  reminderId: number
 ): Promise<DatabaseResult<void>> {
   try {
     const prisma = await getPrisma();
@@ -343,7 +344,7 @@ export async function deleteReminder(
     if (!existingReminder) {
       return {
         success: false,
-        error: "指定されたリマインダーが見つかりません",
+        error: '指定されたリマインダーが見つかりません',
       };
     }
 
@@ -356,7 +357,7 @@ export async function deleteReminder(
       success: true,
     };
   } catch (error: any) {
-    console.error("❌ DB: リマインダー削除エラー:", error);
+    console.error('❌ DB: リマインダー削除エラー:', error);
 
     return {
       success: false,
@@ -376,11 +377,11 @@ export async function deleteReminder(
  * @returns {Promise<DatabaseResult<any>>} 更新されたリマインダー
  */
 export async function markReminderAsSent(
-  reminderId: number,
+  reminderId: number
 ): Promise<DatabaseResult<any>> {
   return updateReminder({
     reminderId,
-    status: "sent",
+    status: 'sent',
     sentAt: new Date(),
   });
 }
@@ -392,11 +393,11 @@ export async function markReminderAsSent(
  * @returns {Promise<DatabaseResult<any>>} 更新されたリマインダー
  */
 export async function cancelReminder(
-  reminderId: number,
+  reminderId: number
 ): Promise<DatabaseResult<any>> {
   return updateReminder({
     reminderId,
-    status: "cancelled",
+    status: 'cancelled',
   });
 }
 
@@ -407,11 +408,11 @@ export async function cancelReminder(
  * @returns {Promise<DatabaseResult<any>>} 更新されたリマインダー
  */
 export async function rescheduleReminder(
-  reminderId: number,
+  reminderId: number
 ): Promise<DatabaseResult<any>> {
   return updateReminder({
     reminderId,
-    status: "scheduled",
+    status: 'scheduled',
     sentAt: null,
   });
 }
@@ -423,11 +424,11 @@ export async function rescheduleReminder(
  * @returns {Promise<DatabaseResult<any>>} 更新されたリマインダー
  */
 export async function markReminderAsDrafting(
-  reminderId: number,
+  reminderId: number
 ): Promise<DatabaseResult<any>> {
   return updateReminder({
     reminderId,
-    status: "drafting",
+    status: 'drafting',
   });
 }
 
@@ -444,6 +445,6 @@ export async function disconnectPrisma(): Promise<void> {
   if (prismaInstance) {
     await prismaInstance.$disconnect();
     prismaInstance = null;
-    console.log("✅ Prismaクライアント切断完了");
+    console.log('✅ Prismaクライアント切断完了');
   }
 }

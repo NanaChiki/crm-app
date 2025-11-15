@@ -18,7 +18,7 @@
  * - わかりやすいログ出力
  */
 
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from '@prisma/client';
 
 let prismaInstance: PrismaClient | null = null;
 
@@ -29,7 +29,7 @@ let prismaInstance: PrismaClient | null = null;
  */
 async function getPrisma(): Promise<PrismaClient> {
   if (!prismaInstance) {
-    const { PrismaClient: PrismaClientClass } = await import("@prisma/client");
+    const { PrismaClient: PrismaClientClass } = await import('@prisma/client');
     prismaInstance = new PrismaClientClass({
       datasources: {
         db: {
@@ -37,7 +37,7 @@ async function getPrisma(): Promise<PrismaClient> {
         },
       },
     });
-    console.log("✅ Prisma Client初期化完了 (serviceRecordHandlers)");
+    console.log('✅ Prisma Client初期化完了 (serviceRecordHandlers)');
   }
   return prismaInstance;
 }
@@ -55,8 +55,8 @@ function serializeForIPC(data: any): any {
       // Decimal型を数値文字列に変換
       if (
         value &&
-        typeof value === "object" &&
-        value.constructor?.name === "Decimal"
+        typeof value === 'object' &&
+        value.constructor?.name === 'Decimal'
       ) {
         return value.toString();
       }
@@ -65,7 +65,7 @@ function serializeForIPC(data: any): any {
         return value.toISOString();
       }
       return value;
-    }),
+    })
   );
 }
 
@@ -93,6 +93,7 @@ interface CreateServiceRecordInput {
   serviceType?: string;
   serviceDescription?: string;
   amount?: number | string;
+  photoPath?: string;
   status?: string;
 }
 
@@ -102,6 +103,7 @@ interface UpdateServiceRecordInput {
   serviceType?: string;
   serviceDescription?: string;
   amount?: number | string;
+  photoPath?: string;
   status?: string;
 }
 
@@ -117,7 +119,7 @@ interface UpdateServiceRecordInput {
  * @throws {Error} データベース接続エラー時
  */
 export async function fetchServiceRecords(
-  filters?: ServiceRecordFilters,
+  filters?: ServiceRecordFilters
 ): Promise<DatabaseResult<any[]>> {
   try {
     const prisma = await getPrisma();
@@ -159,10 +161,10 @@ export async function fetchServiceRecords(
       },
       orderBy: [
         {
-          serviceDate: "desc",
+          serviceDate: 'desc',
         },
         {
-          recordId: "desc",
+          recordId: 'desc',
         },
       ],
     });
@@ -173,10 +175,10 @@ export async function fetchServiceRecords(
       data: serializedRecords,
     };
   } catch (error: any) {
-    console.error("❌ サービス履歴取得エラー:", error);
+    console.error('❌ サービス履歴取得エラー:', error);
     return {
       success: false,
-      error: "サービス履歴の取得に失敗しました",
+      error: 'サービス履歴の取得に失敗しました',
     };
   }
 }
@@ -193,7 +195,7 @@ export async function fetchServiceRecords(
  * @throws {Error} 顧客が存在しない場合、または金額が不正な場合
  */
 export async function createServiceRecord(
-  input: CreateServiceRecordInput,
+  input: CreateServiceRecordInput
 ): Promise<DatabaseResult<any>> {
   try {
     const prisma = await getPrisma();
@@ -206,7 +208,7 @@ export async function createServiceRecord(
     if (!customer) {
       return {
         success: false,
-        error: "指定された顧客が見つかりません",
+        error: '指定された顧客が見つかりません',
       };
     }
 
@@ -215,17 +217,17 @@ export async function createServiceRecord(
     if (
       input.amount !== undefined &&
       input.amount !== null &&
-      input.amount !== ""
+      input.amount !== ''
     ) {
       amountValue =
-        typeof input.amount === "string"
+        typeof input.amount === 'string'
           ? parseFloat(input.amount)
           : input.amount;
 
       if (isNaN(amountValue)) {
         return {
           success: false,
-          error: "金額は有効な数値を入力してください",
+          error: '金額は有効な数値を入力してください',
         };
       }
     }
@@ -238,7 +240,8 @@ export async function createServiceRecord(
         serviceType: input.serviceType?.trim() || null,
         serviceDescription: input.serviceDescription?.trim() || null,
         amount: amountValue,
-        status: input.status || "completed",
+        photoPath: input.photoPath?.trim() || null,
+        status: input.status || 'completed',
       },
       include: {
         customer: true,
@@ -251,10 +254,10 @@ export async function createServiceRecord(
       data: serializedRecord,
     };
   } catch (error: any) {
-    console.error("❌ サービス履歴作成エラー:", error);
+    console.error('❌ サービス履歴作成エラー:', error);
     return {
       success: false,
-      error: "サービス履歴の登録に失敗しました",
+      error: 'サービス履歴の登録に失敗しました',
     };
   }
 }
@@ -271,7 +274,7 @@ export async function createServiceRecord(
  * @throws {Error} サービス履歴が存在しない場合、または金額が不正な場合
  */
 export async function updateServiceRecord(
-  input: UpdateServiceRecordInput,
+  input: UpdateServiceRecordInput
 ): Promise<DatabaseResult<any>> {
   try {
     const prisma = await getPrisma();
@@ -284,7 +287,7 @@ export async function updateServiceRecord(
     if (!existingRecord) {
       return {
         success: false,
-        error: "指定されたサービス履歴が見つかりません",
+        error: '指定されたサービス履歴が見つかりません',
       };
     }
 
@@ -306,17 +309,17 @@ export async function updateServiceRecord(
     if (
       input.amount !== undefined &&
       input.amount !== null &&
-      input.amount !== ""
+      input.amount !== ''
     ) {
       const amountValue =
-        typeof input.amount === "string"
+        typeof input.amount === 'string'
           ? parseFloat(input.amount)
           : input.amount;
 
       if (isNaN(amountValue)) {
         return {
           success: false,
-          error: "金額は有効な数値を入力してください",
+          error: '金額は有効な数値を入力してください',
         };
       }
 
@@ -325,6 +328,10 @@ export async function updateServiceRecord(
 
     if (input.status !== undefined) {
       updateData.status = input.status;
+    }
+
+    if (input.photoPath !== undefined) {
+      updateData.photoPath = input.photoPath.trim() || null;
     }
 
     // サービス履歴更新
@@ -342,10 +349,10 @@ export async function updateServiceRecord(
       data: serializedRecord,
     };
   } catch (error: any) {
-    console.error("❌ サービス履歴更新エラー:", error);
+    console.error('❌ サービス履歴更新エラー:', error);
     return {
       success: false,
-      error: "サービス履歴の更新に失敗しました",
+      error: 'サービス履歴の更新に失敗しました',
     };
   }
 }
@@ -362,7 +369,7 @@ export async function updateServiceRecord(
  * @throws {Error} サービス履歴が存在しない場合、またはデータベースエラー時
  */
 export async function deleteServiceRecord(
-  recordId: number,
+  recordId: number
 ): Promise<DatabaseResult<void>> {
   try {
     const prisma = await getPrisma();
@@ -379,7 +386,7 @@ export async function deleteServiceRecord(
     if (!existingRecord) {
       return {
         success: false,
-        error: "指定されたサービス履歴が見つかりません",
+        error: '指定されたサービス履歴が見つかりません',
       };
     }
 
@@ -393,10 +400,10 @@ export async function deleteServiceRecord(
       success: true,
     };
   } catch (error: any) {
-    console.error("❌ サービス履歴削除エラー:", error);
+    console.error('❌ サービス履歴削除エラー:', error);
     return {
       success: false,
-      error: "サービス履歴の削除に失敗しました",
+      error: 'サービス履歴の削除に失敗しました',
     };
   }
 }
@@ -414,6 +421,6 @@ export async function disconnectPrismaServiceRecord(): Promise<void> {
   if (prismaInstance) {
     await prismaInstance.$disconnect();
     prismaInstance = null;
-    console.log("✅ Prismaクライアント切断完了 (serviceRecordHandlers)");
+    console.log('✅ Prismaクライアント切断完了 (serviceRecordHandlers)');
   }
 }

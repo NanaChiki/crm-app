@@ -27,7 +27,7 @@
  * @future Phase2でリマインダー機能の基盤として使用
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type {
   CreateServiceRecordInput,
@@ -35,9 +35,9 @@ import type {
   ServiceRecordWithCustomer,
   SortOrder,
   UpdateServiceRecordInput,
-} from "../../types";
-import { useApp } from "../contexts/AppContext";
-import { useCustomer } from "../contexts/CustomerContext";
+} from '../../types';
+import { useApp } from '../contexts/AppContext';
+import { useCustomer } from '../contexts/CustomerContext';
 
 // =============================================================================
 // 🔌 Window API Type Declaration for serviceRecordAPI
@@ -65,7 +65,7 @@ declare global {
         error?: string;
       }>;
       update: (
-        input: UpdateServiceRecordInput & { recordId: number },
+        input: UpdateServiceRecordInput & { recordId: number }
       ) => Promise<{
         success: boolean;
         data?: ServiceRecord;
@@ -73,6 +73,11 @@ declare global {
       }>;
       delete: (recordId: number) => Promise<{
         success: boolean;
+        error?: string;
+      }>;
+      uploadPhoto: (data: { recordId: number; filePath: string }) => Promise<{
+        success: boolean;
+        data?: { photoPath: string };
         error?: string;
       }>;
     };
@@ -173,7 +178,7 @@ interface UseServiceRecordsReturn {
    * @returns 作成されたサービス履歴（失敗時はnull）
    */
   createServiceRecord: (
-    data: CreateServiceRecordInput,
+    data: CreateServiceRecordInput
   ) => Promise<ServiceRecord | null>;
 
   /**
@@ -184,7 +189,7 @@ interface UseServiceRecordsReturn {
    */
   updateServiceRecord: (
     id: number,
-    data: UpdateServiceRecordInput,
+    data: UpdateServiceRecordInput
   ) => Promise<ServiceRecord | null>;
 
   /**
@@ -243,7 +248,7 @@ interface UseServiceRecordsReturn {
    * @returns 最新のサービス履歴（なしの場合はnull）
    */
   getLatestRecordByCustomer: (
-    customerId: number,
+    customerId: number
   ) => ServiceRecordWithCustomer | null;
 
   /**
@@ -291,29 +296,29 @@ const VALIDATION_RULES = {
     required: true,
     maxDate: new Date(), // 未来日不可
     errorMessages: {
-      required: "サービス提供日を選択してください",
-      maxDate: "サービス提供日は今日よりも前の日付を選択してください",
+      required: 'サービス提供日を選択してください',
+      maxDate: 'サービス提供日は今日よりも前の日付を選択してください',
     },
   },
   customerId: {
     required: true,
     errorMessages: {
-      required: "顧客を選択してください",
-      notFound: "選択された顧客が見つかりません",
+      required: '顧客を選択してください',
+      notFound: '選択された顧客が見つかりません',
     },
   },
   serviceType: {
     required: false,
     maxLength: 50,
     errorMessages: {
-      maxLength: "サービス種別は50文字以内で入力してください",
+      maxLength: 'サービス種別は50文字以内で入力してください',
     },
   },
   serviceDescription: {
     required: false,
     maxLength: 1000,
     errorMessages: {
-      maxLength: "サービス内容は1000文字以内で入力してください",
+      maxLength: 'サービス内容は1000文字以内で入力してください',
     },
   },
   amount: {
@@ -321,16 +326,16 @@ const VALIDATION_RULES = {
     min: 0,
     max: 10000000,
     errorMessages: {
-      min: "金額は0円以上で入力してください",
-      max: "金額は1000万円以下で入力してください",
-      invalid: "金額は正しい数値で入力してください（例：50000）",
+      min: '金額は0円以上で入力してください',
+      max: '金額は1000万円以下で入力してください',
+      invalid: '金額は正しい数値で入力してください（例：50000）',
     },
   },
   status: {
     required: false,
-    allowedValues: ["completed", "pending", "cancelled", "in-progress"],
+    allowedValues: ['completed', 'pending', 'cancelled', 'in-progress'],
     errorMessages: {
-      invalid: "ステータスは正しくありません",
+      invalid: 'ステータスは正しくありません',
     },
   },
 } as const;
@@ -346,28 +351,28 @@ const VALIDATION_RULES = {
  */
 const MESSAGES = {
   success: {
-    create: "サービス履歴を登録しました。",
-    update: "サービス履歴を更新しました。",
-    delete: "サービス履歴を削除しました。",
-    load: "サービス履歴を読み込みました。",
+    create: 'サービス履歴を登録しました。',
+    update: 'サービス履歴を更新しました。',
+    delete: 'サービス履歴を削除しました。',
+    load: 'サービス履歴を読み込みました。',
   },
   error: {
     create:
-      "サービス履歴の登録に失敗しました。入力内容をご確認の上、もう一度お試しください。",
-    update: "サービス履歴の更新に失敗しました。もう一度お試しください。",
-    delete: "サービス履歴の削除に失敗しました。もう一度お試しください。",
-    load: "サービス履歴の読み込みに失敗しました。ページを再読み込みしてください。",
-    network: "インターネット接続を確認してもう一度お試しください。",
-    validation: "入力内容に不備があります。赤字の項目をご確認ください。",
-    notFound: "指定されたサービス履歴が見つかりません。",
+      'サービス履歴の登録に失敗しました。入力内容をご確認の上、もう一度お試しください。',
+    update: 'サービス履歴の更新に失敗しました。もう一度お試しください。',
+    delete: 'サービス履歴の削除に失敗しました。もう一度お試しください。',
+    load: 'サービス履歴の読み込みに失敗しました。ページを再読み込みしてください。',
+    network: 'インターネット接続を確認してもう一度お試しください。',
+    validation: '入力内容に不備があります。赤字の項目をご確認ください。',
+    notFound: '指定されたサービス履歴が見つかりません。',
   },
   info: {
-    noRecords: "サービス履歴がありません。最初の履歴を登録しましょう。",
-    loading: "サービス履歴を読み込んでいます...",
-    filtering: "条件に一致するサービス履歴を検索しています...",
+    noRecords: 'サービス履歴がありません。最初の履歴を登録しましょう。',
+    loading: 'サービス履歴を読み込んでいます...',
+    filtering: '条件に一致するサービス履歴を検索しています...',
   },
   confirm: {
-    delete: "このサービス履歴を削除してもよろしいですか？",
+    delete: 'このサービス履歴を削除してもよろしいですか？',
   },
 } as const;
 
@@ -381,21 +386,21 @@ const MESSAGES = {
  */
 
 const COMMON_SERVICE_TYPES = [
-  "外壁塗装",
-  "屋根修理",
-  "屋根塗装",
-  "配管工事",
-  "電気工事",
-  "内装リフォーム",
-  "水回りリフォーム",
-  "定期点検",
-  "緊急修理",
-  "エアコン工事",
-  "防水工事",
-  "床工事",
-  "窓・サッシ工事",
-  "見積もり",
-  "その他",
+  '外壁塗装',
+  '屋根修理',
+  '屋根塗装',
+  '配管工事',
+  '電気工事',
+  '内装リフォーム',
+  '水回りリフォーム',
+  '定期点検',
+  '緊急修理',
+  'エアコン工事',
+  '防水工事',
+  '床工事',
+  '窓・サッシ工事',
+  '見積もり',
+  'その他',
 ] as const;
 
 // =============================================================================
@@ -440,7 +445,7 @@ const notifyDataChange = () => {
  * @returns サービス履歴管理機能一式
  */
 export const useServiceRecords = (
-  props: UseServiceRecordsProps = {},
+  props: UseServiceRecordsProps = {}
 ): UseServiceRecordsReturn => {
   const { customerId, autoLoad = true } = props;
 
@@ -466,9 +471,9 @@ export const useServiceRecords = (
   /** フィルタリング・ソート設定 */
   const [filters, setFiltersState] = useState<ServiceRecordFilters>({});
   const [sortOrder, setSortOrderState] = useState<SortOrder>({
-    field: "serviceDate",
-    direction: "desc",
-    label: "新しい順",
+    field: 'serviceDate',
+    direction: 'desc',
+    label: '新しい順',
   });
 
   /** 初期化完了フラグ */
@@ -505,7 +510,7 @@ export const useServiceRecords = (
           const recordsWithCustomer: ServiceRecordWithCustomer[] =
             result.data.map((record) => {
               const customer = customers.find(
-                (c) => c.customerId === record.customerId,
+                (c) => c.customerId === record.customerId
               );
               return {
                 ...record,
@@ -514,11 +519,17 @@ export const useServiceRecords = (
                       customerId: customer.customerId,
                       companyName: customer.companyName,
                       contactPerson: customer.contactPerson || null,
+                      phone: customer.phone || null,
+                      email: customer.email || null,
+                      address: customer.address || null,
                     }
                   : {
                       customerId: record.customerId,
-                      companyName: "不明",
+                      companyName: '不明',
                       contactPerson: null,
+                      phone: null,
+                      email: null,
+                      address: null,
                     },
               };
             });
@@ -529,17 +540,17 @@ export const useServiceRecords = (
           // サイレントモード時はスナックバーを表示しない（リスナー経由の更新時）
           // 【修正】0件の場合のメッセージを削除（UIで表示するため不要）
           if (!silent && recordsWithCustomer.length > 0) {
-            showSnackbar(MESSAGES.success.load, "success");
+            showSnackbar(MESSAGES.success.load, 'success');
           }
         } else {
-          throw new Error(result.error || "サービス履歴の取得に失敗しました");
+          throw new Error(result.error || 'サービス履歴の取得に失敗しました');
         }
       } catch (error) {
-        console.error("❌ サービス履歴取得エラー:", error);
+        console.error('❌ サービス履歴取得エラー:', error);
 
         const errorMessage =
           error instanceof Error
-            ? error.message.includes("network")
+            ? error.message.includes('network')
               ? MESSAGES.error.network
               : MESSAGES.error.load
             : MESSAGES.error.load;
@@ -547,16 +558,16 @@ export const useServiceRecords = (
         setError(errorMessage);
         if (!silent) {
           handleError({
-            type: "SERVER_ERROR",
+            type: 'SERVER_ERROR',
             message: errorMessage,
-            suggestion: "ページを再読み込みしてもう一度お試しください",
+            suggestion: 'ページを再読み込みしてもう一度お試しください',
           });
         }
       } finally {
         setLoading(false);
       }
     },
-    [customerId, customers, showSnackbar, handleError],
+    [customerId, customers, showSnackbar, handleError]
   );
 
   /**
@@ -570,7 +581,7 @@ export const useServiceRecords = (
     async (silent: boolean = false): Promise<void> => {
       // サイレントモードでない場合のみメッセージ表示
       if (!silent) {
-        showSnackbar("最新情報に更新しています...", "info", 2000);
+        showSnackbar('最新情報に更新しています...', 'info', 2000);
       }
 
       // isInitializedをリセットして再読み込みを許可
@@ -578,7 +589,7 @@ export const useServiceRecords = (
 
       await loadServiceRecords();
     },
-    [loadServiceRecords, showSnackbar],
+    [loadServiceRecords, showSnackbar]
   );
 
   // =============================
@@ -634,13 +645,13 @@ export const useServiceRecords = (
       ) {
         // 1000文字以内
         errors.push(
-          VALIDATION_RULES.serviceDescription.errorMessages.maxLength,
+          VALIDATION_RULES.serviceDescription.errorMessages.maxLength
         );
       }
 
       return errors;
     },
-    [],
+    []
   );
 
   const createServiceRecord = useCallback(
@@ -649,8 +660,8 @@ export const useServiceRecords = (
       const validationErrors = validateServiceRecord(data);
       if (validationErrors.length > 0) {
         handleError({
-          message: validationErrors.join("\n"),
-          type: "VALIDATION_ERROR",
+          message: validationErrors.join('\n'),
+          type: 'VALIDATION_ERROR',
         });
         return null;
       }
@@ -669,21 +680,21 @@ export const useServiceRecords = (
           // 全てのuseServiceRecordsインスタンスに変更を通知
           notifyDataChange();
 
-          showSnackbar(MESSAGES.success.create, "success");
+          showSnackbar(MESSAGES.success.create, 'success');
 
           return newRecord;
         } else {
-          throw new Error(result.error || "サービス履歴の作成に失敗しました");
+          throw new Error(result.error || 'サービス履歴の作成に失敗しました');
         }
       } catch (error) {
-        console.error("❌ サービス履歴作成エラー:", error);
+        console.error('❌ サービス履歴作成エラー:', error);
         const errorMessage =
           error instanceof Error ? error.message : MESSAGES.error.create;
 
         handleError({
-          type: "VALIDATION_ERROR",
+          type: 'VALIDATION_ERROR',
           message: errorMessage,
-          suggestion: "入力内容を確認してもう一度お試しください。",
+          suggestion: '入力内容を確認してもう一度お試しください。',
         });
         setError(errorMessage);
 
@@ -698,7 +709,7 @@ export const useServiceRecords = (
       showSnackbar,
       handleError,
       loadServiceRecords,
-    ],
+    ]
   );
 
   /**
@@ -711,7 +722,7 @@ export const useServiceRecords = (
   const updateServiceRecord = useCallback(
     async (
       id: number,
-      data: UpdateServiceRecordInput,
+      data: UpdateServiceRecordInput
     ): Promise<ServiceRecord | null> => {
       setGlobalLoading(true);
       try {
@@ -730,20 +741,20 @@ export const useServiceRecords = (
           // 全てのuseServiceRecordsインスタンスに変更を通知
           notifyDataChange();
 
-          showSnackbar(MESSAGES.success.update, "success");
+          showSnackbar(MESSAGES.success.update, 'success');
 
           return updatedRecord;
         } else {
-          throw new Error(result.error || "サービス履歴の更新に失敗しました");
+          throw new Error(result.error || 'サービス履歴の更新に失敗しました');
         }
       } catch (error) {
-        console.error("❌ サービス履歴更新エラー:", error);
+        console.error('❌ サービス履歴更新エラー:', error);
         const errorMessage =
           error instanceof Error ? error.message : MESSAGES.error.update;
         handleError({
-          type: "SERVER_ERROR",
+          type: 'SERVER_ERROR',
           message: errorMessage,
-          suggestion: "入力内容を確認してもう一度お試しください。",
+          suggestion: '入力内容を確認してもう一度お試しください。',
         });
 
         return null;
@@ -751,7 +762,7 @@ export const useServiceRecords = (
         setGlobalLoading(false);
       }
     },
-    [setGlobalLoading, showSnackbar, handleError, loadServiceRecords],
+    [setGlobalLoading, showSnackbar, handleError, loadServiceRecords]
   );
 
   /**
@@ -782,26 +793,26 @@ export const useServiceRecords = (
           // 全てのuseServiceRecordsインスタンスに変更を通知
           notifyDataChange();
 
-          showSnackbar(MESSAGES.success.delete, "success");
+          showSnackbar(MESSAGES.success.delete, 'success');
           return true;
         } else {
-          throw new Error(result.error || "サービス履歴の削除に失敗しました");
+          throw new Error(result.error || 'サービス履歴の削除に失敗しました');
         }
       } catch (error) {
-        console.error("❌ サービス履歴削除エラー:", error);
+        console.error('❌ サービス履歴削除エラー:', error);
         const errorMessage =
           error instanceof Error ? error.message : MESSAGES.error.delete;
         handleError({
-          type: "SERVER_ERROR",
+          type: 'SERVER_ERROR',
           message: errorMessage,
-          suggestion: "もう一度お試しください。",
+          suggestion: 'もう一度お試しください。',
         });
         return false;
       } finally {
         setGlobalLoading(false);
       }
     },
-    [setGlobalLoading, showSnackbar, handleError, loadServiceRecords],
+    [setGlobalLoading, showSnackbar, handleError, loadServiceRecords]
   );
 
   // =============================
@@ -825,7 +836,7 @@ export const useServiceRecords = (
     // 顧客フィルター
     if (filters.customerId) {
       result = result.filter(
-        (record) => record.customerId === filters.customerId,
+        (record) => record.customerId === filters.customerId
       );
     }
 
@@ -834,7 +845,7 @@ export const useServiceRecords = (
       result = result.filter((record) =>
         record.serviceType
           ?.toLowerCase()
-          .includes(filters.serviceType!.toLowerCase()),
+          .includes(filters.serviceType!.toLowerCase())
       );
     }
 
@@ -843,14 +854,14 @@ export const useServiceRecords = (
       result = result.filter(
         (record) =>
           new Date(record.serviceDate).getTime() >=
-          new Date(filters.dateFrom!).getTime(),
+          new Date(filters.dateFrom!).getTime()
       );
     }
     if (filters.dateTo) {
       result = result.filter(
         (record) =>
           new Date(record.serviceDate).getTime() <=
-          new Date(filters.dateTo!).getTime(),
+          new Date(filters.dateTo!).getTime()
       );
     }
 
@@ -861,7 +872,7 @@ export const useServiceRecords = (
           return false;
         }
         const amount =
-          typeof record.amount === "number"
+          typeof record.amount === 'number'
             ? record.amount
             : Number(record.amount);
         return !isNaN(amount) && amount >= filters.minAmount!;
@@ -874,7 +885,7 @@ export const useServiceRecords = (
           return false;
         }
         const amount =
-          typeof record.amount === "number"
+          typeof record.amount === 'number'
             ? record.amount
             : Number(record.amount);
         return !isNaN(amount) && amount <= filters.maxAmount!;
@@ -888,25 +899,25 @@ export const useServiceRecords = (
 
     // ソート処理(型安全)
     result.sort((a, b) => {
-      if (sortOrder.field === "serviceDate") {
+      if (sortOrder.field === 'serviceDate') {
         const aTime = new Date(a.serviceDate).getTime();
         const bTime = new Date(b.serviceDate).getTime();
-        return sortOrder.direction === "desc" ? bTime - aTime : aTime - bTime;
-      } else if (sortOrder.field === "amount") {
+        return sortOrder.direction === 'desc' ? bTime - aTime : aTime - bTime;
+      } else if (sortOrder.field === 'amount') {
         const aAmount = a.amount ? Number(a.amount) : 0;
         const bAmount = b.amount ? Number(b.amount) : 0;
-        return sortOrder.direction === "desc"
+        return sortOrder.direction === 'desc'
           ? bAmount - aAmount
           : aAmount - bAmount;
       }
       // その他フィールドは文字列比較
       const aValue = String(
-        a[sortOrder.field as keyof ServiceRecordWithCustomer] || "",
+        a[sortOrder.field as keyof ServiceRecordWithCustomer] || ''
       );
       const bValue = String(
-        b[sortOrder.field as keyof ServiceRecordWithCustomer] || "",
+        b[sortOrder.field as keyof ServiceRecordWithCustomer] || ''
       );
-      return sortOrder.direction === "desc"
+      return sortOrder.direction === 'desc'
         ? bValue.localeCompare(aValue)
         : aValue.localeCompare(bValue);
     });
@@ -929,13 +940,13 @@ export const useServiceRecords = (
       const hasActiveFilters = Object.values({
         ...filters,
         ...newFilters,
-      }).some((value) => value !== undefined && value !== null && value !== "");
+      }).some((value) => value !== undefined && value !== null && value !== '');
 
       if (hasActiveFilters) {
-        showSnackbar(MESSAGES.info.filtering, "info", 2000);
+        showSnackbar(MESSAGES.info.filtering, 'info', 2000);
       }
     },
-    [filters, showSnackbar],
+    [filters, showSnackbar]
   );
 
   /**
@@ -955,12 +966,12 @@ export const useServiceRecords = (
   const clearFilters = useCallback(() => {
     setFiltersState({});
     setSortOrderState({
-      field: "serviceDate",
-      direction: "desc",
-      label: "新しい順",
+      field: 'serviceDate',
+      direction: 'desc',
+      label: '新しい順',
     });
 
-    showSnackbar("検索条件をクリアしました", "info", 2000);
+    showSnackbar('検索条件をクリアしました', 'info', 2000);
   }, [showSnackbar]);
 
   // =============================
@@ -973,10 +984,10 @@ export const useServiceRecords = (
   const getRecordsByCustomer = useCallback(
     (customerId: number): ServiceRecordWithCustomer[] => {
       return serviceRecords.filter(
-        (record) => record.customerId === customerId,
+        (record) => record.customerId === customerId
       );
     },
-    [serviceRecords],
+    [serviceRecords]
   );
 
   /**
@@ -995,10 +1006,10 @@ export const useServiceRecords = (
 
       return customerRecords.sort(
         (a, b) =>
-          new Date(b.serviceDate).getTime() - new Date(a.serviceDate).getTime(),
+          new Date(b.serviceDate).getTime() - new Date(a.serviceDate).getTime()
       )[0];
     },
-    [getRecordsByCustomer],
+    [getRecordsByCustomer]
   );
 
   /**
@@ -1015,7 +1026,7 @@ export const useServiceRecords = (
         return total + (record.amount || 0);
       }, 0);
     },
-    [getRecordsByCustomer],
+    [getRecordsByCustomer]
   );
 
   // =============================
@@ -1070,12 +1081,12 @@ export const useServiceRecords = (
    * - 「令和6年12月15日」形式
    */
   const formatServiceDate = useCallback((date: Date): string => {
-    return new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
-      era: "long", // 令和年
-      year: "numeric", // 年
-      month: "long", // 月
-      day: "numeric",
-      weekday: "short",
+    return new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
+      era: 'long', // 令和年
+      year: 'numeric', // 年
+      month: 'long', // 月
+      day: 'numeric',
+      weekday: 'short',
     }).format(date);
   }, []);
 
@@ -1087,9 +1098,9 @@ export const useServiceRecords = (
    * - 「¥350,000」形式
    */
   const formatAmount = useCallback((amount: number): string => {
-    return new Intl.NumberFormat("ja-JP", {
-      style: "currency",
-      currency: "JPY",
+    return new Intl.NumberFormat('ja-JP', {
+      style: 'currency',
+      currency: 'JPY',
     }).format(amount);
   }, []);
 
@@ -1103,12 +1114,12 @@ export const useServiceRecords = (
   const getRecordSummary = useCallback(
     (record: ServiceRecordWithCustomer): string => {
       const date = formatServiceDate(record.serviceDate);
-      const type = record.serviceType || "サービス種別未設定";
-      const amount = record.amount ? `${formatAmount(record.amount)}` : "";
+      const type = record.serviceType || 'サービス種別未設定';
+      const amount = record.amount ? `${formatAmount(record.amount)}` : '';
 
       return `${date} - ${type} ${amount}`;
     },
-    [formatServiceDate, formatAmount],
+    [formatServiceDate, formatAmount]
   );
 
   // =============================

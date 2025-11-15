@@ -22,19 +22,18 @@
  * - ブックマーク・URL共有サポート
  */
 
-import React from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import React from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 // Pages - Phase 5A, 5B, 5C完成
-import CustomerDetailPage from "../pages/CustomerDetailPage";
-import CustomerFormPage from "../pages/CustomerFormPage";
-import CustomerListPage from "../pages/CustomerListPage";
-import Dashboard from "../pages/Dashboard";
-import NotFoundPage from "../pages/NotFoundPage";
-import ReminderListPage from "../pages/ReminderListPage";
-import ReportsPage from "../pages/ReportsPage";
-import SettingsPage from "../pages/SettingsPage";
-import { SiteListPage } from "../pages/SiteListPage"; // Phase 4追加
+import CustomerDetailPage from '../pages/CustomerDetailPage';
+import CustomerFormPage from '../pages/CustomerFormPage';
+import CustomerListPage from '../pages/CustomerListPage';
+import Dashboard from '../pages/Dashboard';
+import NotFoundPage from '../pages/NotFoundPage';
+import ReminderListPage from '../pages/ReminderListPage';
+import ReportsPage from '../pages/ReportsPage';
+import SettingsPage from '../pages/SettingsPage';
 // ================================
 // 未実装ページ用プレースホルダー
 // ================================
@@ -54,19 +53,18 @@ import { SiteListPage } from "../pages/SiteListPage"; // Phase 4追加
 const ComingSoonPage: React.FC<{ pageName: string }> = ({ pageName }) => (
   <div
     style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      height: "70vh",
-      padding: "20px",
-    }}
-  >
-    <h1 style={{ fontSize: "48px", marginBottom: "16px" }}>🚧</h1>
-    <h2 style={{ fontSize: "24px", marginBottom: "8px", fontWeight: "bold" }}>
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '70vh',
+      padding: '20px',
+    }}>
+    <h1 style={{ fontSize: '48px', marginBottom: '16px' }}>🚧</h1>
+    <h2 style={{ fontSize: '24px', marginBottom: '8px', fontWeight: 'bold' }}>
       {pageName}は準備中です
     </h2>
-    <p style={{ fontSize: "16px", color: "#666", textAlign: "center" }}>
+    <p style={{ fontSize: '16px', color: '#666', textAlign: 'center' }}>
       このページは現在開発中です。
       <br />
       もうしばらくお待ちください。
@@ -131,12 +129,6 @@ export const AppRouter: React.FC = () => {
         path="/service/new"
         element={<ComingSoonPage pageName="サービス履歴登録" />}
       />
-
-      {/* ================================
-          物件管理（Phase 4）
-          ================================ */}
-      {/* 物件リストページ - Phase 4完成 */}
-      <Route path="/site-list" element={<SiteListPage />} />
 
       {/* ================================
           集計・レポート

@@ -38,6 +38,7 @@ import {
   Link,
   Button as MuiButton,
   Paper,
+  Slider,
   Tab,
   Tabs,
   Typography,
@@ -72,6 +73,21 @@ import { useCSV } from '../contexts/CSVContext';
 function AppSettingsTab() {
   const [versions, setVersions] = useState<AppVersions | null>(null);
   const [licenseDialogOpen, setLicenseDialogOpen] = useState(false);
+  const [notificationVolume, setNotificationVolume] = useState(() => {
+    // localStorageから音量設定を取得
+    try {
+      const saved = localStorage.getItem('notificationVolume');
+      if (saved) {
+        const volume = parseFloat(saved);
+        if (volume >= 0 && volume <= 1) {
+          return volume;
+        }
+      }
+    } catch (error) {
+      console.error('音量設定取得エラー:', error);
+    }
+    return 0.5; // デフォルト音量
+  });
 
   // バージョン情報取得
   useEffect(() => {
@@ -92,6 +108,17 @@ function AppSettingsTab() {
       await window.appAPI.openExternal(url);
     } catch (error) {
       console.error('外部リンクを開けませんでした:', error);
+    }
+  };
+
+  // 音量設定変更ハンドラー
+  const handleVolumeChange = (_event: Event, newValue: number | number[]) => {
+    const volume = typeof newValue === 'number' ? newValue : newValue[0];
+    setNotificationVolume(volume);
+    try {
+      localStorage.setItem('notificationVolume', volume.toString());
+    } catch (error) {
+      console.error('音量設定保存エラー:', error);
     }
   };
 
@@ -141,6 +168,59 @@ function AppSettingsTab() {
               sx={{ mb: 1, fontSize: FONT_SIZES.body.desktop }}>
               <strong>ビルド日:</strong> 2025年10月28日
             </Typography>
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* リマインダー音調整 */}
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 2,
+                  fontWeight: 'bold',
+                  fontSize: FONT_SIZES.cardTitle.desktop,
+                }}>
+                🔊 リマインダー音の調整
+              </Typography>
+              <Box sx={{ pl: 4 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mb: 2,
+                    fontSize: FONT_SIZES.body.desktop,
+                  }}>
+                  メンテナンス時期到来時の通知音の音量を調整できます
+                </Typography>
+                <Box sx={{ px: 2 }}>
+                  <Slider
+                    value={notificationVolume}
+                    onChange={handleVolumeChange}
+                    min={0}
+                    max={1}
+                    step={0.1}
+                    marks={[
+                      { value: 0, label: '無音' },
+                      { value: 0.5, label: '中' },
+                      { value: 1, label: '最大' },
+                    ]}
+                    valueLabelDisplay="auto"
+                    valueLabelFormat={(value) => `${Math.round(value * 100)}%`}
+                    sx={{
+                      '& .MuiSlider-thumb': {
+                        width: 24,
+                        height: 24,
+                      },
+                      '& .MuiSlider-track': {
+                        height: 6,
+                      },
+                      '& .MuiSlider-rail': {
+                        height: 6,
+                      },
+                    }}
+                  />
+                </Box>
+              </Box>
+            </Box>
 
             <Divider sx={{ my: 2 }} />
 

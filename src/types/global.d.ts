@@ -116,6 +116,19 @@ declare global {
       create: (input: any) => Promise<ApiResponse>;
       update: (input: any) => Promise<ApiResponse>;
       delete: (recordId: number) => Promise<ApiResponse>;
+      uploadPhoto: (data: {
+        recordId: number;
+        filePath: string;
+      }) => Promise<ApiResponse<{ photoPath: string }>>;
+    };
+
+    /**
+     * ダイアログAPI
+     */
+    dialogAPI: {
+      selectImageFile: () => Promise<
+        ApiResponse<{ filePath: string }> & { canceled?: boolean }
+      >;
     };
 
     /**
@@ -140,6 +153,7 @@ declare global {
     appAPI: {
       getVersions: () => Promise<AppVersions>;
       openExternal: (url: string) => Promise<ApiResponse>;
+      getUserDataPath: () => Promise<ApiResponse<{ path: string }>>;
     };
   }
 }

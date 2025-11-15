@@ -29,54 +29,61 @@
  * - 親切な日本語メッセージ
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Add as AddIcon,
+  ExpandMore as ExpandMoreIcon,
   List as ListIcon,
   People as PeopleIcon,
   Refresh as RefreshIcon,
   Search as SearchIcon,
   Warning as WarningIcon,
-} from "@mui/icons-material";
+} from '@mui/icons-material';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
   CircularProgress,
   Container,
   Fab,
+  FormControl,
   Grid,
+  MenuItem,
   Pagination,
   Paper,
+  Select,
   Skeleton,
   Typography,
   useMediaQuery,
   useTheme,
-} from "@mui/material";
+} from '@mui/material';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { useApp } from "../contexts/AppContext";
-import { useCustomer } from "../contexts/CustomerContext";
+import { useApp } from '../contexts/AppContext';
+import { useCustomer } from '../contexts/CustomerContext';
 
 // // Components
-import { CustomerCard } from "../components/customer/CustomerCard";
-import CustomerSearchBar from "../components/customer/CustomerSearchBar";
-import PageHeader from "../components/layout/PageHeader";
+import { CustomerCard } from '../components/customer/CustomerCard';
+import CustomerSearchBar from '../components/customer/CustomerSearchBar';
+import PageHeader from '../components/layout/PageHeader';
 
 // Design System
-import { GRID_LAYOUT, SPACING } from "../constants/uiDesignSystem";
+import { GRID_LAYOUT } from '../constants/uiDesignSystem';
 
 // Types, 型定義・定数
-import { Customer, SortOrder } from "../../types";
+import { Customer, SortOrder } from '../../types';
 
 // ページング設定
 const ITEMS_PER_PAGE = 10;
 
 // ソートオプション定義
 const SORT_OPTIONS: SortOrder[] = [
-  { field: "updatedAt", direction: "desc", label: "更新日（新しい順）" },
-  { field: "companyName", direction: "asc", label: "会社名順" },
-  { field: "createdAt", direction: "desc", label: "登録日（新しい順）" },
+  { field: 'updatedAt', direction: 'desc', label: '更新日（新しい順）' },
+  { field: 'companyName', direction: 'asc', label: '会社名順' },
+  { field: 'createdAt', direction: 'desc', label: '登録日（新しい順）' },
 ];
 
 // レスポンシブ設定（Design System統一）
@@ -94,13 +101,15 @@ const RESPONSIVE_COLUMNS = {
 export const CustomerListPage: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // ================================
   // 状態管理
   // ================================
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSort, setSelectedSort] = useState<SortOrder>(SORT_OPTIONS[0]);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
 
   // ================================
   // Context連携
@@ -138,7 +147,7 @@ export const CustomerListPage: React.FC = () => {
 
       // 日付型の場合
       if (fieldA instanceof Date && fieldB instanceof Date) {
-        if (selectedSort.direction === "desc") {
+        if (selectedSort.direction === 'desc') {
           return fieldB.getTime() - fieldA.getTime();
         } else {
           return fieldA.getTime() - fieldB.getTime();
@@ -146,18 +155,64 @@ export const CustomerListPage: React.FC = () => {
       }
 
       // 文字列型の場合（日本語対応 - Unicode文字コード順）
-      const strA = String(fieldA || "");
-      const strB = String(fieldB || "");
+      const strA = String(fieldA || '');
+      const strB = String(fieldB || '');
 
-      if (selectedSort.direction === "desc") {
-        return strB.localeCompare(strA, "ja-JP", { sensitivity: "base" });
+      if (selectedSort.direction === 'desc') {
+        return strB.localeCompare(strA, 'ja-JP', { sensitivity: 'base' });
       } else {
-        return strA.localeCompare(strB, "ja-JP", { sensitivity: "base" });
+        return strA.localeCompare(strB, 'ja-JP', { sensitivity: 'base' });
       }
     });
 
     return sortedData;
   }, [customers, filteredCustomers, searchTerm, selectedSort]);
+
+  /**
+   * 年度別顧客グループ化
+   * 平成25年（2013年）から現在年まで
+   */
+  const customersByYear = useMemo(() => {
+    const groups: Record<number, Customer[]> = {};
+    const currentYear = new Date().getFullYear();
+    const startYear = 2013; // 平成25年
+
+    // 年度別にグループ化
+    displayCustomers.forEach((customer) => {
+      const createdAt =
+        typeof customer.createdAt === 'string'
+          ? new Date(customer.createdAt)
+          : customer.createdAt;
+      const year = createdAt.getFullYear();
+
+      if (year >= startYear && year <= currentYear) {
+        if (!groups[year]) {
+          groups[year] = [];
+        }
+        groups[year].push(customer);
+      }
+    });
+
+    // 年度順にソート（新しい順）
+    const sortedYears = Object.keys(groups)
+      .map(Number)
+      .sort((a, b) => b - a);
+
+    return { groups, sortedYears };
+  }, [displayCustomers]);
+
+  /**
+   * 年度選択オプション生成（平成25年から現在年まで）
+   */
+  const yearOptions = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2013; // 平成25年
+    const years: number[] = [];
+    for (let i = currentYear; i >= startYear; i--) {
+      years.push(i);
+    }
+    return years;
+  }, []);
 
   /**
    * ページング計算
@@ -192,12 +247,12 @@ export const CustomerListPage: React.FC = () => {
       if (keyword.trim()) {
         searchCustomers(keyword.trim());
         setCurrentPage(1);
-        showSnackbar(`"${keyword}"で検索しました`, "info");
+        showSnackbar(`"${keyword}"で検索しました`, 'info');
       } else {
         clearSearch();
       }
     },
-    [searchCustomers, clearSearch, showSnackbar],
+    [searchCustomers, clearSearch, showSnackbar]
   );
 
   /**
@@ -206,7 +261,7 @@ export const CustomerListPage: React.FC = () => {
   const handleClearSearch = useCallback(() => {
     clearSearch();
     setCurrentPage(1);
-    showSnackbar("検索をクリアしました", "info");
+    showSnackbar('検索をクリアしました', 'info');
   }, [clearSearch, showSnackbar]);
 
   /**
@@ -216,7 +271,7 @@ export const CustomerListPage: React.FC = () => {
     (customerId: number) => {
       navigate(`/customers/${customerId}`);
     },
-    [navigate],
+    [navigate]
   );
 
   /**
@@ -225,16 +280,16 @@ export const CustomerListPage: React.FC = () => {
   const handlePageChange = useCallback(
     (_: React.ChangeEvent<unknown>, page: number) => {
       setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
-    [paginationData.totalPages],
+    [paginationData.totalPages]
   );
 
   /**
    * 新規顧客登録画面遷移
    */
   const handleNewCustomer = useCallback(() => {
-    navigate("/customers/new");
+    navigate('/customers/new');
   }, [navigate]);
 
   /**
@@ -242,7 +297,7 @@ export const CustomerListPage: React.FC = () => {
    */
   const handleRefresh = useCallback(async () => {
     await refreshCustomers();
-    showSnackbar("顧客情報を更新しました", "success");
+    showSnackbar('顧客情報を更新しました', 'success');
   }, [refreshCustomers, showSnackbar]);
 
   // ================================
@@ -291,14 +346,14 @@ export const CustomerListPage: React.FC = () => {
    * エラー状態表示
    */
   const renderErrorState = () => (
-    <Paper sx={{ p: 4, textAlign: "center" }}>
+    <Paper sx={{ p: 4, textAlign: 'center' }}>
       <Alert
         severity="error"
         sx={{
-          fontSize: "16px",
-          alignItems: "center",
-          "& .MuiAlert-message": {
-            fontSize: "16px",
+          fontSize: '16px',
+          alignItems: 'center',
+          '& .MuiAlert-message': {
+            fontSize: '16px',
           },
         }}
         action={
@@ -307,14 +362,12 @@ export const CustomerListPage: React.FC = () => {
             size="large"
             onClick={handleRefresh}
             startIcon={<RefreshIcon />}
-            sx={{ minHeight: 44 }}
-          >
+            sx={{ minHeight: 44 }}>
             再読み込み
           </Button>
-        }
-      >
+        }>
         <Box>
-          <Typography variant="h6" sx={{ mb: 1, fontSize: "18px" }}>
+          <Typography variant="h6" sx={{ mb: 1, fontSize: '18px' }}>
             顧客情報の再読み込みに失敗しました
           </Typography>
           <Typography variant="body1">
@@ -329,29 +382,26 @@ export const CustomerListPage: React.FC = () => {
    * 検索結果なし状態
    */
   const renderNoResultsState = () => (
-    <Paper sx={{ p: 4, textAlign: "center" }}>
-      <SearchIcon sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
+    <Paper sx={{ p: 4, textAlign: 'center' }}>
+      <SearchIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
       <Typography
         variant="h5"
         color="text.primary"
         gutterBottom
-        sx={{ fontSize: "20px" }}
-      >
+        sx={{ fontSize: '20px' }}>
         "{searchTerm}"に一致する顧客が見つかりません
       </Typography>
       <Typography
         variant="body1"
         color="text.secondary"
-        sx={{ mb: 3, fontSize: "16px" }}
-      >
+        sx={{ mb: 3, fontSize: '16px' }}>
         別のキーワードで検索するか、検索条件をクリアしてください
       </Typography>
       <Button
         variant="contained"
         onClick={handleClearSearch}
         size="large"
-        sx={{ minHeight: 44, fontSize: "16px" }}
-      >
+        sx={{ minHeight: 44, fontSize: '16px' }}>
         検索をクリア
       </Button>
     </Paper>
@@ -361,29 +411,26 @@ export const CustomerListPage: React.FC = () => {
    * データなし状態（初回訪問時）
    */
   const renderEmptyState = () => (
-    <Paper sx={{ p: 4, textAlign: "center" }}>
-      <WarningIcon sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
+    <Paper sx={{ p: 4, textAlign: 'center' }}>
+      <WarningIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
       <Typography
         variant="h5"
         color="text.primary"
         gutterBottom
-        sx={{ fontSize: "20px" }}
-      >
+        sx={{ fontSize: '20px' }}>
         まだ顧客が登録されていません
       </Typography>
       <Typography
         variant="body1"
         color="text.secondary"
-        sx={{ mb: 3, fontSize: "16px" }}
-      >
+        sx={{ mb: 3, fontSize: '16px' }}>
         最初の顧客を登録して、CRM管理を始めましょう
       </Typography>
       <Button
         variant="contained"
         onClick={handleNewCustomer}
         size="large"
-        sx={{ minHeight: 48, fontSize: "16px", px: 4 }}
-      >
+        sx={{ minHeight: 48, fontSize: '16px', px: 4 }}>
         新規顧客を登録
       </Button>
     </Paper>
@@ -397,19 +444,17 @@ export const CustomerListPage: React.FC = () => {
       {/* ページング情報 */}
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           mb: 3,
-          flexWrap: "wrap",
+          flexWrap: 'wrap',
           gap: 1,
-        }}
-      >
+        }}>
         <Typography
           variant="body1"
           color="text.secondary"
-          sx={{ fontSize: "16px" }}
-        >
+          sx={{ fontSize: '16px' }}>
           {paginationData.startIndex}〜{paginationData.endIndex}件 / 全
           {paginationData.totalItems}件
         </Typography>
@@ -426,9 +471,8 @@ export const CustomerListPage: React.FC = () => {
               )
             }
             disabled={loading.isLoading}
-            sx={{ fontSize: "14px" }}
-          >
-            {loading.isLoading ? "更新中..." : "最新情報に更新"}
+            sx={{ fontSize: '14px' }}>
+            {loading.isLoading ? '更新中...' : '最新情報に更新'}
           </Button>
         )}
       </Box>
@@ -447,20 +491,20 @@ export const CustomerListPage: React.FC = () => {
       </Grid>
 
       {/* ページング */}
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <Pagination
           count={paginationData.totalPages}
           page={currentPage}
           onChange={handlePageChange}
           color="primary"
-          size={isMobile ? "medium" : "large"}
+          size={isMobile ? 'medium' : 'large'}
           showFirstButton
           showLastButton
           sx={{
-            "& .MuiPaginationItem-root": {
+            '& .MuiPaginationItem-root': {
               minHeight: 44,
               minWidth: 44,
-              fontSize: "16px",
+              fontSize: '16px',
             },
           }}
         />
@@ -479,8 +523,8 @@ export const CustomerListPage: React.FC = () => {
         title="顧客一覧"
         subtitle={`${paginationData.totalItems}件の顧客が登録されています`}
         breadcrumbs={[
-          { label: "顧客管理", path: "/customers", icon: <PeopleIcon /> },
-          { label: "一覧", icon: <ListIcon /> },
+          { label: '顧客管理', path: '/customers', icon: <PeopleIcon /> },
+          { label: '一覧', icon: <ListIcon /> },
         ]}
       />
 
@@ -495,6 +539,37 @@ export const CustomerListPage: React.FC = () => {
         resultCount={paginationData.totalItems}
         searchKeyword={searchTerm}
       />
+
+      {/* 年度選択UI */}
+      {!searchTerm && (
+        <Box sx={{ mb: 3, mt: 2 }}>
+          <FormControl fullWidth sx={{ maxWidth: 400 }}>
+            <Select
+              value={selectedYear ?? ''}
+              onChange={(e) => {
+                const year = e.target.value ? Number(e.target.value) : null;
+                setSelectedYear(year);
+                if (year) {
+                  setExpandedYears(new Set([year]));
+                } else {
+                  setExpandedYears(new Set());
+                }
+              }}
+              displayEmpty
+              sx={{
+                fontSize: '16px',
+                minHeight: 48,
+              }}>
+              <MenuItem value="">全ての年度</MenuItem>
+              {yearOptions.map((year) => (
+                <MenuItem key={year} value={year}>
+                  {year}年（{customersByYear.groups[year]?.length || 0}件）
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      )}
 
       {/* メインコンテンツ */}
       <Box sx={{ mb: 2, mt: 2 }}>
@@ -518,10 +593,84 @@ export const CustomerListPage: React.FC = () => {
           filteredCustomers.length === 0 &&
           renderNoResultsState()}
 
-        {/* 顧客一覧表示 */}
+        {/* 年度別顧客一覧表示 */}
+        {!loading.error &&
+          !loading.isLoading &&
+          !searchTerm &&
+          paginationData.hasData &&
+          customersByYear.sortedYears.length > 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {customersByYear.sortedYears.map((year) => {
+                const yearCustomers = customersByYear.groups[year] || [];
+                const isExpanded = expandedYears.has(year);
+
+                // 年度選択されている場合はその年度のみ表示
+                if (selectedYear !== null && selectedYear !== year) {
+                  return null;
+                }
+
+                return (
+                  <Accordion
+                    key={year}
+                    expanded={isExpanded}
+                    onChange={() => {
+                      const newExpanded = new Set(expandedYears);
+                      if (isExpanded) {
+                        newExpanded.delete(year);
+                      } else {
+                        newExpanded.add(year);
+                      }
+                      setExpandedYears(newExpanded);
+                    }}
+                    sx={{
+                      '&:before': { display: 'none' },
+                      boxShadow: 2,
+                    }}>
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      sx={{
+                        minHeight: 64,
+                        '& .MuiAccordionSummary-content': {
+                          alignItems: 'center',
+                        },
+                      }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 'bold',
+                          fontSize: '18px',
+                        }}>
+                        {year}年（{yearCustomers.length}件）
+                      </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Grid container spacing={3}>
+                        {yearCustomers.map((customer) => (
+                          <Grid
+                            key={customer.customerId}
+                            {...RESPONSIVE_COLUMNS}>
+                            <CustomerCard
+                              customer={customer}
+                              onClick={handleCustomerClick}
+                              showActions={true}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </AccordionDetails>
+                  </Accordion>
+                );
+              })}
+            </Box>
+          )}
+
+        {/* 検索時または年度選択時の顧客一覧表示 */}
         {!loading.error &&
           !loading.isLoading &&
           paginationData.hasData &&
+          (searchTerm ||
+            (selectedYear !== null &&
+              customersByYear.sortedYears.length === 0)) &&
           renderCustomerList()}
       </Box>
 
@@ -531,16 +680,15 @@ export const CustomerListPage: React.FC = () => {
         aria-label="新規顧客登録"
         onClick={handleNewCustomer}
         sx={{
-          position: "fixed",
+          position: 'fixed',
           bottom: 24,
           right: 24,
           minHeight: 60,
           minWidth: 60,
-          fontSize: "24px",
+          fontSize: '24px',
           zIndex: 1000,
-        }}
-      >
-        <AddIcon sx={{ fontSize: "28px" }} />
+        }}>
+        <AddIcon sx={{ fontSize: '28px' }} />
       </Fab>
     </Container>
   );
