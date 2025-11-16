@@ -336,12 +336,14 @@ function Dashboard() {
 
   /**
    * 年度選択オプション生成
+   * 平成25年（2013年）から現在年まで
    */
   const yearOptions = useMemo(() => {
     const currentYear = new Date().getFullYear();
+    const startYear = 2013; // 平成25年
     const years: number[] = [];
-    // 過去5年から現在年まで
-    for (let i = currentYear; i >= currentYear - 5; i--) {
+    // 平成25年（2013年）から現在年まで
+    for (let i = currentYear; i >= startYear; i--) {
       years.push(i);
     }
     return years;

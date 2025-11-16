@@ -22,7 +22,6 @@
  * - 直感的なアイコン・色使い
  * - 操作確認ダイアログ
  */
-import React, { useCallback, useMemo, useState } from "react";
 import {
   Add as AddIcon,
   CalendarToday as CalendarIcon,
@@ -32,7 +31,7 @@ import {
   ExpandMore as ExpandMoreIcon,
   FilterList as FilterListIcon,
   Warning as WarningIcon,
-} from "@mui/icons-material";
+} from '@mui/icons-material';
 import {
   Accordion,
   AccordionDetails,
@@ -49,24 +48,25 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-} from "@mui/material";
+} from '@mui/material';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import type {
   CreateServiceRecordInput,
   ServiceRecordWithCustomer,
   UpdateServiceRecordInput,
-} from "../../../types";
-import { Button } from "../ui/Button";
-import { Card } from "../ui/Card";
-import { Input } from "../ui/Input";
-import { Modal } from "../ui/Modal";
+} from '../../../types';
 import {
   BUTTON_SIZE,
   FONT_SIZES,
   SPACING,
-} from "../../constants/uiDesignSystem";
-import { useApp } from "../../contexts/AppContext";
-import { useServiceRecords } from "../../hooks/useServiceRecords";
+} from '../../constants/uiDesignSystem';
+import { useApp } from '../../contexts/AppContext';
+import { useServiceRecords } from '../../hooks/useServiceRecords';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
+import { Input } from '../ui/Input';
+import { Modal } from '../ui/Modal';
 
 // ================================
 // 型定義・定数
@@ -87,50 +87,48 @@ interface ServiceFormData {
 
 interface DialogState {
   isOpen: boolean;
-  mode: "add" | "edit";
+  mode: 'add' | 'edit';
   editingRecord?: ServiceRecordWithCustomer;
 }
 
 interface FilterState {
-  selectedYear: number | "all";
-  selectedMonth: number | "all";
-  selectedServiceType: string | "all";
+  selectedYear: number | 'all';
+  selectedMonth: number | 'all';
+  selectedServiceType: string | 'all';
 }
 
 // ================================
 // 建築系サービス種別定義
 // ================================
 
-/** よく使われるサービス種別（50代向けプリセット） */
+/** よく使われるサービス種別（50代向けプリセット）
+ * seedFeedback2.tsの8種類 + 「その他」に統一
+ */
 const COMMON_SERVICE_TYPES = [
-  "外壁塗装",
-  "屋根修理",
-  "屋根塗装",
-  "防水工事",
-  "配管工事",
-  "電気工事",
-  "内装リフォーム",
-  "水回りリフォーム",
-  "定期点検",
-  "緊急修理",
-  "エアコン工事",
-  "その他",
+  '屋根工事',
+  '屋根塗装',
+  '屋根修理',
+  '外壁補修',
+  '外壁塗装',
+  '雨樋交換',
+  '雨樋修理',
+  '雨樋工事',
+  'その他',
 ] as const;
 
-/** サービス種別アイコンマッピング */
+/** サービス種別アイコンマッピング
+ * seedFeedback2.tsの8種類 + 「その他」に統一
+ */
 const SERVICE_TYPE_ICONS = {
-  外壁塗装: "🎨",
-  屋根修理: "🏠",
-  屋根塗装: "🎨",
-  防水工事: "💧",
-  配管工事: "🔧",
-  電気工事: "⚡",
-  内装リフォーム: "🏡",
-  水回りリフォーム: "🚿",
-  定期点検: "🔍",
-  緊急修理: "🚨",
-  エアコン工事: "❄️",
-  その他: "🛠️",
+  屋根工事: '🏠',
+  屋根塗装: '🎨',
+  屋根修理: '🔧',
+  外壁補修: '🛠️',
+  外壁塗装: '🎨',
+  雨樋交換: '💧',
+  雨樋修理: '🔧',
+  雨樋工事: '💧',
+  その他: '🛠️',
 } as const;
 
 // ================================
@@ -138,27 +136,27 @@ const SERVICE_TYPE_ICONS = {
 // ================================
 const MESSAGES = {
   success: {
-    add: "サービス履歴を追加しました。",
-    update: "サービス履歴を更新しました。",
-    delete: "サービス履歴を削除しました。",
+    add: 'サービス履歴を追加しました。',
+    update: 'サービス履歴を更新しました。',
+    delete: 'サービス履歴を削除しました。',
   },
   error: {
-    add: "サービス履歴の追加に失敗しました。",
-    update: "サービス履歴の更新に失敗しました。",
-    delete: "サービス履歴の削除に失敗しました。",
-    invalidDate: "正しい日付を入力してください。",
-    invalidAmount: "正しい金額を入力してください（数字のみ）。",
-    requiredFields: "必須項目を入力してください。",
+    add: 'サービス履歴の追加に失敗しました。',
+    update: 'サービス履歴の更新に失敗しました。',
+    delete: 'サービス履歴の削除に失敗しました。',
+    invalidDate: '正しい日付を入力してください。',
+    invalidAmount: '正しい金額を入力してください（数字のみ）。',
+    requiredFields: '必須項目を入力してください。',
   },
   confirm: {
-    delete: "このサービス履歴を削除してもよろしいですか？",
+    delete: 'このサービス履歴を削除してもよろしいですか？',
   },
   info: {
-    noServices: "サービス履歴がありません。最初の履歴を登録しましょう。",
-    filterActive: "フィルターが適用されています。",
-    allYears: "全年度",
-    allMonths: "全月",
-    allServiceTypes: "全種別",
+    noServices: 'サービス履歴がありません。最初の履歴を登録しましょう。',
+    filterActive: 'フィルターが適用されています。',
+    allYears: '全年度',
+    allMonths: '全月',
+    allServiceTypes: '全種別',
   },
 } as const;
 
@@ -170,13 +168,13 @@ const MESSAGES = {
  * 日付フォーマット（50代向け和暦表示）
  */
 const formatDateShort = (date: Date | string): string => {
-  const dateObj = typeof date === "string" ? new Date(date) : date;
-  return new Intl.DateTimeFormat("ja-JP-u-ca-japanese", {
-    era: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    weekday: "short",
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
+    era: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short',
   }).format(dateObj);
 };
 
@@ -184,9 +182,9 @@ const formatDateShort = (date: Date | string): string => {
  * 金額フォーマット（50代向け分かりやすい表示）
  */
 const formatAmount = (amount: number): string => {
-  return new Intl.NumberFormat("ja-JP", {
-    style: "currency",
-    currency: "JPY",
+  return new Intl.NumberFormat('ja-JP', {
+    style: 'currency',
+    currency: 'JPY',
     minimumFractionDigits: 0,
   }).format(amount);
 };
@@ -195,12 +193,12 @@ const formatAmount = (amount: number): string => {
  * サービス履歴の年度別グループ化
  */
 const groupServicesByYear = (
-  services: ServiceRecordWithCustomer[],
+  services: ServiceRecordWithCustomer[]
 ): Record<number, ServiceRecordWithCustomer[]> => {
   return services.reduce(
     (groups, service) => {
       const dateObj =
-        typeof service.serviceDate === "string"
+        typeof service.serviceDate === 'string'
           ? new Date(service.serviceDate)
           : service.serviceDate;
       const year = dateObj.getFullYear();
@@ -210,7 +208,7 @@ const groupServicesByYear = (
       groups[year].push(service);
       return groups;
     },
-    {} as Record<number, ServiceRecordWithCustomer[]>,
+    {} as Record<number, ServiceRecordWithCustomer[]>
   );
 };
 
@@ -218,7 +216,7 @@ const groupServicesByYear = (
  * 年度別売上集計
  */
 const calculateYearlyTotal = (
-  services: ServiceRecordWithCustomer[],
+  services: ServiceRecordWithCustomer[]
 ): Record<number, number> => {
   const yearlyGroups = groupServicesByYear(services);
 
@@ -230,7 +228,7 @@ const calculateYearlyTotal = (
       totals[Number(year)] = total;
       return totals;
     },
-    {} as Record<number, number>,
+    {} as Record<number, number>
   );
 };
 
@@ -239,18 +237,18 @@ const calculateYearlyTotal = (
  */
 const getMonthName = (month: number): string => {
   const monthNames = [
-    "1月",
-    "2月",
-    "3月",
-    "4月",
-    "5月",
-    "6月",
-    "7月",
-    "8月",
-    "9月",
-    "10月",
-    "11月",
-    "12月",
+    '1月',
+    '2月',
+    '3月',
+    '4月',
+    '5月',
+    '6月',
+    '7月',
+    '8月',
+    '9月',
+    '10月',
+    '11月',
+    '12月',
   ];
   return monthNames[month - 1];
 };
@@ -263,27 +261,27 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
   serviceRecordsHook: providedHook,
 }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // ================================
   // 状態管理
   // ================================
   const [dialogState, setDialogState] = useState<DialogState>({
     isOpen: false,
-    mode: "add",
+    mode: 'add',
   });
 
   const [serviceFormData, setServiceFormData] = useState<ServiceFormData>({
-    serviceDate: new Date().toISOString().split("T")[0],
-    serviceType: "",
-    serviceDescription: "",
-    amount: "",
+    serviceDate: new Date().toISOString().split('T')[0],
+    serviceType: '',
+    serviceDescription: '',
+    amount: '',
   });
 
   const [filterState, setFilterState] = useState<FilterState>({
-    selectedYear: "all",
-    selectedMonth: "all",
-    selectedServiceType: "all",
+    selectedYear: 'all',
+    selectedMonth: 'all',
+    selectedServiceType: 'all',
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<{
@@ -332,15 +330,15 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
     const serviceMap = new Map<string, ServiceRecordWithCustomer>();
 
     serviceRecords.forEach((record) => {
-      const serviceType = record.serviceType || "その他";
+      const serviceType = record.serviceType || 'その他';
       const existingRecord = serviceMap.get(serviceType);
 
       const recordDate =
-        typeof record.serviceDate === "string"
+        typeof record.serviceDate === 'string'
           ? new Date(record.serviceDate)
           : record.serviceDate;
       const existingDate = existingRecord
-        ? typeof existingRecord.serviceDate === "string"
+        ? typeof existingRecord.serviceDate === 'string'
           ? new Date(existingRecord.serviceDate)
           : existingRecord.serviceDate
         : null;
@@ -361,10 +359,10 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
     let filtered = [...latestServicesByType];
 
     // 年度別フィルタ
-    if (filterState.selectedYear !== "all") {
+    if (filterState.selectedYear !== 'all') {
       filtered = filtered.filter((record) => {
         const dateObj =
-          typeof record.serviceDate === "string"
+          typeof record.serviceDate === 'string'
             ? new Date(record.serviceDate)
             : record.serviceDate;
         return dateObj.getFullYear() === filterState.selectedYear;
@@ -372,10 +370,10 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
     }
 
     // 月フィルタ
-    if (filterState.selectedMonth !== "all") {
+    if (filterState.selectedMonth !== 'all') {
       filtered = filtered.filter((record) => {
         const dateObj =
-          typeof record.serviceDate === "string"
+          typeof record.serviceDate === 'string'
             ? new Date(record.serviceDate)
             : record.serviceDate;
         return dateObj.getMonth() + 1 === filterState.selectedMonth;
@@ -383,11 +381,11 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
     }
 
     // サービス種別フィルタ
-    if (filterState.selectedServiceType !== "all") {
+    if (filterState.selectedServiceType !== 'all') {
       filtered = filtered.filter((record) =>
         record.serviceType
           ?.toLowerCase()
-          .includes(filterState.selectedServiceType.toLowerCase()),
+          .includes(filterState.selectedServiceType.toLowerCase())
       );
     }
 
@@ -418,18 +416,18 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
       new Set(
         serviceRecords.map((record) => {
           const dateObj =
-            typeof record.serviceDate === "string"
+            typeof record.serviceDate === 'string'
               ? new Date(record.serviceDate)
               : record.serviceDate;
           return dateObj.getFullYear();
-        }),
-      ),
+        })
+      )
     ).sort((a, b) => b - a);
 
     const serviceTypes = Array.from(
       new Set(
-        serviceRecords.map((record) => record.serviceType).filter(Boolean),
-      ),
+        serviceRecords.map((record) => record.serviceType).filter(Boolean)
+      )
     ).sort();
 
     return { years, serviceTypes };
@@ -440,14 +438,14 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
    */
   const responsiveSettings = useMemo(
     () => ({
-      buttonSize: isMobile ? "large" : "medium",
+      buttonSize: isMobile ? 'large' : 'medium',
       fontSize: isMobile
         ? FONT_SIZES.cardTitle.mobile
         : FONT_SIZES.cardTitle.desktop,
       contentPadding: isMobile ? SPACING.page.mobile : SPACING.page.desktop,
       cardSpacing: isMobile ? SPACING.card.mobile : SPACING.card.desktop,
     }),
-    [isMobile],
+    [isMobile]
   );
 
   /**
@@ -455,9 +453,9 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
    */
   const hasActiveFilters = useMemo(() => {
     return (
-      filterState.selectedYear !== "all" ||
-      filterState.selectedMonth !== "all" ||
-      filterState.selectedServiceType !== "all"
+      filterState.selectedYear !== 'all' ||
+      filterState.selectedMonth !== 'all' ||
+      filterState.selectedServiceType !== 'all'
     );
   }, [filterState]);
 
@@ -469,12 +467,12 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
    */
   const handleAddService = useCallback(() => {
     setServiceFormData({
-      serviceDate: new Date().toISOString().split("T")[0],
-      serviceType: "",
-      serviceDescription: "",
-      amount: "",
+      serviceDate: new Date().toISOString().split('T')[0],
+      serviceType: '',
+      serviceDescription: '',
+      amount: '',
     });
-    setDialogState({ isOpen: true, mode: "add" });
+    setDialogState({ isOpen: true, mode: 'add' });
   }, []);
 
   /**
@@ -482,28 +480,28 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
    */
   const handleEditService = useCallback((record: ServiceRecordWithCustomer) => {
     const dateObj =
-      typeof record.serviceDate === "string"
+      typeof record.serviceDate === 'string'
         ? new Date(record.serviceDate)
         : record.serviceDate;
     setServiceFormData({
-      serviceDate: dateObj.toISOString().split("T")[0],
-      serviceType: record.serviceType || "",
-      serviceDescription: record.serviceDescription || "",
-      amount: record.amount ? String(record.amount) : "",
+      serviceDate: dateObj.toISOString().split('T')[0],
+      serviceType: record.serviceType || '',
+      serviceDescription: record.serviceDescription || '',
+      amount: record.amount ? String(record.amount) : '',
     });
-    setDialogState({ isOpen: true, mode: "edit", editingRecord: record });
+    setDialogState({ isOpen: true, mode: 'edit', editingRecord: record });
   }, []);
 
   /**
    * ダイアログを閉じる
    */
   const handleCloseDialog = useCallback(() => {
-    setDialogState({ isOpen: false, mode: "add" });
+    setDialogState({ isOpen: false, mode: 'add' });
     setServiceFormData({
-      serviceDate: new Date().toISOString().split("T")[0],
-      serviceType: "",
-      serviceDescription: "",
-      amount: "",
+      serviceDate: new Date().toISOString().split('T')[0],
+      serviceType: '',
+      serviceDescription: '',
+      amount: '',
     });
   }, []);
 
@@ -512,7 +510,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
    */
   const handleSaveService = useCallback(async () => {
     try {
-      if (dialogState.mode === "add") {
+      if (dialogState.mode === 'add') {
         const serviceData: CreateServiceRecordInput = {
           customerId,
           serviceDate: new Date(serviceFormData.serviceDate),
@@ -521,11 +519,11 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
           amount: serviceFormData.amount
             ? Number(serviceFormData.amount)
             : undefined,
-          status: "completed",
+          status: 'completed',
         };
 
         await createServiceRecord(serviceData);
-        showSnackbar(MESSAGES.success.add, "success");
+        showSnackbar(MESSAGES.success.add, 'success');
       } else if (dialogState.editingRecord) {
         const updateData: UpdateServiceRecordInput = {
           serviceDate: new Date(serviceFormData.serviceDate),
@@ -538,16 +536,16 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
 
         await updateServiceRecord(
           dialogState.editingRecord.recordId,
-          updateData,
+          updateData
         );
-        showSnackbar(MESSAGES.success.update, "success");
+        showSnackbar(MESSAGES.success.update, 'success');
       }
 
       handleCloseDialog();
     } catch (error) {
       const errorMessage =
-        dialogState.mode === "add" ? MESSAGES.error.add : MESSAGES.error.update;
-      showSnackbar(errorMessage, "error");
+        dialogState.mode === 'add' ? MESSAGES.error.add : MESSAGES.error.update;
+      showSnackbar(errorMessage, 'error');
     }
   }, [
     dialogState,
@@ -576,10 +574,10 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
 
     try {
       await deleteServiceRecord(showDeleteConfirm.recordId);
-      showSnackbar(MESSAGES.success.delete, "success");
+      showSnackbar(MESSAGES.success.delete, 'success');
       setShowDeleteConfirm({ isOpen: false });
     } catch (error) {
-      showSnackbar(MESSAGES.error.delete, "error");
+      showSnackbar(MESSAGES.error.delete, 'error');
     }
   }, [showDeleteConfirm.recordId, deleteServiceRecord, showSnackbar]);
 
@@ -588,9 +586,9 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
    */
   const handleClearFilters = useCallback(() => {
     setFilterState({
-      selectedYear: "all",
-      selectedMonth: "all",
-      selectedServiceType: "all",
+      selectedYear: 'all',
+      selectedMonth: 'all',
+      selectedServiceType: 'all',
     });
   }, []);
 
@@ -606,17 +604,15 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
       <Box sx={{ p: SPACING.card.desktop }}>
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             gap: SPACING.gap.small,
             mb: SPACING.gap.medium,
-          }}
-        >
+          }}>
           <FilterListIcon color="action" />
           <Typography
             variant="h6"
-            sx={{ fontSize: responsiveSettings.fontSize }}
-          >
+            sx={{ fontSize: responsiveSettings.fontSize }}>
             フィルター
           </Typography>
           {hasActiveFilters && (
@@ -625,8 +621,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
               variant="outlined"
               onClick={handleClearFilters}
               startIcon={<ClearIcon />}
-              sx={{ ml: SPACING.gap.small }}
-            >
+              sx={{ ml: SPACING.gap.small }}>
               クリア
             </Button>
           )}
@@ -643,10 +638,9 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                 onChange={(e) =>
                   setFilterState({
                     ...filterState,
-                    selectedYear: e.target.value as number | "all",
+                    selectedYear: e.target.value as number | 'all',
                   })
-                }
-              >
+                }>
                 <MenuItem value="all">{MESSAGES.info.allYears}</MenuItem>
                 {filterOptions.years.map((year) => (
                   <MenuItem key={year} value={year}>
@@ -668,10 +662,9 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                 onChange={(e) =>
                   setFilterState({
                     ...filterState,
-                    selectedMonth: e.target.value as number | "all",
+                    selectedMonth: e.target.value as number | 'all',
                   })
-                }
-              >
+                }>
                 <MenuItem value="all">{MESSAGES.info.allMonths}</MenuItem>
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
                   <MenuItem key={month} value={month}>
@@ -695,12 +688,11 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                     ...prev,
                     selectedServiceType: e.target.value,
                   }))
-                }
-              >
+                }>
                 <MenuItem value="all">{MESSAGES.info.allServiceTypes}</MenuItem>
                 {filterOptions.serviceTypes.map((type) => (
-                  <MenuItem key={type ?? "empty"} value={type ?? ""}>
-                    {type || "未設定"}
+                  <MenuItem key={type ?? 'empty'} value={type ?? ''}>
+                    {type || '未設定'}
                   </MenuItem>
                 ))}
               </Select>
@@ -725,22 +717,23 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
    */
   const renderEmptyState = () => (
     <Card>
-      <Box sx={{ textAlign: "center", p: 6 }}>
+      <Box sx={{ textAlign: 'center', p: 6 }}>
         <WarningIcon
-          sx={{ fontSize: 80, color: "text.secondary", mb: SPACING.gap.medium }}
+          sx={{ fontSize: 80, color: 'text.secondary', mb: SPACING.gap.medium }}
         />
         <Typography
           variant="h6"
-          sx={{ mb: SPACING.gap.medium, fontSize: responsiveSettings.fontSize }}
-        >
+          sx={{
+            mb: SPACING.gap.medium,
+            fontSize: responsiveSettings.fontSize,
+          }}>
           {MESSAGES.info.noServices}
         </Typography>
         <Button
           variant="contained"
           onClick={handleAddService}
           startIcon={<AddIcon />}
-          size={responsiveSettings.buttonSize as any}
-        >
+          size={responsiveSettings.buttonSize as any}>
           最初のサービス履歴を登録
         </Button>
       </Box>
@@ -758,53 +751,49 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
           <Accordion key={year} defaultExpanded sx={{ mb: SPACING.gap.medium }}>
             <AccordionSummary
               expandIcon={
-                <ExpandMoreIcon sx={{ fontSize: 32, color: "white" }} />
+                <ExpandMoreIcon sx={{ fontSize: 32, color: 'white' }} />
               }
               aria-label={`${year}年度のサービス履歴を展開`} // アクセシビリティ向上
               sx={{
                 backgroundColor: theme.palette.primary.main,
                 color: theme.palette.primary.contrastText,
                 minHeight: 64,
-                "&:hover": {
+                '&:hover': {
                   backgroundColor: theme.palette.primary.dark,
                 },
-                "&.Mui-expanded": {
+                '&.Mui-expanded': {
                   minHeight: 64,
                 },
-                "& .MuiAccordionSummary-content": {
-                  margin: "16px 0",
+                '& .MuiAccordionSummary-content': {
+                  margin: '16px 0',
                 },
-              }}
-            >
+              }}>
               <Box
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  width: "100%",
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  width: '100%',
                   pr: SPACING.gap.medium,
-                  alignItems: "center",
-                }}
-              >
+                  alignItems: 'center',
+                }}>
                 <Typography
                   variant="h6"
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     fontSize: isMobile
                       ? FONT_SIZES.cardTitle.mobile
                       : FONT_SIZES.cardTitle.desktop,
-                  }}
-                >
+                  }}>
                   📅 {year}年度 ({yearServices.length}件)
                 </Typography>
                 <Typography
                   variant="h6"
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     fontSize: isMobile
                       ? FONT_SIZES.body.mobile
                       : FONT_SIZES.cardTitle.mobile,
-                  }}
-                >
+                  }}>
                   {formatAmount(filteredYearlyTotals[Number(year)] || 0)}
                 </Typography>
               </Box>
@@ -812,16 +801,15 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
             <AccordionDetails>
               <Stack
                 spacing={SPACING.gap.medium}
-                sx={{ p: isMobile ? SPACING.gap.small : SPACING.gap.medium }}
-              >
+                sx={{ p: isMobile ? SPACING.gap.small : SPACING.gap.medium }}>
                 {yearServices
                   .sort((a, b) => {
                     const dateA =
-                      typeof a.serviceDate === "string"
+                      typeof a.serviceDate === 'string'
                         ? new Date(a.serviceDate)
                         : a.serviceDate;
                     const dateB =
-                      typeof b.serviceDate === "string"
+                      typeof b.serviceDate === 'string'
                         ? new Date(b.serviceDate)
                         : b.serviceDate;
                     return dateB.getTime() - dateA.getTime();
@@ -834,34 +822,30 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                         alignItems="center"
                         sx={{
                           p: SPACING.card.desktop,
-                        }}
-                      >
+                        }}>
                         {/* 日付 */}
                         <Grid size={{ xs: 12 }}>
                           <Box
                             sx={{
-                              display: "flex",
-                              alignItems: "center",
+                              display: 'flex',
+                              alignItems: 'center',
                               gap: SPACING.gap.small,
                               justifyContent: isMobile
-                                ? "center"
-                                : "flex-start",
-                            }}
-                          >
+                                ? 'center'
+                                : 'flex-start',
+                            }}>
                             <CalendarIcon fontSize="small" color="primary" />
                             <Box>
                               <Typography
                                 variant="body2"
-                                sx={{ fontWeight: "bold" }}
-                              >
+                                sx={{ fontWeight: 'bold' }}>
                                 {formatDateShort(new Date(service.serviceDate))}
                               </Typography>
                               {!isMobile && (
                                 <Typography
                                   variant="caption"
-                                  color="text.secondary"
-                                >
-                                  {(typeof service.serviceDate === "string"
+                                  color="text.secondary">
+                                  {(typeof service.serviceDate === 'string'
                                     ? new Date(service.serviceDate)
                                     : service.serviceDate
                                   ).getFullYear()}
@@ -876,30 +860,28 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                         <Grid
                           size={{ xs: 12 }}
                           sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                          }}
-                        >
+                            display: 'flex',
+                            justifyContent: 'center',
+                          }}>
                           <Chip
                             label={
                               <Box
                                 sx={{
-                                  display: "flex",
-                                  alignItems: "center",
+                                  display: 'flex',
+                                  alignItems: 'center',
                                   gap: SPACING.gap.small,
-                                }}
-                              >
+                                }}>
                                 <span>
                                   {SERVICE_TYPE_ICONS[
                                     service.serviceType as keyof typeof SERVICE_TYPE_ICONS
-                                  ] || "🛠️"}
+                                  ] || '🛠️'}
                                 </span>
-                                {service.serviceType || "その他"}
+                                {service.serviceType || 'その他'}
                               </Box>
                             }
                             color="primary"
                             variant="outlined"
-                            sx={{ minWidth: "100px" }}
+                            sx={{ minWidth: '100px' }}
                           />
                         </Grid>
 
@@ -909,15 +891,14 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                             variant="body2"
                             color="text.secondary"
                             sx={{
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              display: "-webkit-box",
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              display: '-webkit-box',
                               WebkitLineClamp: 2,
-                              WebkitBoxOrient: "vertical",
-                              textAlign: "center",
-                            }}
-                          >
-                            {service.serviceDescription || "詳細記載なし"}
+                              WebkitBoxOrient: 'vertical',
+                              textAlign: 'center',
+                            }}>
+                            {service.serviceDescription || '詳細記載なし'}
                           </Typography>
                         </Grid>
 
@@ -927,13 +908,12 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                             variant="h6"
                             color="primary"
                             sx={{
-                              fontWeight: "bold",
-                              textAlign: "center",
-                            }}
-                          >
+                              fontWeight: 'bold',
+                              textAlign: 'center',
+                            }}>
                             {service.amount
                               ? formatAmount(Number(service.amount))
-                              : "金額未設定"}
+                              : '金額未設定'}
                           </Typography>
                         </Grid>
 
@@ -942,8 +922,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                           <Stack
                             direction="row"
                             spacing={SPACING.gap.small}
-                            justifyContent={isMobile ? "center" : "flex-end"}
-                          >
+                            justifyContent={isMobile ? 'center' : 'flex-end'}>
                             <Button
                               size="small"
                               variant="outlined"
@@ -952,8 +931,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                                 minWidth: BUTTON_SIZE.minHeight.tablet,
                                 minHeight: BUTTON_SIZE.minHeight.tablet,
                                 p: SPACING.gap.small,
-                              }}
-                            >
+                              }}>
                               <EditIcon fontSize="small" />
                             </Button>
                             <Button
@@ -967,8 +945,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                                 minWidth: BUTTON_SIZE.minHeight.tablet,
                                 minHeight: BUTTON_SIZE.minHeight.tablet,
                                 p: SPACING.gap.small,
-                              }}
-                            >
+                              }}>
                               <DeleteIcon fontSize="small" />
                             </Button>
                           </Stack>
@@ -992,18 +969,16 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
       onClose={handleCloseDialog}
       modalsize="medium"
       sx={{
-        "& .MuiDialog-paper": {
-          maxHeight: isMobile ? "80vh" : "auto",
+        '& .MuiDialog-paper': {
+          maxHeight: isMobile ? '80vh' : 'auto',
         },
       }}
       title={
-        dialogState.mode === "add" ? "サービス履歴追加" : "サービス履歴編集"
-      }
-    >
+        dialogState.mode === 'add' ? 'サービス履歴追加' : 'サービス履歴編集'
+      }>
       <Stack
         spacing={SPACING.gap.large}
-        sx={{ p: SPACING.card.desktop, pb: 0 }}
-      >
+        sx={{ p: SPACING.card.desktop, pb: 0 }}>
         {/* サービス実施日 */}
         <Input
           label="サービス実施日"
@@ -1028,17 +1003,15 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                 ...prev,
                 serviceType: e.target.value,
               }))
-            }
-          >
+            }>
             {COMMON_SERVICE_TYPES.map((type) => (
               <MenuItem key={type} value={type}>
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: SPACING.gap.small,
-                  }}
-                >
+                  }}>
                   <span> {SERVICE_TYPE_ICONS[type]} </span>
                   {type}
                 </Box>
@@ -1080,11 +1053,10 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
         {/* 操作ボタン */}
         <Box
           sx={{
-            display: "flex",
+            display: 'flex',
             gap: SPACING.gap.medium,
-            justifyContent: "flex-end",
-          }}
-        >
+            justifyContent: 'flex-end',
+          }}>
           <Button variant="outlined" onClick={handleCloseDialog}>
             キャンセル
           </Button>
@@ -1094,9 +1066,8 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
             disabled={
               !serviceFormData.serviceDate || !serviceFormData.serviceType
             }
-            startIcon={dialogState.mode === "add" ? <AddIcon /> : <EditIcon />}
-          >
-            {dialogState.mode === "add" ? "追加" : "更新"}
+            startIcon={dialogState.mode === 'add' ? <AddIcon /> : <EditIcon />}>
+            {dialogState.mode === 'add' ? '追加' : '更新'}
           </Button>
         </Box>
       </Stack>
@@ -1112,13 +1083,12 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
       <Box sx={{ mb: SPACING.section.desktop }}>
         <Box
           sx={{
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            justifyContent: "space-between",
-            alignItems: isMobile ? "stretch" : "center",
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: 'space-between',
+            alignItems: isMobile ? 'stretch' : 'center',
             gap: SPACING.gap.medium,
-          }}
-        >
+          }}>
           <Typography
             variant="h5"
             sx={{
@@ -1126,10 +1096,9 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
                 xs: FONT_SIZES.sectionTitle.mobile,
                 md: FONT_SIZES.sectionTitle.desktop,
               },
-              fontWeight: "bold",
-              textAlign: isMobile ? "center" : "left",
-            }}
-          >
+              fontWeight: 'bold',
+              textAlign: isMobile ? 'center' : 'left',
+            }}>
             📝 サービス履歴
           </Typography>
           <Button
@@ -1142,9 +1111,8 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
               fontSize: isMobile
                 ? FONT_SIZES.body.desktop
                 : FONT_SIZES.label.desktop,
-              width: isMobile ? "100%" : "auto",
-            }}
-          >
+              width: isMobile ? '100%' : 'auto',
+            }}>
             サービス履歴を追加
           </Button>
         </Box>
@@ -1160,11 +1128,11 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
         renderEmptyState()
       ) : filteredRecords.length === 0 ? (
         <Card>
-          <Box sx={{ textAlign: "center", p: 4 }}>
+          <Box sx={{ textAlign: 'center', p: 4 }}>
             <FilterListIcon
               sx={{
                 fontSize: 60,
-                color: "text.secondary",
+                color: 'text.secondary',
                 mb: SPACING.gap.medium,
               }}
             />
@@ -1174,8 +1142,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
             <Button
               variant="outlined"
               onClick={handleClearFilters}
-              startIcon={<ClearIcon />}
-            >
+              startIcon={<ClearIcon />}>
               フィルターをクリア
             </Button>
           </Box>
@@ -1194,36 +1161,32 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
         title="サービス履歴削除の確認"
         modalsize="small"
         sx={{
-          "& .MuiDialog-paper": {
-            maxHeight: isMobile ? "55vh" : "auto",
+          '& .MuiDialog-paper': {
+            maxHeight: isMobile ? '55vh' : 'auto',
           },
-        }}
-      >
-        <Box sx={{ textAlign: "center", p: SPACING.card.desktop }}>
+        }}>
+        <Box sx={{ textAlign: 'center', p: SPACING.card.desktop }}>
           <Typography
             variant="h6"
             sx={{
               mb: SPACING.gap.medium,
               color: theme.palette.error.main,
-              fontWeight: "bold",
-            }}
-          >
+              fontWeight: 'bold',
+            }}>
             ⚠️ 削除の確認
           </Typography>
           <Typography variant="body1" sx={{ mb: SPACING.gap.large }}>
             {MESSAGES.confirm.delete}
           </Typography>
           <Stack
-            direction={isMobile ? "column" : "row"}
+            direction={isMobile ? 'column' : 'row'}
             spacing={SPACING.gap.medium}
             justifyContent="center"
-            sx={{ gap: isMobile ? SPACING.gap.medium : 0 }}
-          >
+            sx={{ gap: isMobile ? SPACING.gap.medium : 0 }}>
             <Button
               variant="outlined"
               sx={{ order: isMobile ? 2 : 1 }}
-              onClick={() => setShowDeleteConfirm({ isOpen: false })}
-            >
+              onClick={() => setShowDeleteConfirm({ isOpen: false })}>
               キャンセル
             </Button>
             <Button
@@ -1231,8 +1194,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
               color="error"
               sx={{ order: isMobile ? 1 : 2 }}
               onClick={handleDeleteConfirm}
-              startIcon={<DeleteIcon />}
-            >
+              startIcon={<DeleteIcon />}>
               削除する
             </Button>
           </Stack>

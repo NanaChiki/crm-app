@@ -102,6 +102,10 @@ export const MaintenanceSiteList: React.FC<MaintenanceSiteListProps> = ({
 
     return serviceRecords
       .filter((record) => {
+        // 顧客IDでフィルタリング（念のため）
+        if (record.customerId !== customerId) {
+          return false;
+        }
         // サービス種別が屋根・外壁・雨樋のいずれかに含まれるか
         return targetTypes.some((type) => record.serviceType?.includes(type));
       })
@@ -167,7 +171,7 @@ export const MaintenanceSiteList: React.FC<MaintenanceSiteListProps> = ({
         }
         return b.yearsElapsed - a.yearsElapsed;
       });
-  }, [serviceRecords]);
+  }, [serviceRecords, customerId]);
 
   /**
    * タブ別フィルタリング
@@ -452,7 +456,7 @@ export const MaintenanceSiteList: React.FC<MaintenanceSiteListProps> = ({
                     />
                   </Box>
 
-                  {/* サービス種別 */}
+                  {/* サービス種別（元のサービス種別を表示） */}
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -460,7 +464,9 @@ export const MaintenanceSiteList: React.FC<MaintenanceSiteListProps> = ({
                       mb: 1,
                       fontSize: FONT_SIZES.body.desktop,
                     }}>
-                    🏗️ {site.serviceType}工事
+                    🏗️{' '}
+                    {(site as any).originalServiceType ||
+                      `${site.serviceType}工事`}
                   </Typography>
 
                   {/* 写真表示・アップロード */}
