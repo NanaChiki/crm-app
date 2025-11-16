@@ -19,9 +19,25 @@ async function seedFeedback2() {
   console.log('🌱 Feedback2用ダミーデータ生成を開始します...');
 
   try {
+    // 既存データを削除（リレーションの順序に注意）
+    console.log('🧹 既存データを削除中...');
+    await prisma.reminder.deleteMany();
+    await prisma.serviceRecord.deleteMany();
+    await prisma.customer.deleteMany();
+    console.log('✅ 既存データの削除が完了しました');
     // 年度別顧客データ生成（2021-2025年、各年10件）
     const years = [2021, 2022, 2023, 2024, 2025];
-    const serviceTypes = ['屋根工事', '雨樋交換', '外壁補修', '屋根補修'];
+    // メンテナンス検出用に「屋根」「外壁」「雨樋」を含む種別を追加
+    const serviceTypes = [
+      '屋根工事',
+      '屋根塗装',
+      '屋根修理',
+      '外壁補修',
+      '外壁塗装',
+      '雨樋交換',
+      '雨樋修理',
+      '雨樋工事',
+    ];
     const companyNames = [
       '工務店',
       '建設',
@@ -65,11 +81,11 @@ async function seedFeedback2() {
         const serviceCount = Math.floor(Math.random() * 3) + 3; // 3-5件
 
         for (let j = 0; j < serviceCount; j++) {
-          // サービス日は顧客登録日からランダムに設定（過去5年以内）
+          // サービス日は顧客登録日からランダムに設定（過去15年以内）
+          // メンテナンス時期を迎えたサービス履歴も生成するため、過去の日付も含める
           const serviceDate = new Date(customer.createdAt);
-          serviceDate.setFullYear(
-            serviceDate.getFullYear() - Math.floor(Math.random() * 5)
-          );
+          const yearsAgo = Math.floor(Math.random() * 15); // 0-14年前
+          serviceDate.setFullYear(serviceDate.getFullYear() - yearsAgo);
           serviceDate.setMonth(Math.floor(Math.random() * 12));
           serviceDate.setDate(Math.floor(Math.random() * 28) + 1);
 
@@ -88,6 +104,7 @@ async function seedFeedback2() {
               serviceDescription: `${serviceType}の施工を行いました`,
               amount,
               status: 'completed',
+              photoPath: null, // 写真は後で追加可能
             },
           });
 

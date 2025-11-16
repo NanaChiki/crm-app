@@ -71,7 +71,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.ico",
@@ -92,7 +94,10 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "category": "public.app-category.business",
@@ -170,6 +175,6 @@
   },
   "prisma": {
     "schema": "src/database/schema.prisma",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seedFeedback2.ts"
   }
 }
