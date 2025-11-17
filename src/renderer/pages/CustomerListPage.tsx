@@ -45,7 +45,6 @@ import {
   Alert,
   Box,
   Button,
-  CircularProgress,
   Container,
   Fab,
   FormControl,
@@ -71,13 +70,17 @@ import CustomerSearchBar from '../components/customer/CustomerSearchBar';
 import PageHeader from '../components/layout/PageHeader';
 
 // Design System
-import { GRID_LAYOUT } from '../constants/uiDesignSystem';
+import {
+  BUTTON_SIZE,
+  FONT_SIZES,
+  GRID_LAYOUT,
+} from '../constants/uiDesignSystem';
 
 // Types, 型定義・定数
 import { Customer, SortOrder } from '../../types';
 
 // ページング設定
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE_YEARLY = 9;
 
 // ソートオプション定義
 const SORT_OPTIONS: SortOrder[] = [
@@ -110,6 +113,9 @@ export const CustomerListPage: React.FC = () => {
   const [selectedSort, setSelectedSort] = useState<SortOrder>(SORT_OPTIONS[0]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
+  const [yearPageNumber, setYearPageNumber] = useState<Map<number, number>>(
+    new Map()
+  );
 
   // ================================
   // Context連携
@@ -216,24 +222,26 @@ export const CustomerListPage: React.FC = () => {
 
   /**
    * ページング計算
-   * 総件数・総ページ数・現在ページのデータ取得
+   * 年度別顧客リストのページング計算
    */
-  const paginationData = useMemo(() => {
-    const totalItems = displayCustomers.length;
-    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    const pageData = displayCustomers.slice(startIndex, endIndex);
+  const getYearCustomersPageData = useCallback(
+    (year: number, customers: Customer[]) => {
+      const currentPage = yearPageNumber.get(year) || 1;
+      const totalPages = Math.ceil(customers.length / ITEMS_PER_PAGE_YEARLY);
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE_YEARLY;
+      const endIndex = startIndex + ITEMS_PER_PAGE_YEARLY;
+      const pageData = customers.slice(startIndex, endIndex);
 
-    return {
-      totalItems,
-      totalPages,
-      pageData,
-      hasData: totalItems > 0,
-      startIndex: startIndex + 1,
-      endIndex: Math.min(endIndex, totalItems),
-    };
-  }, [displayCustomers, currentPage]);
+      return {
+        pageData,
+        currentPage,
+        totalPages,
+        totalItems: customers.length,
+        hasData: customers.length > 0,
+      };
+    },
+    [yearPageNumber]
+  );
 
   // ================================
   // イベントハンドラー
@@ -247,12 +255,16 @@ export const CustomerListPage: React.FC = () => {
       if (keyword.trim()) {
         searchCustomers(keyword.trim());
         setCurrentPage(1);
+        // 検索時は全ての年度を展開
+        setExpandedYears(new Set(customersByYear.sortedYears));
+        // 年度別ページ番号をリセット
+        setYearPageNumber(new Map());
         showSnackbar(`"${keyword}"で検索しました`, 'info');
       } else {
         clearSearch();
       }
     },
-    [searchCustomers, clearSearch, showSnackbar]
+    [searchCustomers, clearSearch, showSnackbar, customersByYear.sortedYears]
   );
 
   /**
@@ -261,6 +273,9 @@ export const CustomerListPage: React.FC = () => {
   const handleClearSearch = useCallback(() => {
     clearSearch();
     setCurrentPage(1);
+    // 年度別ページ番号をリセット
+    setYearPageNumber(new Map());
+    setExpandedYears(new Set());
     showSnackbar('検索をクリアしました', 'info');
   }, [clearSearch, showSnackbar]);
 
@@ -275,15 +290,15 @@ export const CustomerListPage: React.FC = () => {
   );
 
   /**
-   * ページ変更
+   * 年度別ページ番号変更ハンドラー
    */
-  const handlePageChange = useCallback(
-    (_: React.ChangeEvent<unknown>, page: number) => {
-      setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    },
-    [paginationData.totalPages]
-  );
+  const handleYearPageChange = useCallback((year: number, page: number) => {
+    setYearPageNumber((prev) => {
+      const newMap = new Map(prev);
+      newMap.set(year, page);
+      return newMap;
+    });
+  }, []);
 
   /**
    * 新規顧客登録画面遷移
@@ -439,76 +454,133 @@ export const CustomerListPage: React.FC = () => {
   /**
    * 顧客一覧表示
    */
-  const renderCustomerList = () => (
+  const renderYearlyCustomerList = () => (
     <>
       {/* ページング情報 */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 3,
-          flexWrap: 'wrap',
-          gap: 1,
-        }}>
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{ fontSize: '16px' }}>
-          {paginationData.startIndex}〜{paginationData.endIndex}件 / 全
-          {paginationData.totalItems}件
-        </Typography>
+      {customersByYear.sortedYears.length > 0 && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {customersByYear.sortedYears.map((year) => {
+            const yearCustomers = customersByYear.groups[year] || [];
+            const isExpanded = expandedYears.has(year);
+            const yearPagination = getYearCustomersPageData(
+              year,
+              yearCustomers
+            );
 
-        {!isMobile && (
-          <Button
-            variant="text"
-            onClick={handleRefresh}
-            startIcon={
-              loading.isLoading ? (
-                <CircularProgress size={16} />
-              ) : (
-                <RefreshIcon />
-              )
+            // 年度選択されている場合はその年度のみ表示
+            if (selectedYear !== null && selectedYear !== year) {
+              return null;
             }
-            disabled={loading.isLoading}
-            sx={{ fontSize: '14px' }}>
-            {loading.isLoading ? '更新中...' : '最新情報に更新'}
-          </Button>
-        )}
-      </Box>
 
-      {/* 顧客カード一覧 */}
-      <Grid container spacing={3}>
-        {paginationData.pageData.map((customer) => (
-          <Grid key={customer.customerId} {...RESPONSIVE_COLUMNS}>
-            <CustomerCard
-              customer={customer}
-              onClick={handleCustomerClick}
-              showActions={true}
-            />
-          </Grid>
-        ))}
-      </Grid>
+            return (
+              <Accordion
+                key={year}
+                expanded={isExpanded}
+                onChange={() => {
+                  const newExpanded = new Set(expandedYears);
+                  if (isExpanded) {
+                    newExpanded.delete(year);
+                  } else {
+                    newExpanded.add(year);
+                  }
+                  setExpandedYears(newExpanded);
+                }}
+                sx={{
+                  '&:before': { display: 'none' },
+                  boxShadow: 2,
+                }}>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  sx={{
+                    minHeight: 64,
+                    '& .MuiAccordionSummary-content': {
+                      alignItems: 'center',
+                    },
+                  }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 'bold',
+                      fontSize: '18px',
+                    }}>
+                    {year}年（{yearCustomers.length}件）
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {yearPagination.hasData ? (
+                    <>
+                      <Grid container spacing={3}>
+                        {yearPagination.pageData.map((customer) => (
+                          <Grid
+                            key={customer.customerId}
+                            {...RESPONSIVE_COLUMNS}>
+                            <CustomerCard
+                              customer={customer}
+                              onClick={handleCustomerClick}
+                              showActions={true}
+                            />
+                          </Grid>
+                        ))}
+                      </Grid>
 
-      {/* ページング */}
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Pagination
-          count={paginationData.totalPages}
-          page={currentPage}
-          onChange={handlePageChange}
-          color="primary"
-          size={isMobile ? 'medium' : 'large'}
-          showFirstButton
-          showLastButton
-          sx={{
-            '& .MuiPaginationItem-root': {
-              minHeight: 44,
-              minWidth: 44,
-              fontSize: '16px',
-            },
-          }}
-        />
-      </Box>
+                      {/* 年度別ページング */}
+                      {yearPagination.totalPages > 1 && (
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            mt: 3,
+                            gap: 2,
+                          }}>
+                          <Pagination
+                            count={yearPagination.totalPages}
+                            page={yearPagination.currentPage}
+                            onChange={(_event, page) =>
+                              handleYearPageChange(year, page)
+                            }
+                            color="primary"
+                            size="large"
+                            sx={{
+                              '& .MuiPaginationItem-root': {
+                                fontSize: FONT_SIZES.body.desktop,
+                                minHeight: BUTTON_SIZE.minHeight.desktop,
+                                minWidth: BUTTON_SIZE.minHeight.desktop,
+                              },
+                            }}
+                          />
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                              fontSize: FONT_SIZES.body.desktop,
+                            }}>
+                            {yearPagination.currentPage} /{' '}
+                            {yearPagination.totalPages} ページ (
+                            {yearPagination.pageData.length}件表示 / 全
+                            {yearPagination.totalItems}件)
+                          </Typography>
+                        </Box>
+                      )}
+                    </>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        textAlign: 'center',
+                        py: 4,
+                        fontSize: FONT_SIZES.body.desktop,
+                      }}>
+                      {year}年の顧客データがありません
+                    </Typography>
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            );
+          })}
+        </Box>
+      )}
     </>
   );
 
@@ -523,7 +595,7 @@ export const CustomerListPage: React.FC = () => {
         title="顧客一覧"
         subtitle={`${
           searchTerm || selectedYear !== null
-            ? paginationData.totalItems
+            ? filteredCustomers.length
             : customers.length
         }件の顧客が登録されています`}
         breadcrumbs={[
@@ -540,7 +612,7 @@ export const CustomerListPage: React.FC = () => {
         selectedSort={selectedSort}
         sortOptions={SORT_OPTIONS}
         isLoading={loading.isLoading}
-        resultCount={paginationData.totalItems}
+        resultCount={filteredCustomers.length}
         searchKeyword={searchTerm}
       />
 
@@ -590,92 +662,19 @@ export const CustomerListPage: React.FC = () => {
           customers.length === 0 &&
           renderEmptyState()}
 
+        {/* 年度別顧客一覧表示 (検索時も含む) */}
+        {!loading.error &&
+          !loading.isLoading &&
+          displayCustomers.length > 0 &&
+          customersByYear.sortedYears.length > 0 &&
+          renderYearlyCustomerList()}
+
         {/* 検索結果なし */}
         {!loading.error &&
           !loading.isLoading &&
           searchTerm &&
           filteredCustomers.length === 0 &&
           renderNoResultsState()}
-
-        {/* 年度別顧客一覧表示 */}
-        {!loading.error &&
-          !loading.isLoading &&
-          !searchTerm &&
-          paginationData.hasData &&
-          customersByYear.sortedYears.length > 0 && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {customersByYear.sortedYears.map((year) => {
-                const yearCustomers = customersByYear.groups[year] || [];
-                const isExpanded = expandedYears.has(year);
-
-                // 年度選択されている場合はその年度のみ表示
-                if (selectedYear !== null && selectedYear !== year) {
-                  return null;
-                }
-
-                return (
-                  <Accordion
-                    key={year}
-                    expanded={isExpanded}
-                    onChange={() => {
-                      const newExpanded = new Set(expandedYears);
-                      if (isExpanded) {
-                        newExpanded.delete(year);
-                      } else {
-                        newExpanded.add(year);
-                      }
-                      setExpandedYears(newExpanded);
-                    }}
-                    sx={{
-                      '&:before': { display: 'none' },
-                      boxShadow: 2,
-                    }}>
-                    <AccordionSummary
-                      expandIcon={<ExpandMoreIcon />}
-                      sx={{
-                        minHeight: 64,
-                        '& .MuiAccordionSummary-content': {
-                          alignItems: 'center',
-                        },
-                      }}>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          fontWeight: 'bold',
-                          fontSize: '18px',
-                        }}>
-                        {year}年（{yearCustomers.length}件）
-                      </Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Grid container spacing={3}>
-                        {yearCustomers.map((customer) => (
-                          <Grid
-                            key={customer.customerId}
-                            {...RESPONSIVE_COLUMNS}>
-                            <CustomerCard
-                              customer={customer}
-                              onClick={handleCustomerClick}
-                              showActions={true}
-                            />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </AccordionDetails>
-                  </Accordion>
-                );
-              })}
-            </Box>
-          )}
-
-        {/* 検索時または年度選択時の顧客一覧表示 */}
-        {!loading.error &&
-          !loading.isLoading &&
-          paginationData.hasData &&
-          (searchTerm ||
-            (selectedYear !== null &&
-              customersByYear.sortedYears.length === 0)) &&
-          renderCustomerList()}
       </Box>
 
       {/* 新規登録FAB（Floating Action Button） */}
