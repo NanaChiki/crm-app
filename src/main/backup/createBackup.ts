@@ -1,7 +1,7 @@
-import archiver from "archiver";
-import fs from "fs/promises";
-import path from "path";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
+import archiver from 'archiver';
+import fs from 'fs/promises';
+import path from 'path';
 
 // Prisma Client singleton
 let prismaInstance: PrismaClient | null = null;
@@ -15,7 +15,6 @@ function getPrismaClient(): PrismaClient {
         },
       },
     });
-    console.log("✅ Prisma Client初期化完了 (createBackup)");
   }
   return prismaInstance;
 }
@@ -31,7 +30,7 @@ function getPrismaClient(): PrismaClient {
  * await createBackup('/Users/name/Desktop/CRMバックアップ_2024-10-23.zip');
  */
 export async function createBackup(outputPath: string): Promise<void> {
-  const tempDir = path.join(require("os").tmpdir(), "crm-backup-" + Date.now());
+  const tempDir = path.join(require('os').tmpdir(), 'crm-backup-' + Date.now());
 
   try {
     // 一時ディレクトリ作成
@@ -52,25 +51,25 @@ export async function createBackup(outputPath: string): Promise<void> {
     };
 
     await fs.writeFile(
-      path.join(tempDir, "data.json"),
+      path.join(tempDir, 'data.json'),
       JSON.stringify(data, null, 2),
-      "utf-8",
+      'utf-8'
     );
 
     // 3. データベースファイルをコピー
-    const dbPath = path.join(process.cwd(), "src", "database", "dev.db");
+    const dbPath = path.join(process.cwd(), 'src', 'database', 'dev.db');
     const dbExists = await fs
       .access(dbPath)
       .then(() => true)
       .catch(() => false);
 
     if (dbExists) {
-      await fs.copyFile(dbPath, path.join(tempDir, "database.db"));
+      await fs.copyFile(dbPath, path.join(tempDir, 'database.db'));
     }
 
     // 4. バックアップ情報を作成
     const backupInfo = {
-      version: "1.0.0",
+      version: '1.0.0',
       createdAt: new Date().toISOString(),
       customerCount: customers.length,
       serviceRecordCount: serviceRecords.length,
@@ -78,9 +77,9 @@ export async function createBackup(outputPath: string): Promise<void> {
     };
 
     await fs.writeFile(
-      path.join(tempDir, "backup-info.json"),
+      path.join(tempDir, 'backup-info.json'),
       JSON.stringify(backupInfo, null, 2),
-      "utf-8",
+      'utf-8'
     );
 
     // 5. ZIPファイルに圧縮
@@ -89,13 +88,13 @@ export async function createBackup(outputPath: string): Promise<void> {
     // 6. 一時ディレクトリを削除
     await fs.rm(tempDir, { recursive: true, force: true });
   } catch (error) {
-    console.error("❌ バックアップ作成エラー:", error);
+    console.error('❌ バックアップ作成エラー:', error);
 
     // エラー時は一時ディレクトリをクリーンアップ
     try {
       await fs.rm(tempDir, { recursive: true, force: true });
     } catch (cleanupError) {
-      console.error("❌ クリーンアップエラー:", cleanupError);
+      console.error('❌ クリーンアップエラー:', cleanupError);
     }
     throw error;
   }
@@ -111,20 +110,20 @@ export async function createBackup(outputPath: string): Promise<void> {
  */
 async function createZipFile(
   sourceDir: string,
-  outputPath: string,
+  outputPath: string
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    const output = require("fs").createWriteStream(outputPath);
-    const archive = archiver("zip", {
+    const output = require('fs').createWriteStream(outputPath);
+    const archive = archiver('zip', {
       zlib: { level: 9 }, // 最高圧縮
     });
 
-    output.on("close", () => {
+    output.on('close', () => {
       resolve();
     });
 
-    archive.on("error", (err) => {
-      console.error("❌ ZIP作成エラー:", err);
+    archive.on('error', (err) => {
+      console.error('❌ ZIP作成エラー:', err);
       reject(err);
     });
 

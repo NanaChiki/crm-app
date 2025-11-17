@@ -209,10 +209,14 @@ export const CustomerDetailPage: React.FC = () => {
    *
    * CustomerDetailPageで1つのインスタンスを管理し、
    * 両コンポーネントにpropsとして渡すことでデータを同期。
+   *
+   * 【重要】currentCustomerが確定してからcustomerIdを設定
+   * currentCustomerがnullの場合はcustomerIdをundefinedにしない
+   * （useServiceRecordsが全顧客のデータを取得してしまうのを防ぐ）
    */
   const serviceRecordsHook = useServiceRecords({
-    customerId: currentCustomer?.customerId,
-    autoLoad: true,
+    customerId: currentCustomer?.customerId ?? undefined,
+    autoLoad: currentCustomer !== null, // 顧客が確定してから読み込み
   });
 
   /**

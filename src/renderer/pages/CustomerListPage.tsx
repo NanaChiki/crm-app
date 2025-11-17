@@ -521,7 +521,11 @@ export const CustomerListPage: React.FC = () => {
       {/* ページヘッダー */}
       <PageHeader
         title="顧客一覧"
-        subtitle={`${paginationData.totalItems}件の顧客が登録されています`}
+        subtitle={`${
+          searchTerm || selectedYear !== null
+            ? paginationData.totalItems
+            : customers.length
+        }件の顧客が登録されています`}
         breadcrumbs={[
           { label: '顧客管理', path: '/customers', icon: <PeopleIcon /> },
           { label: '一覧', icon: <ListIcon /> },

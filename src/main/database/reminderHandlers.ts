@@ -38,7 +38,6 @@ async function getPrisma(): Promise<PrismaClient> {
         },
       },
     });
-    console.log('✅ Prisma Client初期化完了');
   }
   return prismaInstance;
 }
@@ -445,6 +444,5 @@ export async function disconnectPrisma(): Promise<void> {
   if (prismaInstance) {
     await prismaInstance.$disconnect();
     prismaInstance = null;
-    console.log('✅ Prismaクライアント切断完了');
   }
 }

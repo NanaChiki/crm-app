@@ -323,40 +323,12 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
   // ================================
 
   /**
-   * サービス種別ごとの最新履歴取得（メンテナンス予測と同じロジック）
-   * 同じサービスタイプの場合は最新のもののみを保持
-   */
-  const latestServicesByType = useMemo(() => {
-    const serviceMap = new Map<string, ServiceRecordWithCustomer>();
-
-    serviceRecords.forEach((record) => {
-      const serviceType = record.serviceType || 'その他';
-      const existingRecord = serviceMap.get(serviceType);
-
-      const recordDate =
-        typeof record.serviceDate === 'string'
-          ? new Date(record.serviceDate)
-          : record.serviceDate;
-      const existingDate = existingRecord
-        ? typeof existingRecord.serviceDate === 'string'
-          ? new Date(existingRecord.serviceDate)
-          : existingRecord.serviceDate
-        : null;
-
-      // 同じサービスタイプの場合は最新のもののみを保持
-      if (!existingRecord || (existingDate && recordDate > existingDate)) {
-        serviceMap.set(serviceType, record);
-      }
-    });
-
-    return Array.from(serviceMap.values());
-  }, [serviceRecords]);
-
-  /**
    * フィルタリング済みサービス履歴
+   * 【修正】全てのサービス履歴を表示（latestServicesByTypeは削除）
+   * メンテナンス現場表と一致させるため、同じサービス種別でも全ての履歴を表示
    */
   const filteredRecords = useMemo(() => {
-    let filtered = [...latestServicesByType];
+    let filtered = [...serviceRecords];
 
     // 年度別フィルタ
     if (filterState.selectedYear !== 'all') {
@@ -390,7 +362,7 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
     }
 
     return filtered;
-  }, [latestServicesByType, filterState]);
+  }, [serviceRecords, filterState]);
 
   /**
    * フィルタリング済み履歴の年度別グループ化

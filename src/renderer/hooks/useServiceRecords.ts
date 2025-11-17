@@ -27,7 +27,7 @@
  * @future Phase2でリマインダー機能の基盤として使用
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type {
   CreateServiceRecordInput,
@@ -478,6 +478,9 @@ export const useServiceRecords = (
 
   /** 初期化完了フラグ */
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
+
+  /** customerIdの前回の値を保持（変更検出用） */
+  const prevCustomerIdRef = useRef<number | undefined>(customerId);
 
   // =============================
   // 🔄 データ取得・初期化
@@ -1127,19 +1130,36 @@ export const useServiceRecords = (
   // =============================
 
   /**
-   * 初期データ読み込み（初回のみ）
+   * 初期データ読み込み・customerId変更時の再読み込み
    *
-   * 【修正】初回読み込みのみを行う。customerIdが変わっても
-   * loadServiceRecordsは呼ばない。createServiceRecord等のCRUD操作が
-   * 直接stateを更新するため、不要な再読み込みを避ける。
+   * 【修正】customerIdが変更された時も再読み込みする
+   * customerIdがundefinedから数値に変わった場合や、
+   * 別の顧客の詳細ページに移動した場合に正しいデータを取得する
    *
-   * 【修正2】isInitializedを依存配列に追加して、初回のみ実行を保証
+   * 【重要】
+   * - DashboardではcustomerIdがundefinedでも読み込む（全顧客のデータを取得）
+   * - CustomerDetailPageではcustomerIdが確定してから読み込む（autoLoadがfalseになる）
    */
   useEffect(() => {
-    if (autoLoad && !isInitialized) {
+    if (!autoLoad) {
+      return; // autoLoadがfalseの場合は読み込まない
+    }
+
+    // customerIdが変更された場合、または初回読み込みの場合
+    const customerIdChanged = prevCustomerIdRef.current !== customerId;
+    const isFirstLoad = !isInitialized;
+
+    if (customerIdChanged || isFirstLoad) {
+      prevCustomerIdRef.current = customerId;
+
+      // customerIdが変更された場合は初期化フラグをリセット
+      if (customerIdChanged && isInitialized) {
+        setIsInitialized(false);
+      }
+
       loadServiceRecords();
     }
-  }, [autoLoad, isInitialized]); // loadServiceRecordsは除外して無限ループ防止
+  }, [autoLoad, customerId, isInitialized, loadServiceRecords]); // loadServiceRecordsを依存配列に追加（最新の関数参照を使用）
 
   /**
    * データ変更リスナーの登録

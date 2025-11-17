@@ -23,6 +23,8 @@ import {
   Add as AddIcon,
   Assessment as AssessmentIcon,
   Build as BuildIcon,
+  ExpandLess as ExpandLessIcon,
+  ExpandMore as ExpandMoreIcon,
   History as HistoryIcon,
   Notifications as NotificationsIcon,
   People as PeopleIcon,
@@ -48,6 +50,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import type { Customer } from '../../types';
+import {
+  MAINTENANCE_CYCLES,
+  type MaintenanceServiceType,
+} from '../../types/siteList';
 import PageHeader from '../components/layout/PageHeader';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -60,6 +66,24 @@ import { useServiceRecords } from '../hooks/useServiceRecords';
 // 型定義
 // ================================
 type TabValue = 'services' | 'maintenance' | 'reminders';
+
+/**
+ * 部位別のメンテナンスステータス
+ */
+type MaintenancePartType = MaintenanceServiceType; // '屋根' | '外壁' | '雨樋'
+type PartUrgency = 'low' | 'medium' | 'high' | 'overdue';
+
+interface PartStatusSummary {
+  part: MaintenancePartType;
+  yearsElapsed: number;
+  urgency: PartUrgency;
+}
+
+/**
+ * 顧客ごとの部位別メンテナンスサマリー
+ * key: customerId, value: その顧客の各部位のステータス配列
+ */
+type CustomerMaintenanceSummary = Map<number, PartStatusSummary[]>;
 
 // ================================
 // メインコンポーネント
@@ -157,6 +181,15 @@ function Dashboard() {
    * - 例: 田中建設の「外壁塗装」と「屋根修理」がどちらも5年超なら両方表示
    */
   const maintenanceAlerts = useMemo(() => {
+    // 【修正】重複を防ぐため、recordIdでユニークに管理
+    const uniqueRecords = new Map<number, (typeof serviceRecords)[0]>();
+    serviceRecords.forEach((record) => {
+      if (!uniqueRecords.has(record.recordId)) {
+        uniqueRecords.set(record.recordId, record);
+      }
+    });
+    const deduplicatedRecords = Array.from(uniqueRecords.values());
+
     // 顧客ごと＋サービス種別ごとの最終実施日を計算
     // キー: "customerId-serviceType"
     const customerServiceLastDate = new Map<
@@ -168,7 +201,7 @@ function Dashboard() {
       }
     >();
 
-    serviceRecords.forEach((record) => {
+    deduplicatedRecords.forEach((record) => {
       const key = `${record.customerId}-${record.serviceType}`;
       const existing = customerServiceLastDate.get(key);
       const serviceDate =
@@ -229,6 +262,135 @@ function Dashboard() {
   }, [getNotifications]);
 
   /**
+   * 顧客ごとの部位別メンテナンスサマリーを計算
+   *
+   * 【ロジック】
+   * - serviceRecordsから屋根・外壁・雨樋のみを抽出
+   * - 顧客ID＋部位ごとに、経過年数を計算
+   * - MAINTENANCE_CYCLESを使って緊急度を判定
+   * - 同じ顧客・同じ部位については、yearsElapsedが最大のもの1件だけを残す
+   */
+  const maintenanceSummaryByCustomer =
+    useMemo<CustomerMaintenanceSummary>(() => {
+      const summary = new Map<number, PartStatusSummary[]>();
+
+      // 重複を防ぐため、recordIdでユニークに管理
+      const uniqueRecords = new Map<number, (typeof serviceRecords)[0]>();
+      serviceRecords.forEach((record) => {
+        if (!uniqueRecords.has(record.recordId)) {
+          uniqueRecords.set(record.recordId, record);
+        }
+      });
+      const deduplicatedRecords = Array.from(uniqueRecords.values());
+
+      // 顧客×部位ごとの最大経過年数を集計
+      const customerPartMaxElapsed = new Map<
+        string,
+        { customerId: number; part: MaintenancePartType; yearsElapsed: number }
+      >();
+
+      deduplicatedRecords.forEach((record) => {
+        // 部位判定
+        let part: MaintenancePartType | null = null;
+        const serviceType = record.serviceType || '';
+
+        if (serviceType.includes('外壁')) {
+          part = '外壁';
+        } else if (serviceType.includes('雨樋')) {
+          part = '雨樋';
+        } else if (serviceType.includes('屋根')) {
+          part = '屋根';
+        }
+
+        // 対象外の部位はスキップ
+        if (!part) {
+          return;
+        }
+
+        // 経過年数を計算
+        const serviceDate =
+          typeof record.serviceDate === 'string'
+            ? new Date(record.serviceDate)
+            : record.serviceDate;
+        const now = new Date();
+        const yearsElapsed =
+          (now.getTime() - serviceDate.getTime()) /
+          (1000 * 60 * 60 * 24 * 365.25);
+        const roundedYearsElapsed = Math.round(yearsElapsed * 10) / 10;
+
+        // cycle取得
+        const cycle = MAINTENANCE_CYCLES[part];
+
+        // early未満は表示対象外
+        if (roundedYearsElapsed < cycle.early) {
+          return;
+        }
+
+        // 緊急度判定
+        let urgency: PartUrgency;
+        if (roundedYearsElapsed >= cycle.late) {
+          urgency = 'overdue';
+        } else if (roundedYearsElapsed >= cycle.standard) {
+          urgency = 'high';
+        } else if (roundedYearsElapsed >= cycle.early) {
+          urgency = 'medium';
+        } else {
+          urgency = 'low';
+        }
+
+        // 顧客×部位のキー
+        const key = `${record.customerId}-${part}`;
+        const existing = customerPartMaxElapsed.get(key);
+
+        // 同じ顧客・同じ部位については、経過年数が最大のもののみ保持
+        if (!existing || roundedYearsElapsed > existing.yearsElapsed) {
+          customerPartMaxElapsed.set(key, {
+            customerId: record.customerId,
+            part,
+            yearsElapsed: roundedYearsElapsed,
+          });
+        }
+      });
+
+      // Map<customerId, PartStatusSummary[]>に変換
+      customerPartMaxElapsed.forEach(({ customerId, part, yearsElapsed }) => {
+        const cycle = MAINTENANCE_CYCLES[part];
+        let urgency: PartUrgency;
+
+        if (yearsElapsed >= cycle.late) {
+          urgency = 'overdue';
+        } else if (yearsElapsed >= cycle.standard) {
+          urgency = 'high';
+        } else if (yearsElapsed >= cycle.early) {
+          urgency = 'medium';
+        } else {
+          urgency = 'low';
+        }
+
+        const partStatus: PartStatusSummary = {
+          part,
+          yearsElapsed,
+          urgency,
+        };
+
+        const existing = summary.get(customerId) || [];
+        existing.push(partStatus);
+        summary.set(customerId, existing);
+      });
+
+      // 各顧客の部位配列を屋根→外壁→雨樋の順に並び替え
+      summary.forEach((parts, customerId) => {
+        const sortedParts = parts.sort((a, b) => {
+          const order = { 屋根: 0, 外壁: 1, 雨樋: 2 };
+          return order[a.part] - order[b.part];
+        });
+        summary.set(customerId, sortedParts);
+      });
+
+      return summary;
+    }, [serviceRecords]);
+
+  /**
    * 要対応顧客数（緊急度=high）
    */
   const criticalCustomerCount = useMemo(() => {
@@ -251,9 +413,19 @@ function Dashboard() {
 
   /**
    * 最近のサービス履歴（日付降順、同日の場合は作成日時降順）
+   * 【修正】重複を防ぐため、recordIdでユニークに管理
    */
   const recentServices = useMemo(() => {
-    return serviceRecords
+    // 重複を防ぐため、recordIdでユニークに管理
+    const uniqueRecords = new Map<number, (typeof serviceRecords)[0]>();
+    serviceRecords.forEach((record) => {
+      if (!uniqueRecords.has(record.recordId)) {
+        uniqueRecords.set(record.recordId, record);
+      }
+    });
+    const deduplicatedRecords = Array.from(uniqueRecords.values());
+
+    return deduplicatedRecords
       .slice()
       .sort((a, b) => {
         // まずserviceDateで降順ソート
@@ -294,7 +466,31 @@ function Dashboard() {
   // ================================
 
   /**
+   * 選択年度の合計件数計算
+   */
+  const selectedYearServiceCount = useMemo(() => {
+    const yearRecords = serviceRecords.filter((record) => {
+      const dateObj =
+        typeof record.serviceDate === 'string'
+          ? new Date(record.serviceDate)
+          : record.serviceDate;
+      return dateObj.getFullYear() === selectedYear;
+    });
+
+    // 重複を防ぐため、recordIdでユニークに管理
+    const uniqueRecords = new Map<number, (typeof yearRecords)[0]>();
+    yearRecords.forEach((record) => {
+      if (!uniqueRecords.has(record.recordId)) {
+        uniqueRecords.set(record.recordId, record);
+      }
+    });
+
+    return uniqueRecords.size;
+  }, [serviceRecords, selectedYear]);
+
+  /**
    * 年度別・月別・顧客別サービス履歴の計算
+   * 【修正】重複を防ぐため、recordIdでユニークに管理
    */
   const servicesByYearMonth = useMemo(() => {
     const yearRecords = serviceRecords.filter((record) => {
@@ -305,9 +501,18 @@ function Dashboard() {
       return dateObj.getFullYear() === selectedYear;
     });
 
-    // 月別にグループ化
-    const monthGroups: Record<number, typeof yearRecords> = {};
+    // 重複を防ぐため、recordIdでユニークに管理
+    const uniqueRecords = new Map<number, (typeof yearRecords)[0]>();
     yearRecords.forEach((record) => {
+      if (!uniqueRecords.has(record.recordId)) {
+        uniqueRecords.set(record.recordId, record);
+      }
+    });
+    const deduplicatedRecords = Array.from(uniqueRecords.values());
+
+    // 月別にグループ化
+    const monthGroups: Record<number, typeof deduplicatedRecords> = {};
+    deduplicatedRecords.forEach((record) => {
       const dateObj =
         typeof record.serviceDate === 'string'
           ? new Date(record.serviceDate)
@@ -319,20 +524,26 @@ function Dashboard() {
       monthGroups[month].push(record);
     });
 
-    // 各月の顧客別集計
+    // 各月の顧客別集計（重複チェック付き）
     const monthCustomerCounts: Record<number, Map<number, number>> = {};
     Object.keys(monthGroups).forEach((monthStr) => {
       const month = parseInt(monthStr, 10);
       const customerCounts = new Map<number, number>();
+      const processedRecordIds = new Set<number>(); // 重複チェック用
+
       monthGroups[month].forEach((record) => {
-        const count = customerCounts.get(record.customerId) || 0;
-        customerCounts.set(record.customerId, count + 1);
+        // recordIdで重複チェック
+        if (!processedRecordIds.has(record.recordId)) {
+          processedRecordIds.add(record.recordId);
+          const count = customerCounts.get(record.customerId) || 0;
+          customerCounts.set(record.customerId, count + 1);
+        }
       });
       monthCustomerCounts[month] = customerCounts;
     });
 
     return { monthGroups, monthCustomerCounts };
-  }, [serviceRecords, selectedYear]);
+  }, [serviceRecords, selectedYear, customerMap]);
 
   /**
    * 年度選択オプション生成
@@ -465,32 +676,282 @@ function Dashboard() {
     </Box>
   );
 
+  // ================================
+  // ヘルパー関数（メンテナンス推奨タブ用）
+  // ================================
+
+  /**
+   * 緊急度の優先順位を返す（数値が大きいほど緊急）
+   */
+  const getPartUrgencyOrder = (urgency: PartUrgency): number => {
+    switch (urgency) {
+      case 'overdue':
+        return 4;
+      case 'high':
+        return 3;
+      case 'medium':
+        return 2;
+      case 'low':
+        return 1;
+      default:
+        return 0;
+    }
+  };
+
+  /**
+   * 部位配列から全体ステータスを決定
+   * - どれかの部位が「overdue」→ overdue
+   * - どれかの部位が「high」（かつoverdueなし）→ high
+   * - どれかの部位が「medium」のみ → medium
+   * - partsが空 → null
+   */
+  const getOverallUrgencyFromParts = (
+    parts: PartStatusSummary[]
+  ): 'overdue' | 'high' | 'medium' | null => {
+    if (parts.length === 0) {
+      return null;
+    }
+
+    const maxUrgencyOrder = Math.max(
+      ...parts.map((p) => getPartUrgencyOrder(p.urgency))
+    );
+
+    if (maxUrgencyOrder >= 4) {
+      return 'overdue';
+    }
+    if (maxUrgencyOrder >= 3) {
+      return 'high';
+    }
+    if (maxUrgencyOrder >= 2) {
+      return 'medium';
+    }
+    return null;
+  };
+
+  /**
+   * 緊急度からメインChipのラベルとカラーを決定
+   */
+  const mapUrgencyToMainChip = (
+    urgency: 'overdue' | 'high' | 'medium' | null,
+    fallbackUrgency?: 'high' | 'medium'
+  ): { label: string; color: 'error' | 'warning' | 'info' } => {
+    if (urgency === 'overdue') {
+      return { label: '🔴 要対応', color: 'error' };
+    }
+    if (urgency === 'high') {
+      return { label: '🟠 推奨時期', color: 'warning' };
+    }
+    if (urgency === 'medium') {
+      return { label: '🔵 検討時期', color: 'info' };
+    }
+
+    // fallback: 従来の alert.urgency を使用
+    if (fallbackUrgency === 'high') {
+      return { label: '🔴 要対応', color: 'error' };
+    }
+    if (fallbackUrgency === 'medium') {
+      return { label: '🟡 推奨時期', color: 'warning' };
+    }
+
+    // デフォルト
+    return { label: '🔵 検討時期', color: 'info' };
+  };
+
+  /**
+   * 部位の絵文字を返す
+   */
+  const getPartEmoji = (part: MaintenancePartType): string => {
+    switch (part) {
+      case '屋根':
+        return '🏠';
+      case '外壁':
+        return '🎨';
+      case '雨樋':
+        return '💧';
+      default:
+        return '🔧';
+    }
+  };
+
+  /**
+   * 部位ステータスの小さめChipの色を決定
+   */
+  const getPartChipColor = (
+    urgency: PartUrgency
+  ): 'error' | 'warning' | 'info' | 'default' => {
+    switch (urgency) {
+      case 'overdue':
+        return 'error';
+      case 'high':
+        return 'warning';
+      case 'medium':
+        return 'info';
+      default:
+        return 'default';
+    }
+  };
+
+  /**
+   * 部位ステータスの日本語ラベルを返す
+   */
+  const getPartUrgencyLabel = (urgency: PartUrgency): string => {
+    switch (urgency) {
+      case 'overdue':
+        return '要対応';
+      case 'high':
+        return '推奨時期';
+      case 'medium':
+        return '検討時期';
+      default:
+        return '良好';
+    }
+  };
+
+  /**
+   * メンテナンス推奨顧客タブの表示件数管理
+   */
+  const [maintenanceDisplayCount, setMaintenanceDisplayCount] = useState(5);
+
+  /**
+   * メンテナンス推奨の合計件数を計算
+   */
+  const totalMaintenanceAlerts = useMemo(() => {
+    // maintenanceSummaryByCustomer から全顧客を取得
+    const uniqueCustomerIds = new Set<number>();
+
+    // 既存の maintenanceAlerts から顧客IDを追加
+    maintenanceAlerts.forEach((alert) => {
+      uniqueCustomerIds.add(alert.customer.customerId);
+    });
+
+    // notifications から顧客IDを追加
+    notifications.forEach((notification) => {
+      uniqueCustomerIds.add(notification.customer.customerId);
+    });
+
+    // maintenanceSummaryByCustomer から全顧客IDを追加
+    maintenanceSummaryByCustomer.forEach((_, customerId) => {
+      uniqueCustomerIds.add(customerId);
+    });
+
+    return uniqueCustomerIds.size;
+  }, [maintenanceAlerts, notifications, maintenanceSummaryByCustomer]);
+
   /**
    * メンテナンス推奨顧客タブ（お知らせも含む）
    */
   const renderMaintenanceTab = () => {
-    // お知らせもメンテナンス推奨として表示
-    const allAlerts = [
-      ...maintenanceAlerts,
-      ...notifications.map((notification) => ({
-        customer: notification.customer,
-        yearsSince: 0, // お知らせは経過年数なし
-        lastServiceType: notification.title,
-        urgency: 'high' as const,
-        isNotification: true,
-        reminderId: notification.reminderId,
-      })),
-    ];
+    // 全ての推奨顧客を含める
+    // 1. 既存の maintenanceAlerts
+    // 2. notifications
+    // 3. maintenanceSummaryByCustomer に含まれる全顧客
+
+    // 顧客IDごとにアラートをまとめる
+    const customerAlertsMap = new Map<
+      number,
+      {
+        customer: Customer;
+        yearsSince: number;
+        lastServiceType: string;
+        urgency: 'high' | 'medium';
+        isNotification?: boolean;
+        reminderId?: number;
+        mainUrgency?: 'overdue' | 'high' | 'medium' | null;
+      }
+    >();
+
+    // 既存の maintenanceAlerts を追加
+    maintenanceAlerts.forEach((alert) => {
+      if (!customerAlertsMap.has(alert.customer.customerId)) {
+        customerAlertsMap.set(alert.customer.customerId, alert);
+      }
+    });
+
+    // notifications を追加
+    notifications.forEach((notification) => {
+      if (!customerAlertsMap.has(notification.customer.customerId)) {
+        customerAlertsMap.set(notification.customer.customerId, {
+          customer: notification.customer,
+          yearsSince: 0,
+          lastServiceType: notification.title,
+          urgency: 'high' as const,
+          isNotification: true,
+          reminderId: notification.reminderId,
+        });
+      }
+    });
+
+    // maintenanceSummaryByCustomer から全顧客を追加
+    maintenanceSummaryByCustomer.forEach((partSummaries, customerId) => {
+      if (!customerAlertsMap.has(customerId)) {
+        const customer = customers.find((c) => c.customerId === customerId);
+        if (customer) {
+          // 最も緊急度が高い部位を基準にする
+          const maxUrgency = getOverallUrgencyFromParts(partSummaries);
+          customerAlertsMap.set(customerId, {
+            customer,
+            yearsSince: 0,
+            lastServiceType: '',
+            urgency: maxUrgency === 'overdue' ? 'high' : 'medium',
+          });
+        }
+      }
+    });
+
+    // allAlerts に変換し、mainUrgency を追加
+    const allAlerts = Array.from(customerAlertsMap.values()).map((alert) => {
+      const customerSummary = maintenanceSummaryByCustomer.get(
+        alert.customer.customerId
+      );
+      const mainUrgency = customerSummary
+        ? getOverallUrgencyFromParts(customerSummary)
+        : null;
+
+      return {
+        ...alert,
+        mainUrgency,
+      };
+    });
+
+    // 並び順: 要対応（overdue）→ 推奨時期（high）→ 検討時期（medium）
+    const sortedAlerts = allAlerts.sort((a, b) => {
+      const orderA = a.mainUrgency
+        ? getPartUrgencyOrder(a.mainUrgency)
+        : getPartUrgencyOrder(
+            a.urgency === 'high' ? 'overdue' : ('medium' as PartUrgency)
+          );
+      const orderB = b.mainUrgency
+        ? getPartUrgencyOrder(b.mainUrgency)
+        : getPartUrgencyOrder(
+            b.urgency === 'high' ? 'overdue' : ('medium' as PartUrgency)
+          );
+
+      return orderB - orderA; // 降順（緊急度が高い順）
+    });
+
+    // 表示件数分のアラート
+    const displayedAlerts = sortedAlerts.slice(0, maintenanceDisplayCount);
 
     return (
       <Box sx={{ p: { xs: 2, md: 3 } }}>
-        {allAlerts.length > 0 ? (
+        {sortedAlerts.length > 0 ? (
           <>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {allAlerts.map((alert, index) => {
+              {displayedAlerts.map((alert) => {
                 const alertKey = (alert as any).isNotification
                   ? `notification-${(alert as any).reminderId}`
                   : `${alert.customer.customerId}-${alert.lastServiceType}`;
+
+                // 顧客の部位別サマリーを取得
+                const customerSummary = maintenanceSummaryByCustomer.get(
+                  alert.customer.customerId
+                );
+
+                // メインChipのラベルとカラーを決定
+                const chipInfo = mapUrgencyToMainChip(
+                  alert.mainUrgency,
+                  alert.urgency
+                );
 
                 return (
                   <Box
@@ -502,14 +963,18 @@ function Dashboard() {
                       p: 2,
                       border: 2,
                       borderColor:
-                        alert.urgency === 'high'
+                        chipInfo.color === 'error'
                           ? 'error.main'
-                          : 'warning.main',
+                          : chipInfo.color === 'warning'
+                            ? 'warning.main'
+                            : 'info.main',
                       borderRadius: 1,
                       bgcolor:
-                        alert.urgency === 'high'
+                        chipInfo.color === 'error'
                           ? 'error.lighter'
-                          : 'warning.lighter',
+                          : chipInfo.color === 'warning'
+                            ? 'warning.lighter'
+                            : 'info.lighter',
                       '&:hover': {
                         cursor: 'pointer',
                         opacity: 0.9,
@@ -525,6 +990,7 @@ function Dashboard() {
                         );
                       }
                     }}>
+                    {/* 上段: 顧客名 + 全体ステータスChip */}
                     <Box
                       sx={{
                         display: 'flex',
@@ -533,10 +999,8 @@ function Dashboard() {
                         mb: 1,
                       }}>
                       <Chip
-                        label={
-                          alert.urgency === 'high' ? '🔴 要対応' : '🟡 推奨時期'
-                        }
-                        color={alert.urgency === 'high' ? 'error' : 'warning'}
+                        label={chipInfo.label}
+                        color={chipInfo.color}
                         sx={{
                           fontWeight: 'bold',
                           fontSize: FONT_SIZES.label.desktop,
@@ -552,31 +1016,94 @@ function Dashboard() {
                       }}>
                       {alert.customer.companyName || '不明'}
                     </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: FONT_SIZES.body.desktop }}>
-                      {(alert as any).isNotification
-                        ? alert.lastServiceType || 'お知らせ'
-                        : `${alert.lastServiceType || 'サービス'}から${alert.yearsSince}年経過`}
-                    </Typography>
+
+                    {/* 下段: 部位別の情報 */}
+                    {customerSummary && customerSummary.length > 0 ? (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: SPACING.gap.small,
+                        }}>
+                        {customerSummary.map((partStatus) => (
+                          <Box
+                            key={`${alert.customer.customerId}-${partStatus.part}`}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                            }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontSize: FONT_SIZES.body.desktop,
+                                flex: 1,
+                              }}>
+                              {getPartEmoji(partStatus.part)} {partStatus.part}:{' '}
+                              {partStatus.yearsElapsed}年経過
+                            </Typography>
+                            <Chip
+                              label={getPartUrgencyLabel(partStatus.urgency)}
+                              color={getPartChipColor(partStatus.urgency)}
+                              size="small"
+                              sx={{
+                                fontSize: FONT_SIZES.label.desktop,
+                                height: 24,
+                              }}
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    ) : (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: FONT_SIZES.body.desktop }}>
+                        {(alert as any).isNotification
+                          ? alert.lastServiceType || 'お知らせ'
+                          : `${alert.lastServiceType || 'サービス'}から${alert.yearsSince}年経過`}
+                      </Typography>
+                    )}
                   </Box>
                 );
               })}
             </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button
-                variant="outlined"
-                onClick={() => navigate('/customers')}
-                sx={{
-                  mt: 3,
-                  fontSize: FONT_SIZES.body.desktop,
-                  minHeight: BUTTON_SIZE.minHeight.desktop,
-                }}>
-                全ての顧客を見る
-              </Button>
-            </Box>
+            {/* さらに表示するボタン */}
+            {sortedAlerts.length > 5 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={
+                    maintenanceDisplayCount >= sortedAlerts.length ? (
+                      <ExpandLessIcon />
+                    ) : (
+                      <ExpandMoreIcon />
+                    )
+                  }
+                  onClick={() => {
+                    if (maintenanceDisplayCount >= sortedAlerts.length) {
+                      // 折りたたむ
+                      setMaintenanceDisplayCount(5);
+                      // スクロールを上に戻す
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                      // 全て表示
+                      setMaintenanceDisplayCount(sortedAlerts.length);
+                    }
+                  }}
+                  sx={{
+                    fontSize: FONT_SIZES.body.desktop,
+                    minHeight: BUTTON_SIZE.minHeight.desktop,
+                    px: 4,
+                  }}>
+                  {maintenanceDisplayCount >= sortedAlerts.length
+                    ? '閉じる'
+                    : `さらに表示する（残り${sortedAlerts.length - maintenanceDisplayCount}件）`}
+                </Button>
+              </Box>
+            )}
           </>
         ) : (
           <Typography
@@ -959,7 +1486,7 @@ function Dashboard() {
                           fontSize: FONT_SIZES.body.desktop,
                           fontWeight: 'bold',
                         }}>
-                        最近のサービス ({recentServices.length})
+                        最近のサービス ({selectedYearServiceCount})
                       </Typography>
                     </Box>
                   }
@@ -979,8 +1506,7 @@ function Dashboard() {
                           fontSize: FONT_SIZES.body.desktop,
                           fontWeight: 'bold',
                         }}>
-                        メンテナンス推奨 (
-                        {maintenanceAlerts.length + notifications.length})
+                        メンテナンス推奨 ({totalMaintenanceAlerts})
                       </Typography>
                     </Box>
                   }

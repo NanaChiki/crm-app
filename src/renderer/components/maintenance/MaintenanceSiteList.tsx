@@ -266,21 +266,13 @@ export const MaintenanceSiteList: React.FC<MaintenanceSiteListProps> = ({
         filePath,
       });
 
-      // デバッグログ: レスポンス全体を確認
-      console.log(
-        '📸 写真アップロードレスポンス:',
-        JSON.stringify(uploadResult, null, 2)
-      );
-
       if (!uploadResult.success) {
         const errorMessage =
           uploadResult.error || '写真のアップロードに失敗しました';
-        console.error('❌ 写真アップロードエラー:', errorMessage);
         throw new Error(errorMessage);
       }
 
       // レスポンス構造を確認（dataオブジェクト内のphotoPath、または直接photoPath）
-      // 実際のレスポンスは { success: true, photoPath: "photos/..." } 形式
       const photoPath =
         (uploadResult as any).data?.photoPath ||
         (uploadResult as any).photoPath;
@@ -597,7 +589,6 @@ export const MaintenanceSiteList: React.FC<MaintenanceSiteListProps> = ({
                       startIcon={<EmailIcon />}
                       onClick={() => {
                         // TODO: メール送信機能実装
-                        console.log('メール送信:', site);
                       }}
                       sx={{
                         minHeight: BUTTON_SIZE.minHeight.desktop,

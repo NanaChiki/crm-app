@@ -155,9 +155,6 @@ function createWindow(): void {
     // 本番環境: app.asar内のdist/index.htmlをロード
     // __dirname = app.asar/dist/main なので、../index.html が正しい
     const indexPath = path.join(__dirname, '../index.html');
-    console.log('Production mode - Loading file:', indexPath);
-    console.log('__dirname:', __dirname);
-    console.log('File exists:', fsSync.existsSync(indexPath));
 
     mainWindow.loadFile(indexPath).catch((err: any) => {
       console.error('Failed to load file:', err);
@@ -200,7 +197,6 @@ function registerCustomProtocol(): void {
         return;
       }
 
-      console.log('📸 カスタムプロトコルで画像を読み込み:', filePath);
       callback({ path: filePath });
     } catch (error: any) {
       console.error('❌ カスタムプロトコルエラー:', error);
@@ -666,12 +662,6 @@ ipcMain.handle(
         photoPath: relativePath,
         message: '写真を保存しました',
       };
-
-      // デバッグログ: IPCレスポンスを確認
-      console.log(
-        '📸 IPC: 写真アップロード成功レスポンス:',
-        JSON.stringify(response, null, 2)
-      );
 
       return response;
     } catch (error: any) {
