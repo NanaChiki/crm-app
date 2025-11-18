@@ -31,6 +31,7 @@
 
 import {
   Add as AddIcon,
+  Build as BuildIcon,
   ExpandMore as ExpandMoreIcon,
   List as ListIcon,
   People as PeopleIcon,
@@ -63,6 +64,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { useApp } from '../contexts/AppContext';
 import { useCustomer } from '../contexts/CustomerContext';
+import { useServiceRecords } from '../hooks/useServiceRecords';
+import { detectMaintenanceNeeded } from '../utils/maintenanceDetection';
 
 // // Components
 import { CustomerCard } from '../components/customer/CustomerCard';
@@ -116,6 +119,7 @@ export const CustomerListPage: React.FC = () => {
   const [yearPageNumber, setYearPageNumber] = useState<Map<number, number>>(
     new Map()
   );
+  const [showMaintenanceOnly, setShowMaintenanceOnly] = useState(false);
 
   // ================================
   // Context連携
@@ -134,6 +138,13 @@ export const CustomerListPage: React.FC = () => {
 
   // グローバル通知
   const { showSnackbar } = useApp();
+
+  // 全サービス履歴取得（メンテナンス検出用）
+  const { serviceRecords: allServiceRecords, loading: serviceRecordsLoading } =
+    useServiceRecords({
+      customerId: undefined, // 全顧客のサービス履歴を取得
+      autoLoad: true,
+    });
 
   // ================================
   // データ処理ロジック
@@ -175,6 +186,45 @@ export const CustomerListPage: React.FC = () => {
   }, [customers, filteredCustomers, searchTerm, selectedSort]);
 
   /**
+   * メンテナンス時期を迎えた顧客IDのセット
+   */
+  const maintenanceCustomerIds = useMemo(() => {
+    if (!showMaintenanceOnly) {
+      return new Set<number>();
+    }
+
+    // サービス履歴が読み込まれていない場合は空セットを返す
+    if (serviceRecordsLoading || allServiceRecords.length === 0) {
+      return new Set<number>();
+    }
+
+    // メンテナンス時期を迎えた現場を検出
+    const detections = detectMaintenanceNeeded(allServiceRecords);
+
+    // 顧客IDのセットを作成
+    const customerIdSet = new Set<number>();
+    detections.forEach((detection) => {
+      customerIdSet.add(detection.customerId);
+    });
+
+    return customerIdSet;
+  }, [showMaintenanceOnly, allServiceRecords, serviceRecordsLoading]);
+
+  /**
+   * メンテナンス推奨顧客でフィルタリング
+   */
+  const filteredDisplayCustomers = useMemo(() => {
+    if (!showMaintenanceOnly) {
+      return displayCustomers;
+    }
+
+    // メンテナンス時期を迎えた顧客のみをフィルタリング
+    return displayCustomers.filter((customer) =>
+      maintenanceCustomerIds.has(customer.customerId)
+    );
+  }, [displayCustomers, showMaintenanceOnly, maintenanceCustomerIds]);
+
+  /**
    * 年度別顧客グループ化
    * 平成25年（2013年）から現在年まで
    */
@@ -183,8 +233,8 @@ export const CustomerListPage: React.FC = () => {
     const currentYear = new Date().getFullYear();
     const startYear = 2013; // 平成25年
 
-    // 年度別にグループ化
-    displayCustomers.forEach((customer) => {
+    // 年度別にグループ化（フィルタリング済み顧客を使用）
+    filteredDisplayCustomers.forEach((customer) => {
       const createdAt =
         typeof customer.createdAt === 'string'
           ? new Date(customer.createdAt)
@@ -205,7 +255,7 @@ export const CustomerListPage: React.FC = () => {
       .sort((a, b) => b - a);
 
     return { groups, sortedYears };
-  }, [displayCustomers]);
+  }, [filteredDisplayCustomers]);
 
   /**
    * 年度選択オプション生成（平成25年から現在年まで）
@@ -278,6 +328,46 @@ export const CustomerListPage: React.FC = () => {
     setExpandedYears(new Set());
     showSnackbar('検索をクリアしました', 'info');
   }, [clearSearch, showSnackbar]);
+
+  /**
+   * メンテナンス推奨モード切り替え
+   */
+  const handleToggleMaintenanceMode = useCallback(() => {
+    const newMode = !showMaintenanceOnly;
+    setShowMaintenanceOnly(newMode);
+
+    if (newMode) {
+      // メンテナンス推奨モード有効化時、全ての年度を展開
+      // 注意: maintenanceCustomerIdsは次のレンダリングで更新されるため、
+      // ここでは直接計算して件数を取得
+      if (!serviceRecordsLoading && allServiceRecords.length > 0) {
+        const detections = detectMaintenanceNeeded(allServiceRecords);
+        const customerIdSet = new Set<number>();
+        detections.forEach((detection) => {
+          customerIdSet.add(detection.customerId);
+        });
+        const count = customerIdSet.size;
+        setExpandedYears(new Set(customersByYear.sortedYears));
+        showSnackbar(`メンテナンス推奨顧客${count}件を表示しています`, 'info');
+      } else {
+        setExpandedYears(new Set(customersByYear.sortedYears));
+        showSnackbar('メンテナンス推奨顧客を表示しています', 'info');
+      }
+    } else {
+      // 通常モードに戻す
+      setExpandedYears(new Set());
+      showSnackbar('通常表示に戻しました', 'info');
+    }
+
+    // 年度別ページ番号をリセット
+    setYearPageNumber(new Map());
+  }, [
+    showMaintenanceOnly,
+    customersByYear.sortedYears,
+    showSnackbar,
+    serviceRecordsLoading,
+    allServiceRecords,
+  ]);
 
   /**
    * 顧客カードクリック - 詳細画面遷移
@@ -594,9 +684,11 @@ export const CustomerListPage: React.FC = () => {
       <PageHeader
         title="顧客一覧"
         subtitle={`${
-          searchTerm || selectedYear !== null
-            ? filteredCustomers.length
-            : customers.length
+          showMaintenanceOnly
+            ? `${maintenanceCustomerIds.size}件のメンテナンス推奨顧客`
+            : searchTerm || selectedYear !== null
+              ? filteredCustomers.length
+              : customers.length
         }件の顧客が登録されています`}
         breadcrumbs={[
           { label: '顧客管理', path: '/customers', icon: <PeopleIcon /> },
@@ -616,10 +708,18 @@ export const CustomerListPage: React.FC = () => {
         searchKeyword={searchTerm}
       />
 
-      {/* 年度選択UI */}
+      {/* 年度選択UI + メンテナンス推奨ボタン */}
       {!searchTerm && (
-        <Box sx={{ mb: 3, mt: 2 }}>
-          <FormControl fullWidth sx={{ maxWidth: 400 }}>
+        <Box
+          sx={{
+            mb: 3,
+            mt: 2,
+            display: 'flex',
+            gap: 2,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}>
+          <FormControl sx={{ maxWidth: 400, flex: '0 0 auto' }}>
             <Select
               value={selectedYear ?? ''}
               onChange={(e) => {
@@ -644,6 +744,23 @@ export const CustomerListPage: React.FC = () => {
               ))}
             </Select>
           </FormControl>
+
+          {/* メンテナンス推奨顧客を表示ボタン */}
+          <Button
+            variant={showMaintenanceOnly ? 'contained' : 'outlined'}
+            color={showMaintenanceOnly ? 'primary' : 'primary'}
+            onClick={handleToggleMaintenanceMode}
+            startIcon={<BuildIcon />}
+            sx={{
+              fontSize: '16px',
+              minHeight: 48,
+              px: 3,
+              fontWeight: showMaintenanceOnly ? 'bold' : 'normal',
+            }}>
+            {showMaintenanceOnly
+              ? `メンテナンス推奨顧客を表示中（${maintenanceCustomerIds.size}件）`
+              : 'メンテナンス推奨顧客を表示'}
+          </Button>
         </Box>
       )}
 
