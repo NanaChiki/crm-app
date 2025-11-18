@@ -22,15 +22,18 @@
 
 import {
   Add as AddIcon,
+  Build as BuildIcon,
   Cancel as CancelIcon,
   CheckCircle as CheckCircleIcon,
   Delete as DeleteIcon,
   Drafts as DraftsIcon,
   Edit as EditIcon,
   ExpandMore as ExpandMoreIcon,
+  Info as InfoIcon,
   Notifications as NotificationsIcon,
   Schedule as ScheduleIcon,
   Send as SendIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import {
   Alert,
@@ -45,7 +48,13 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { PageHeader } from '../components/layout/PageHeader';
@@ -54,7 +63,10 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
 import { useApp } from '../contexts/AppContext';
+import { useCustomer } from '../contexts/CustomerContext';
 import { useReminder } from '../contexts/ReminderContext';
+import { useServiceRecords } from '../hooks/useServiceRecords';
+import { detectMaintenanceNeeded } from '../utils/maintenanceDetection';
 
 // Design System
 import {
@@ -133,7 +145,19 @@ export const ReminderListPage: React.FC = () => {
     cancelReminder,
     rescheduleReminder,
     sendReminderEmail,
+    getNotifications,
+    createReminder,
+    createNotification,
   } = useReminder();
+
+  // 全サービス履歴取得（お知らせの緊急度計算用）
+  const { serviceRecords: allServiceRecords, loading: serviceRecordsLoading } =
+    useServiceRecords({
+      autoLoad: true,
+    });
+
+  // 顧客データ取得（通知作成時に顧客名を取得するため）
+  const { customers } = useCustomer();
 
   // ================================
   // State
@@ -148,6 +172,18 @@ export const ReminderListPage: React.FC = () => {
   const [expandedMessages, setExpandedMessages] = useState<Set<number>>(
     new Set()
   );
+  // リマインダーフォームのデフォルトデータを管理するためのstate
+  const [defaultFormData, setDefaultFormData] = useState<{
+    customerId?: number;
+    title?: string;
+    message?: string;
+    reminderDate?: Date;
+  }>({});
+
+  // 既存サービス履歴の通知作成処理が実行済みかどうかを追跡
+  const hasCheckedExistingRecordsRef = useRef<boolean>(false);
+  // 処理済みのserviceRecordIdを追跡（重複防止）
+  const processedServiceRecordIdsRef = useRef<Set<number>>(new Set());
 
   // ================================
   // Effects
@@ -157,11 +193,139 @@ export const ReminderListPage: React.FC = () => {
     fetchReminders();
   }, [fetchReminders]);
 
+  /**
+   * 既存のサービス履歴をチェックして通知を作成
+   * アプリ起動時やサービス履歴が読み込まれた時に1回だけ実行
+   */
+  useEffect(() => {
+    // サービス履歴が読み込まれていない場合はスキップ
+    if (serviceRecordsLoading || allServiceRecords.length === 0) {
+      return;
+    }
+
+    // 既に処理済みの場合はスキップ（無限ループ防止）
+    if (hasCheckedExistingRecordsRef.current) {
+      return;
+    }
+
+    // 既存の通知を取得（getNotifications()の代わりに直接remindersをフィルタリング）
+    // これにより、getNotificationsが依存配列に含まれなくなり、無限ループを防止
+    const existingNotifications = reminders.filter(
+      (r) => r.status === 'notification'
+    );
+    const existingServiceRecordIds = new Set(
+      existingNotifications
+        .map((n) => n.serviceRecordId)
+        .filter((id): id is number => id !== null && id !== undefined)
+    );
+
+    // メンテナンス時期を迎えたサービス履歴を検出
+    const detections = detectMaintenanceNeeded(allServiceRecords);
+
+    // 既に通知が存在しないものだけ通知を作成
+    const createNotificationsForExistingRecords = async () => {
+      // 処理開始フラグを立てる（無限ループ防止）
+      hasCheckedExistingRecordsRef.current = true;
+
+      for (const detection of detections) {
+        // 既に通知が存在する場合はスキップ
+        if (existingServiceRecordIds.has(detection.recordId)) {
+          processedServiceRecordIdsRef.current.add(detection.recordId);
+          continue;
+        }
+
+        // 既に処理済みの場合はスキップ
+        if (processedServiceRecordIdsRef.current.has(detection.recordId)) {
+          continue;
+        }
+
+        // サービス履歴を取得
+        const serviceRecord = allServiceRecords.find(
+          (r) => r.recordId === detection.recordId
+        );
+        if (!serviceRecord) {
+          continue;
+        }
+
+        // 顧客情報を取得
+        const customer = customers.find(
+          (c) => c.customerId === detection.customerId
+        );
+        if (!customer) {
+          continue;
+        }
+
+        // サービス種別ラベルを生成
+        const serviceTypeLabel =
+          detection.serviceType === '屋根'
+            ? '屋根工事'
+            : detection.serviceType === '外壁'
+              ? '外壁工事'
+              : '雨樋工事';
+
+        // 現場名を生成（サービス説明があれば使用、なければサービス種別）
+        const siteName = serviceRecord.serviceDescription || serviceTypeLabel;
+
+        // タイトル: 「{顧客名}・{現場名}のメンテナンス時期です」
+        const title = `${customer.companyName}・${siteName}のメンテナンス時期です`;
+
+        // メッセージ: 「{サービス種別}の施工から{経過年数}年が経過しました。そろそろメンテナンスのご案内はいかがでしょうか？」
+        const message = `${serviceTypeLabel}の施工から **${detection.yearsElapsed}年** が経過しました。\nそろそろメンテナンスのご案内はいかがでしょうか？`;
+
+        try {
+          await createNotification({
+            customerId: detection.customerId,
+            serviceRecordId: detection.recordId,
+            title,
+            message,
+            reminderDate: new Date(),
+            createdBy: 'system',
+            notes: `自動生成: ${detection.serviceType}工事が${detection.yearsElapsed}年経過`,
+          });
+
+          // 処理済みとしてマーク
+          processedServiceRecordIdsRef.current.add(detection.recordId);
+        } catch (error) {
+          // エラーはログのみ（ユーザーには通知しない）
+          console.error('既存サービス履歴の通知作成エラー:', error);
+        }
+      }
+    };
+
+    createNotificationsForExistingRecords();
+  }, [
+    serviceRecordsLoading,
+    allServiceRecords,
+    customers,
+    reminders, // getNotificationsの代わりにremindersを直接使用
+    createNotification,
+  ]);
+
   // ================================
   // フィルタリング
   // ================================
 
+  /**
+   * お知らせ一覧取得（createdAt降順）
+   */
+  const notifications = useMemo(() => {
+    if (selectedTab !== 'notification') {
+      return [];
+    }
+    return getNotifications().sort((a, b) => {
+      // createdAt降順（新しい順）
+      const dateA =
+        typeof a.createdAt === 'string' ? new Date(a.createdAt) : a.createdAt;
+      const dateB =
+        typeof b.createdAt === 'string' ? new Date(b.createdAt) : b.createdAt;
+      return dateB.getTime() - dateA.getTime();
+    });
+  }, [selectedTab, getNotifications]);
+
   const filteredReminders = useMemo(() => {
+    if (selectedTab === 'notification') {
+      return []; // お知らせは別途notificationsで処理
+    }
     return reminders
       .filter((reminder) => reminder.status === selectedTab)
       .sort((a, b) => {
@@ -197,6 +361,7 @@ export const ReminderListPage: React.FC = () => {
   const handleFormClose = useCallback(() => {
     setIsFormOpen(false);
     setEditingReminder(null);
+    setDefaultFormData({}); // デフォルトデータもクリア
   }, []);
 
   const handleDeleteClick = useCallback((reminderId: number) => {
@@ -303,6 +468,213 @@ export const ReminderListPage: React.FC = () => {
       return newSet;
     });
   }, []);
+
+  /**
+   * お知らせから詳細を見る（顧客詳細ページのメンテナンス現場表タブへ）
+   */
+  const handleViewDetails = useCallback(
+    (customerId: number) => {
+      navigate(`/customers/${customerId}#sites`);
+    },
+    [navigate]
+  );
+
+  /**
+   * お知らせからリマインダーを作成
+   * お知らせ（notification）からリマインダーを作成する場合は、新規作成として扱う
+   */
+  const handleCreateReminderFromNotification = useCallback(
+    (notification: ReminderWithCustomer) => {
+      // お知らせからリマインダーを作成する場合は、reminderをnullにして新規作成として扱う
+      // ReminderFormのdefault propsを使用して初期値を設定
+      setEditingReminder(null);
+      setDefaultFormData({
+        customerId: notification.customerId,
+        title: notification.title,
+        message: notification.message.replace(/\*\*/g, ''), // マークダウンを削除
+        reminderDate: new Date(), // 今日をデフォルトに
+      });
+      setIsFormOpen(true);
+    },
+    []
+  );
+
+  // ================================
+  // レンダリング: お知らせカード
+  // ================================
+
+  /**
+   * お知らせカードのレンダリング
+   * 要件に沿ったシンプルなカード形式
+   */
+  const renderNotificationCard = useCallback(
+    (notification: ReminderWithCustomer) => {
+      // サービス履歴を取得（緊急度計算用）
+      const serviceRecord = notification.serviceRecordId
+        ? allServiceRecords.find(
+            (r) => r.recordId === notification.serviceRecordId
+          )
+        : null;
+
+      // 緊急度を計算
+      let urgencyLevel: 'overdue' | 'high' | 'medium' | 'low' = 'low';
+      let urgencyLabel = '検討時期';
+      let urgencyColor: 'error' | 'warning' | 'info' | 'default' = 'info';
+      let serviceDate: Date | null = null;
+      let yearsElapsed: number | null = null;
+
+      if (serviceRecord) {
+        const detections = detectMaintenanceNeeded([serviceRecord]);
+        if (detections.length > 0) {
+          const detection = detections[0];
+          urgencyLevel = detection.urgencyLevel;
+          serviceDate =
+            typeof serviceRecord.serviceDate === 'string'
+              ? new Date(serviceRecord.serviceDate)
+              : serviceRecord.serviceDate;
+          yearsElapsed = detection.yearsElapsed;
+
+          // 緊急度に応じたラベルと色
+          if (urgencyLevel === 'overdue') {
+            urgencyLabel = '要対応';
+            urgencyColor = 'error';
+          } else if (urgencyLevel === 'high') {
+            urgencyLabel = '推奨時期';
+            urgencyColor = 'warning';
+          } else {
+            urgencyLabel = '検討時期';
+            urgencyColor = 'info';
+          }
+        }
+      }
+
+      // 作成日をフォーマット
+      const createdAt =
+        typeof notification.createdAt === 'string'
+          ? new Date(notification.createdAt)
+          : notification.createdAt;
+      const createdAtFormatted = createdAt.toLocaleDateString('ja-JP', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      });
+
+      // メッセージから**マークダウンを削除して表示
+      const messageText = notification.message.replace(/\*\*/g, '');
+
+      return (
+        <Card key={notification.reminderId}>
+          <Box sx={{ p: SPACING.card.desktop }}>
+            {/* ヘッダー行: 緊急度Chip + 作成日 */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: SPACING.gap.medium,
+              }}>
+              <Chip
+                label={urgencyLabel}
+                color={urgencyColor}
+                size="small"
+                sx={{
+                  fontSize: FONT_SIZES.label.desktop,
+                  fontWeight: 'bold',
+                  minHeight: 32,
+                }}
+              />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ fontSize: FONT_SIZES.label.desktop }}>
+                {createdAtFormatted}
+              </Typography>
+            </Box>
+
+            {/* タイトル（太字1行） */}
+            <Typography
+              variant="h6"
+              sx={{
+                mb: SPACING.gap.small,
+                fontWeight: 'bold',
+                fontSize: {
+                  xs: FONT_SIZES.cardTitle.mobile,
+                  md: FONT_SIZES.cardTitle.desktop,
+                },
+              }}>
+              {notification.title}
+            </Typography>
+
+            {/* 本文（2行程度） */}
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                mb: SPACING.gap.medium,
+                fontSize: FONT_SIZES.body.desktop,
+                lineHeight: 1.6,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}>
+              {messageText}
+            </Typography>
+
+            {/* フッター: 施工日・経過年数 + ボタン */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: SPACING.gap.small,
+              }}>
+              {/* 施工日・経過年数 */}
+              {serviceDate && yearsElapsed !== null && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: FONT_SIZES.label.desktop }}>
+                  施工日: {serviceDate.toLocaleDateString('ja-JP')} ・ 経過:{' '}
+                  {yearsElapsed}年
+                </Typography>
+              )}
+
+              {/* ボタン */}
+              <Box sx={{ display: 'flex', gap: SPACING.gap.small }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<VisibilityIcon />}
+                  onClick={() => handleViewDetails(notification.customerId)}
+                  sx={{
+                    minHeight: BUTTON_SIZE.minHeight.desktop,
+                    fontSize: FONT_SIZES.body.desktop,
+                  }}>
+                  詳細を見る
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<BuildIcon />}
+                  onClick={() =>
+                    handleCreateReminderFromNotification(notification)
+                  }
+                  sx={{
+                    minHeight: BUTTON_SIZE.minHeight.desktop,
+                    fontSize: FONT_SIZES.body.desktop,
+                  }}>
+                  リマインダーを作成
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+        </Card>
+      );
+    },
+    [allServiceRecords, handleViewDetails, handleCreateReminderFromNotification]
+  );
 
   // ================================
   // レンダリング: リマインダーカード
@@ -556,31 +928,84 @@ export const ReminderListPage: React.FC = () => {
               '&.Mui-disabled': { opacity: 0.3 },
             },
           }}>
-          {Object.entries(STATUS_CONFIG).map(([value, config]) => (
-            <Tab
-              key={value}
-              value={value}
-              label={config.label}
-              icon={config.icon}
-              iconPosition="start"
-              sx={{
-                minHeight: BUTTON_SIZE.minHeight.desktop,
-                fontSize: {
-                  xs: FONT_SIZES.label.mobile,
-                  md: FONT_SIZES.body.desktop,
-                },
-                fontWeight: 'bold',
-                minWidth: { xs: BUTTON_SIZE.minWidth.desktop, md: 'auto' },
-              }}
-            />
-          ))}
+          {Object.entries(STATUS_CONFIG).map(([value, config]) => {
+            // お知らせタブの場合は件数を表示
+            const label =
+              value === 'notification'
+                ? `${config.label}（${getNotifications().length}）`
+                : config.label;
+            return (
+              <Tab
+                key={value}
+                value={value}
+                label={label}
+                icon={config.icon}
+                iconPosition="start"
+                sx={{
+                  minHeight: BUTTON_SIZE.minHeight.desktop,
+                  fontSize: {
+                    xs: FONT_SIZES.label.mobile,
+                    md: FONT_SIZES.body.desktop,
+                  },
+                  fontWeight: 'bold',
+                  minWidth: { xs: BUTTON_SIZE.minWidth.desktop, md: 'auto' },
+                }}
+              />
+            );
+          })}
         </Tabs>
       </Box>
 
-      {/* リマインダー一覧 */}
+      {/* リマインダー一覧 / お知らせ一覧 */}
       {loading ? (
         <Alert severity="info">読み込み中...</Alert>
+      ) : selectedTab === 'notification' ? (
+        // お知らせタブ
+        notifications.length > 0 ? (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: SPACING.gap.medium,
+            }}>
+            {notifications.map(renderNotificationCard)}
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              textAlign: 'center',
+              py: 8,
+              px: 2,
+            }}>
+            <InfoIcon
+              sx={{
+                fontSize: 80,
+                color: 'text.secondary',
+                mb: 2,
+              }}
+            />
+            <Typography
+              variant="h6"
+              color="text.primary"
+              gutterBottom
+              sx={{
+                fontSize: FONT_SIZES.cardTitle.desktop,
+                mb: 1,
+              }}>
+              今はお知らせはありません
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                fontSize: FONT_SIZES.body.desktop,
+              }}>
+              メンテナンス時期を迎えた現場が追加されると、ここに表示されます
+            </Typography>
+          </Box>
+        )
       ) : filteredReminders.length > 0 ? (
+        // 通常のリマインダータブ
         <Box
           sx={{
             display: 'flex',
@@ -614,6 +1039,10 @@ export const ReminderListPage: React.FC = () => {
           open={isFormOpen}
           onClose={handleFormClose}
           reminder={editingReminder}
+          defaultCustomerId={defaultFormData.customerId}
+          defaultTitle={defaultFormData.title}
+          defaultMessage={defaultFormData.message}
+          defaultDate={defaultFormData.reminderDate}
         />
       )}
 

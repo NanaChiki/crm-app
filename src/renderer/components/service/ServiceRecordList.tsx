@@ -62,7 +62,10 @@ import {
   SPACING,
 } from '../../constants/uiDesignSystem';
 import { useApp } from '../../contexts/AppContext';
+import { useCustomer } from '../../contexts/CustomerContext';
+import { useReminder } from '../../contexts/ReminderContext';
 import { useServiceRecords } from '../../hooks/useServiceRecords';
+import { detectMaintenanceNeeded } from '../../utils/maintenanceDetection';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
@@ -317,6 +320,8 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
   } = providedHook || localHook;
 
   const { showSnackbar } = useApp();
+  const { customers } = useCustomer();
+  const { createNotification } = useReminder();
 
   // ================================
   // 計算値・メモ化データ
@@ -494,8 +499,28 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
           status: 'completed',
         };
 
-        await createServiceRecord(serviceData);
+        const result = await createServiceRecord(serviceData);
         showSnackbar(MESSAGES.success.add, 'success');
+
+        // メンテナンス時期検出と通知作成
+        if (result) {
+          // 顧客情報を取得してServiceRecordWithCustomerを作成
+          const customer = customers.find((c) => c.customerId === customerId);
+          if (customer) {
+            const recordWithCustomer: ServiceRecordWithCustomer = {
+              ...result,
+              customer: {
+                customerId: customer.customerId,
+                companyName: customer.companyName,
+                contactPerson: customer.contactPerson || null,
+                phone: customer.phone || null,
+                email: customer.email || null,
+                address: customer.address || null,
+              },
+            };
+            await checkAndCreateMaintenanceNotification(recordWithCustomer);
+          }
+        }
       } else if (dialogState.editingRecord) {
         const updateData: UpdateServiceRecordInput = {
           serviceDate: new Date(serviceFormData.serviceDate),
@@ -527,7 +552,55 @@ export const ServiceRecordList: React.FC<ServiceRecordListProps> = ({
     createServiceRecord,
     updateServiceRecord,
     handleCloseDialog,
+    customers,
+    createNotification,
   ]);
+
+  /**
+   * メンテナンス時期検出と通知作成
+   */
+  const checkAndCreateMaintenanceNotification = useCallback(
+    async (newRecord: ServiceRecordWithCustomer) => {
+      try {
+        // 追加されたサービス履歴がメンテナンス時期を迎えているかチェック
+        const detections = detectMaintenanceNeeded([newRecord]);
+
+        // メンテナンス時期を迎えている場合、通知を作成
+        if (detections.length > 0) {
+          const detection = detections[0];
+          const serviceTypeLabel =
+            detection.serviceType === '屋根'
+              ? '屋根工事'
+              : detection.serviceType === '外壁'
+                ? '外壁工事'
+                : '雨樋工事';
+
+          // 現場名を生成（サービス説明があれば使用、なければサービス種別）
+          const siteName = newRecord.serviceDescription || serviceTypeLabel;
+
+          // タイトル: 「{顧客名}・{現場名}のメンテナンス時期です」
+          const title = `${newRecord.customer.companyName}・${siteName}のメンテナンス時期です`;
+
+          // メッセージ: 「{サービス種別}の施工から{経過年数}年が経過しました。そろそろメンテナンスのご案内はいかがでしょうか？」
+          const message = `${serviceTypeLabel}の施工から **${detection.yearsElapsed}年** が経過しました。\nそろそろメンテナンスのご案内はいかがでしょうか？`;
+
+          await createNotification({
+            customerId: detection.customerId,
+            serviceRecordId: detection.recordId,
+            title,
+            message,
+            reminderDate: new Date(),
+            createdBy: 'system',
+            notes: `自動生成: ${detection.serviceType}工事が${detection.yearsElapsed}年経過`,
+          });
+        }
+      } catch (error) {
+        // エラーはログのみ（ユーザーには通知しない）
+        console.error('メンテナンス通知作成エラー:', error);
+      }
+    },
+    [createNotification]
+  );
 
   /**
    * サービス履歴削除処理
