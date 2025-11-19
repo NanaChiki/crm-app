@@ -21,7 +21,6 @@
 
 import {
   Add as AddIcon,
-  Assessment as AssessmentIcon,
   Build as BuildIcon,
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
@@ -390,12 +389,112 @@ function Dashboard() {
       return summary;
     }, [serviceRecords]);
 
+  // ================================
+  // ヘルパー関数（メンテナンス推奨タブ用）
+  // ================================
+
   /**
-   * 要対応顧客数（緊急度=high）
+   * 緊急度の優先順位を返す（数値が大きいほど緊急）
+   */
+  const getPartUrgencyOrder = (urgency: PartUrgency): number => {
+    switch (urgency) {
+      case 'overdue':
+        return 4;
+      case 'high':
+        return 3;
+      case 'medium':
+        return 2;
+      case 'low':
+        return 1;
+      default:
+        return 0;
+    }
+  };
+
+  /**
+   * 複数の部位ステータスから全体の緊急度を決定
+   * - どれかの部位が「overdue」→ overdue
+   * - どれかの部位が「high」（かつoverdueなし）→ high
+   * - どれかの部位が「medium」のみ → medium
+   * - partsが空 → null
+   */
+  const getOverallUrgencyFromParts = (
+    parts: PartStatusSummary[]
+  ): 'overdue' | 'high' | 'medium' | null => {
+    if (parts.length === 0) {
+      return null;
+    }
+
+    const maxUrgencyOrder = Math.max(
+      ...parts.map((p) => getPartUrgencyOrder(p.urgency))
+    );
+
+    if (maxUrgencyOrder >= 4) {
+      return 'overdue';
+    }
+    if (maxUrgencyOrder >= 3) {
+      return 'high';
+    }
+    if (maxUrgencyOrder >= 2) {
+      return 'medium';
+    }
+    return null;
+  };
+
+  /**
+   * 要対応顧客数（緊急度=overdue または high）
+   * メンテナンス推奨顧客の中の「要対応」顧客を全て含める
+   * renderMaintenanceTabと同じロジックで、メンテナンス推奨タブに表示される全ての顧客から要対応を抽出
    */
   const criticalCustomerCount = useMemo(() => {
-    return maintenanceAlerts.filter((a) => a.urgency === 'high').length;
-  }, [maintenanceAlerts]);
+    // メンテナンス推奨タブに表示される全てのアラートから、要対応（overdue または high）の顧客を抽出
+    const criticalCustomerIds = new Set<number>();
+
+    // 1. maintenanceAlerts から要対応（high）の顧客を追加
+    maintenanceAlerts.forEach((alert) => {
+      if (alert.urgency === 'high') {
+        criticalCustomerIds.add(alert.customer.customerId);
+      }
+    });
+
+    // 2. notifications から要対応の顧客を追加
+    notifications.forEach((notification) => {
+      // サービス履歴から緊急度を計算
+      const relatedRecord = serviceRecords.find(
+        (r) => r.recordId === notification.serviceRecordId
+      );
+      if (relatedRecord) {
+        const serviceDate =
+          typeof relatedRecord.serviceDate === 'string'
+            ? new Date(relatedRecord.serviceDate)
+            : relatedRecord.serviceDate;
+        const yearsElapsed =
+          (new Date().getTime() - serviceDate.getTime()) /
+          (1000 * 60 * 60 * 24 * 365);
+
+        // 15年以上でoverdue、10年以上でhigh
+        if (yearsElapsed >= 10) {
+          criticalCustomerIds.add(notification.customer.customerId);
+        }
+      }
+    });
+
+    // 3. maintenanceSummaryByCustomer から要対応（overdue または high）の顧客を追加
+    maintenanceSummaryByCustomer.forEach((partSummaries, customerId) => {
+      // 最も緊急度が高い部位を基準にする
+      const maxUrgency = getOverallUrgencyFromParts(partSummaries);
+      if (maxUrgency === 'overdue' || maxUrgency === 'high') {
+        criticalCustomerIds.add(customerId);
+      }
+    });
+
+    return criticalCustomerIds.size;
+  }, [
+    maintenanceAlerts,
+    serviceRecords,
+    notifications,
+    maintenanceSummaryByCustomer,
+  ]);
 
   /**
    * 顧客情報のMap（O(1)検索用）
@@ -675,58 +774,6 @@ function Dashboard() {
       )}
     </Box>
   );
-
-  // ================================
-  // ヘルパー関数（メンテナンス推奨タブ用）
-  // ================================
-
-  /**
-   * 緊急度の優先順位を返す（数値が大きいほど緊急）
-   */
-  const getPartUrgencyOrder = (urgency: PartUrgency): number => {
-    switch (urgency) {
-      case 'overdue':
-        return 4;
-      case 'high':
-        return 3;
-      case 'medium':
-        return 2;
-      case 'low':
-        return 1;
-      default:
-        return 0;
-    }
-  };
-
-  /**
-   * 部位配列から全体ステータスを決定
-   * - どれかの部位が「overdue」→ overdue
-   * - どれかの部位が「high」（かつoverdueなし）→ high
-   * - どれかの部位が「medium」のみ → medium
-   * - partsが空 → null
-   */
-  const getOverallUrgencyFromParts = (
-    parts: PartStatusSummary[]
-  ): 'overdue' | 'high' | 'medium' | null => {
-    if (parts.length === 0) {
-      return null;
-    }
-
-    const maxUrgencyOrder = Math.max(
-      ...parts.map((p) => getPartUrgencyOrder(p.urgency))
-    );
-
-    if (maxUrgencyOrder >= 4) {
-      return 'overdue';
-    }
-    if (maxUrgencyOrder >= 3) {
-      return 'high';
-    }
-    if (maxUrgencyOrder >= 2) {
-      return 'medium';
-    }
-    return null;
-  };
 
   /**
    * 緊急度からメインChipのラベルとカラーを決定
@@ -1288,14 +1335,14 @@ function Dashboard() {
                   variant="contained"
                   fullWidth
                   size="large"
-                  startIcon={<AssessmentIcon fontSize="large" />}
-                  onClick={() => navigate('/reports')}
+                  startIcon={<NotificationsIcon fontSize="large" />}
+                  onClick={() => navigate('/reminders')}
                   sx={{
                     minHeight: BUTTON_SIZE.minHeight.desktop,
                     fontSize: FONT_SIZES.body.desktop,
                     fontWeight: 'bold',
                   }}>
-                  集計レポートへ
+                  リマインダーへ
                 </Button>
               </Grid>
             </Grid>
