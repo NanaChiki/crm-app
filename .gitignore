@@ -123,3 +123,9 @@ dist-electron/
 *.zip
 *.blockmap
 *.AppImage
+
+# Pictures
+# /pictures/
+
+# Local development notes
+*.local.md

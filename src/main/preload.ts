@@ -12,14 +12,14 @@ contextBridge.exposeInMainWorld('outlookAPI', {
     ipcRenderer.invoke('outlook:send-email', emailData),
 
   /**
-   * カレンダー予定作成
+   * カレンダー予定作成 (変更検討：削除予定)
    */
   createEvent: (eventData: any) =>
     ipcRenderer.invoke('outlook:create-event', eventData),
 });
 
 // ================================
-// リマインダーAPI公開
+// リマインダーAPI公開 (変更検討：余分な機能が多い)
 // ================================
 
 contextBridge.exposeInMainWorld('reminderAPI', {
@@ -140,7 +140,7 @@ contextBridge.exposeInMainWorld('dialogAPI', {
 });
 
 // ================================
-// CSV API公開
+// CSV API公開 (変更検討：エクスポート機能はいらないかも)
 // ================================
 
 contextBridge.exposeInMainWorld('csvAPI', {
@@ -153,6 +153,12 @@ contextBridge.exposeInMainWorld('csvAPI', {
    * サービス履歴CSVエクスポート（ジョブカン請求書用）
    */
   exportServiceRecords: () => ipcRenderer.invoke('csv:export-service-records'),
+
+  /**
+   * 顧客データCSVインポート
+   * ジョブカン等からエクスポートしたCSVを一括インポート
+   */
+  importCustomers: () => ipcRenderer.invoke('csv:import-customers'),
 });
 
 // ================================

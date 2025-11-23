@@ -19,6 +19,7 @@ import CodeIcon from '@mui/icons-material/Code';
 import DescriptionIcon from '@mui/icons-material/Description';
 import DownloadIcon from '@mui/icons-material/Download';
 import EmailIcon from '@mui/icons-material/Email';
+import UploadIcon from '@mui/icons-material/Upload';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import HelpIcon from '@mui/icons-material/Help';
 import InfoIcon from '@mui/icons-material/Info';
@@ -531,7 +532,7 @@ export default function SettingsPage() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [currentTab, setCurrentTab] = useState(0);
-  const { loading, exportCustomersCSV, exportServiceRecordsCSV } = useCSV();
+  const { loading, exportCustomersCSV, exportServiceRecordsCSV, importCustomersCSV } = useCSV();
   const { loading: backupLoading, createBackup, restoreBackup } = useBackup();
 
   /**
@@ -553,6 +554,13 @@ export default function SettingsPage() {
    */
   const handleExportServiceRecords = async () => {
     await exportServiceRecordsCSV();
+  };
+
+  /**
+   * 顧客データCSVインポートハンドラー
+   */
+  const handleImportCustomers = async () => {
+    await importCustomersCSV();
   };
 
   return (
@@ -679,6 +687,65 @@ export default function SettingsPage() {
               </Button>
             </Box>
 
+            {/* 顧客データCSVインポート */}
+            <Box sx={{ mb: SPACING.section.desktop }}>
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{
+                  fontSize: FONT_SIZES.cardTitle.desktop,
+                  fontWeight: 'bold',
+                  my: SPACING.gap.medium,
+                }}>
+                📥 CSVインポート
+              </Typography>
+
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: FONT_SIZES.body.desktop,
+                  mb: SPACING.gap.medium,
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                }}>
+                ジョブカンや他のソフトからエクスポートした顧客データCSVを一括インポートします。
+                <br />
+                会社名、担当者、電話番号、メールアドレス、住所、備考の列に対応しています。
+              </Typography>
+
+              <Button
+                variant="contained"
+                size="large"
+                color="success"
+                startIcon={
+                  loading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <UploadIcon />
+                  )
+                }
+                onClick={handleImportCustomers}
+                disabled={loading}
+                sx={{
+                  fontSize: FONT_SIZES.body.desktop,
+                  py: 2,
+                  px: 4,
+                  minHeight: BUTTON_SIZE.minHeight.desktop,
+                }}>
+                {loading ? 'インポート中...' : '顧客データをCSVからインポート'}
+              </Button>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: FONT_SIZES.label.desktop,
+                  mt: SPACING.gap.medium,
+                  color: 'text.secondary',
+                }}>
+                ※ 既に登録済みの会社名は自動でスキップされます
+              </Typography>
+            </Box>
+
             {/* 使い方の説明 */}
             <Box
               sx={{
@@ -714,6 +781,17 @@ export default function SettingsPage() {
                 2. 保存先を選択（デスクトップがおすすめ）
                 <br />
                 3. ジョブカンで請求書作成時に参照、またはインポート
+                <br />
+                <br />
+                <strong>📥 CSVインポート:</strong>
+                <br />
+                1. ジョブカン等から顧客データをCSVエクスポート
+                <br />
+                2. 「顧客データをCSVからインポート」ボタンをクリック
+                <br />
+                3. CSVファイルを選択
+                <br />
+                4. 自動で顧客データが登録されます
               </Typography>
             </Box>
           </Box>

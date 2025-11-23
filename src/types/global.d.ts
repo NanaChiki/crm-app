@@ -135,8 +135,28 @@ declare global {
      * CSV API
      */
     csvAPI: {
-      exportCustomers: () => Promise<ApiResponse<{ path: string }>>;
-      exportServiceRecords: () => Promise<ApiResponse<{ path: string }>>;
+      exportCustomers: () => Promise<{
+        success: boolean;
+        filePath?: string;
+        message?: string;
+        error?: string;
+        canceled?: boolean;
+      }>;
+      exportServiceRecords: () => Promise<{
+        success: boolean;
+        filePath?: string;
+        message?: string;
+        error?: string;
+        canceled?: boolean;
+      }>;
+      importCustomers: () => Promise<{
+        success: boolean;
+        canceled?: boolean;
+        imported?: number;
+        skipped?: number;
+        errors?: string[];
+        message?: string;
+      }>;
     };
 
     /**

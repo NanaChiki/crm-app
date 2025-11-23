@@ -16,6 +16,7 @@ import { createBackup } from './backup/createBackup';
 import { restoreBackup } from './backup/restoreBackup';
 import { generateCustomersCSV } from './csv/exportCustomers';
 import { generateServiceRecordsCSV } from './csv/exportServiceRecords';
+import { importCustomersFromCSV } from './csv/importCustomers';
 import {
   createCustomer,
   deleteCustomer,
@@ -802,6 +803,47 @@ ipcMain.handle('csv:export-customers', async () => {
     return {
       success: false,
       error: error.message || 'ファイルの保存に失敗しました',
+    };
+  }
+});
+
+/**
+ * 顧客データCSVインポート
+ * ジョブカン等からエクスポートしたCSVを一括インポート
+ */
+ipcMain.handle('csv:import-customers', async () => {
+  try {
+    // ファイル選択ダイアログ表示
+    const result = await dialog.showOpenDialog({
+      title: '顧客データCSVファイルを選択',
+      defaultPath: os.homedir(),
+      filters: [
+        { name: 'CSVファイル', extensions: ['csv'] },
+        { name: 'すべてのファイル', extensions: ['*'] },
+      ],
+      properties: ['openFile'],
+    });
+
+    // キャンセルされた場合
+    if (result.canceled || result.filePaths.length === 0) {
+      return {
+        success: false,
+        canceled: true,
+      };
+    }
+
+    // CSVインポート実行
+    const importResult = await importCustomersFromCSV(result.filePaths[0]);
+
+    return importResult;
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : '不明なエラー';
+    return {
+      success: false,
+      imported: 0,
+      skipped: 0,
+      errors: [errorMessage],
+      message: 'インポート中にエラーが発生しました',
     };
   }
 });
