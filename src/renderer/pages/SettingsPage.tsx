@@ -19,6 +19,7 @@ import CodeIcon from '@mui/icons-material/Code';
 import DescriptionIcon from '@mui/icons-material/Description';
 import DownloadIcon from '@mui/icons-material/Download';
 import EmailIcon from '@mui/icons-material/Email';
+import UploadIcon from '@mui/icons-material/Upload';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import HelpIcon from '@mui/icons-material/Help';
 import InfoIcon from '@mui/icons-material/Info';
@@ -38,6 +39,7 @@ import {
   Link,
   Button as MuiButton,
   Paper,
+  Slider,
   Tab,
   Tabs,
   Typography,
@@ -72,6 +74,21 @@ import { useCSV } from '../contexts/CSVContext';
 function AppSettingsTab() {
   const [versions, setVersions] = useState<AppVersions | null>(null);
   const [licenseDialogOpen, setLicenseDialogOpen] = useState(false);
+  const [notificationVolume, setNotificationVolume] = useState(() => {
+    // localStorageから音量設定を取得
+    try {
+      const saved = localStorage.getItem('notificationVolume');
+      if (saved) {
+        const volume = parseFloat(saved);
+        if (volume >= 0 && volume <= 1) {
+          return volume;
+        }
+      }
+    } catch (error) {
+      console.error('音量設定取得エラー:', error);
+    }
+    return 0.5; // デフォルト音量
+  });
 
   // バージョン情報取得
   useEffect(() => {
@@ -92,6 +109,17 @@ function AppSettingsTab() {
       await window.appAPI.openExternal(url);
     } catch (error) {
       console.error('外部リンクを開けませんでした:', error);
+    }
+  };
+
+  // 音量設定変更ハンドラー
+  const handleVolumeChange = (_event: Event, newValue: number | number[]) => {
+    const volume = typeof newValue === 'number' ? newValue : newValue[0];
+    setNotificationVolume(volume);
+    try {
+      localStorage.setItem('notificationVolume', volume.toString());
+    } catch (error) {
+      console.error('音量設定保存エラー:', error);
     }
   };
 
@@ -141,6 +169,59 @@ function AppSettingsTab() {
               sx={{ mb: 1, fontSize: FONT_SIZES.body.desktop }}>
               <strong>ビルド日:</strong> 2025年10月28日
             </Typography>
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* リマインダー音調整 */}
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 2,
+                  fontWeight: 'bold',
+                  fontSize: FONT_SIZES.cardTitle.desktop,
+                }}>
+                🔊 リマインダー音の調整
+              </Typography>
+              <Box sx={{ pl: 4 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mb: 2,
+                    fontSize: FONT_SIZES.body.desktop,
+                  }}>
+                  メンテナンス時期到来時の通知音の音量を調整できます
+                </Typography>
+                <Box sx={{ px: 2 }}>
+                  <Slider
+                    value={notificationVolume}
+                    onChange={handleVolumeChange}
+                    min={0}
+                    max={1}
+                    step={0.1}
+                    marks={[
+                      { value: 0, label: '無音' },
+                      { value: 0.5, label: '中' },
+                      { value: 1, label: '最大' },
+                    ]}
+                    valueLabelDisplay="auto"
+                    valueLabelFormat={(value) => `${Math.round(value * 100)}%`}
+                    sx={{
+                      '& .MuiSlider-thumb': {
+                        width: 24,
+                        height: 24,
+                      },
+                      '& .MuiSlider-track': {
+                        height: 6,
+                      },
+                      '& .MuiSlider-rail': {
+                        height: 6,
+                      },
+                    }}
+                  />
+                </Box>
+              </Box>
+            </Box>
 
             <Divider sx={{ my: 2 }} />
 
@@ -451,7 +532,7 @@ export default function SettingsPage() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [currentTab, setCurrentTab] = useState(0);
-  const { loading, exportCustomersCSV, exportServiceRecordsCSV } = useCSV();
+  const { loading, exportCustomersCSV, exportServiceRecordsCSV, importCustomersCSV } = useCSV();
   const { loading: backupLoading, createBackup, restoreBackup } = useBackup();
 
   /**
@@ -473,6 +554,13 @@ export default function SettingsPage() {
    */
   const handleExportServiceRecords = async () => {
     await exportServiceRecordsCSV();
+  };
+
+  /**
+   * 顧客データCSVインポートハンドラー
+   */
+  const handleImportCustomers = async () => {
+    await importCustomersCSV();
   };
 
   return (
@@ -599,6 +687,65 @@ export default function SettingsPage() {
               </Button>
             </Box>
 
+            {/* 顧客データCSVインポート */}
+            <Box sx={{ mb: SPACING.section.desktop }}>
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{
+                  fontSize: FONT_SIZES.cardTitle.desktop,
+                  fontWeight: 'bold',
+                  my: SPACING.gap.medium,
+                }}>
+                📥 CSVインポート
+              </Typography>
+
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: FONT_SIZES.body.desktop,
+                  mb: SPACING.gap.medium,
+                  color: 'text.secondary',
+                  lineHeight: 1.8,
+                }}>
+                ジョブカンや他のソフトからエクスポートした顧客データCSVを一括インポートします。
+                <br />
+                会社名、担当者、電話番号、メールアドレス、住所、備考の列に対応しています。
+              </Typography>
+
+              <Button
+                variant="contained"
+                size="large"
+                color="success"
+                startIcon={
+                  loading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <UploadIcon />
+                  )
+                }
+                onClick={handleImportCustomers}
+                disabled={loading}
+                sx={{
+                  fontSize: FONT_SIZES.body.desktop,
+                  py: 2,
+                  px: 4,
+                  minHeight: BUTTON_SIZE.minHeight.desktop,
+                }}>
+                {loading ? 'インポート中...' : '顧客データをCSVからインポート'}
+              </Button>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: FONT_SIZES.label.desktop,
+                  mt: SPACING.gap.medium,
+                  color: 'text.secondary',
+                }}>
+                ※ 既に登録済みの会社名は自動でスキップされます
+              </Typography>
+            </Box>
+
             {/* 使い方の説明 */}
             <Box
               sx={{
@@ -634,6 +781,17 @@ export default function SettingsPage() {
                 2. 保存先を選択（デスクトップがおすすめ）
                 <br />
                 3. ジョブカンで請求書作成時に参照、またはインポート
+                <br />
+                <br />
+                <strong>📥 CSVインポート:</strong>
+                <br />
+                1. ジョブカン等から顧客データをCSVエクスポート
+                <br />
+                2. 「顧客データをCSVからインポート」ボタンをクリック
+                <br />
+                3. CSVファイルを選択
+                <br />
+                4. 自動で顧客データが登録されます
               </Typography>
             </Box>
           </Box>

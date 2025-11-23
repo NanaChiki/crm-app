@@ -100,8 +100,9 @@ out/
 CLAUDE.md
 .claude/
 
-# 顧客フィードバック（機密情報含む）
-after-MVP-1.md
+# ドキュメント（ローカルメモ用・リモートには反映しない）
+docs/feedback/
+docs/marketing/
 # Database
 *.db
 *.db-journal
@@ -122,3 +123,9 @@ dist-electron/
 *.zip
 *.blockmap
 *.AppImage
+
+# Pictures
+# /pictures/
+
+# Local development notes
+*.local.md

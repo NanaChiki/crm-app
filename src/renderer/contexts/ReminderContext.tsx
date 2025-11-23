@@ -119,6 +119,10 @@ interface ReminderContextType {
   // OutLook連携
   sendReminderEmail: (reminderId: number) => Promise<void>;
   createOutlookEvent: (reminderId: number) => Promise<void>;
+
+  // お知らせ機能
+  createNotification: (data: CreateReminderInput) => Promise<Reminder>;
+  getNotifications: () => ReminderWithCustomer[];
 }
 
 // ================================
@@ -244,6 +248,53 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
     },
     [fetchReminders, showSnackbar]
   );
+
+  /**
+   * お知らせ作成（status: "notification"で作成）
+   */
+  const createNotification = useCallback(
+    async (data: CreateReminderInput): Promise<Reminder> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // status: "notification"で作成
+        const notificationData = {
+          ...data,
+          status: 'notification' as const,
+        };
+
+        const result = await window.reminderAPI.create(notificationData);
+
+        if (result.success && result.data) {
+          // 一覧を再取得
+          await fetchReminders();
+
+          showSnackbar('お知らせを作成しました。', 'success');
+
+          return result.data;
+        } else {
+          throw new Error(result.error || 'お知らせの作成に失敗しました');
+        }
+      } catch (err: any) {
+        const errorMessage = err.message || 'お知らせの作成に失敗しました';
+        console.error('❌ お知らせ作成エラー:', err);
+        setError(errorMessage);
+        showSnackbar(errorMessage, 'error');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchReminders, showSnackbar]
+  );
+
+  /**
+   * お知らせ一覧取得（status: "notification"のみ）
+   */
+  const getNotifications = useCallback((): ReminderWithCustomer[] => {
+    return reminders.filter((reminder) => reminder.status === 'notification');
+  }, [reminders]);
 
   // ================================
   // リマインダー削除
@@ -471,9 +522,11 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
 
       return reminders
         .filter((reminder) => {
+          // お知らせも含める
           if (
             reminder.status !== 'scheduled' &&
-            reminder.status !== 'drafting'
+            reminder.status !== 'drafting' &&
+            reminder.status !== 'notification'
           ) {
             return false;
           }
@@ -542,6 +595,8 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
       getReminderById,
       getUpcomingReminders,
       filterReminders,
+      createNotification,
+      getNotifications,
     }),
     [
       reminders,
@@ -559,6 +614,8 @@ export const ReminderProvider: React.FC<ReminderProviderProps> = ({
       getReminderById,
       getUpcomingReminders,
       filterReminders,
+      createNotification,
+      getNotifications,
     ]
   );
 

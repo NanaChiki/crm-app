@@ -18,7 +18,7 @@
  * - わかりやすいログ出力
  */
 
-import type { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from '@prisma/client';
 
 let prismaInstance: PrismaClient | null = null;
 
@@ -29,7 +29,7 @@ let prismaInstance: PrismaClient | null = null;
  */
 async function getPrisma(): Promise<PrismaClient> {
   if (!prismaInstance) {
-    const { PrismaClient: PrismaClientClass } = await import("@prisma/client");
+    const { PrismaClient: PrismaClientClass } = await import('@prisma/client');
     prismaInstance = new PrismaClientClass({
       datasources: {
         db: {
@@ -54,8 +54,8 @@ function serializeForIPC(data: any): any {
       // Decimal型を数値文字列に変換
       if (
         value &&
-        typeof value === "object" &&
-        value.constructor?.name === "Decimal"
+        typeof value === 'object' &&
+        value.constructor?.name === 'Decimal'
       ) {
         return value.toString();
       }
@@ -64,7 +64,7 @@ function serializeForIPC(data: any): any {
         return value.toISOString();
       }
       return value;
-    }),
+    })
   );
 }
 
@@ -116,7 +116,7 @@ interface UpdateCustomerInput {
  * @throws {Error} データベース接続エラー時
  */
 export async function fetchCustomers(
-  filters?: CustomerFilters,
+  filters?: CustomerFilters
 ): Promise<DatabaseResult<any[]>> {
   try {
     const prisma = await getPrisma();
@@ -156,7 +156,7 @@ export async function fetchCustomers(
         reminders: true,
       },
       orderBy: {
-        updatedAt: "desc",
+        updatedAt: 'desc',
       },
     });
 
@@ -168,10 +168,10 @@ export async function fetchCustomers(
       data: serializedCustomers,
     };
   } catch (error: any) {
-    console.error("❌ 顧客取得エラー:", error);
+    console.error('❌ 顧客取得エラー:', error);
     return {
       success: false,
-      error: "顧客情報の取得に失敗しました",
+      error: '顧客情報の取得に失敗しました',
     };
   }
 }
@@ -188,26 +188,26 @@ export async function fetchCustomers(
  * @throws {Error} 会社名が空の場合、またはメールアドレス形式が不正な場合
  */
 export async function createCustomer(
-  input: CreateCustomerInput,
+  input: CreateCustomerInput
 ): Promise<DatabaseResult<any>> {
   try {
     const prisma = await getPrisma();
 
     // バリデーション
-    if (!input.companyName || input.companyName.trim() === "") {
+    if (!input.companyName || input.companyName.trim() === '') {
       return {
         success: false,
-        error: "会社名は必須です",
+        error: '会社名は必須です',
       };
     }
 
     // メールアドレス形式チェック（入力がある場合のみ）
-    if (input.email && input.email.trim() !== "") {
+    if (input.email && input.email.trim() !== '') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(input.email)) {
         return {
           success: false,
-          error: "正しいメールアドレスを入力してください",
+          error: '正しいメールアドレスを入力してください',
         };
       }
     }
@@ -236,10 +236,10 @@ export async function createCustomer(
       data: serializedCustomer,
     };
   } catch (error: any) {
-    console.error("❌ 顧客作成エラー:", error);
+    console.error('❌ 顧客作成エラー:', error);
     return {
       success: false,
-      error: "顧客情報の登録に失敗しました",
+      error: '顧客情報の登録に失敗しました',
     };
   }
 }
@@ -256,7 +256,7 @@ export async function createCustomer(
  * @throws {Error} 顧客が存在しない場合、または会社名が空の場合
  */
 export async function updateCustomer(
-  input: UpdateCustomerInput,
+  input: UpdateCustomerInput
 ): Promise<DatabaseResult<any>> {
   try {
     const prisma = await getPrisma();
@@ -269,25 +269,25 @@ export async function updateCustomer(
     if (!existingCustomer) {
       return {
         success: false,
-        error: "指定された顧客が見つかりません",
+        error: '指定された顧客が見つかりません',
       };
     }
 
     // バリデーション
-    if (input.companyName !== undefined && input.companyName.trim() === "") {
+    if (input.companyName !== undefined && input.companyName.trim() === '') {
       return {
         success: false,
-        error: "会社名は必須です",
+        error: '会社名は必須です',
       };
     }
 
     // メールアドレス形式チェック（更新がある場合のみ）
-    if (input.email !== undefined && input.email.trim() !== "") {
+    if (input.email !== undefined && input.email.trim() !== '') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(input.email)) {
         return {
           success: false,
-          error: "正しいメールアドレスを入力してください",
+          error: '正しいメールアドレスを入力してください',
         };
       }
     }
@@ -332,10 +332,10 @@ export async function updateCustomer(
       data: serializedCustomer,
     };
   } catch (error: any) {
-    console.error("❌ 顧客更新エラー:", error);
+    console.error('❌ 顧客更新エラー:', error);
     return {
       success: false,
-      error: "顧客情報の更新に失敗しました",
+      error: '顧客情報の更新に失敗しました',
     };
   }
 }
@@ -352,7 +352,7 @@ export async function updateCustomer(
  * @throws {Error} 顧客が存在しない場合、またはデータベースエラー時
  */
 export async function deleteCustomer(
-  customerId: number,
+  customerId: number
 ): Promise<DatabaseResult<void>> {
   try {
     const prisma = await getPrisma();
@@ -369,7 +369,7 @@ export async function deleteCustomer(
     if (!existingCustomer) {
       return {
         success: false,
-        error: "指定された顧客が見つかりません",
+        error: '指定された顧客が見つかりません',
       };
     }
 
@@ -382,10 +382,10 @@ export async function deleteCustomer(
       success: true,
     };
   } catch (error: any) {
-    console.error("❌ 顧客削除エラー:", error);
+    console.error('❌ 顧客削除エラー:', error);
     return {
       success: false,
-      error: "顧客情報の削除に失敗しました",
+      error: '顧客情報の削除に失敗しました',
     };
   }
 }
@@ -403,6 +403,5 @@ export async function disconnectPrismaCustomer(): Promise<void> {
   if (prismaInstance) {
     await prismaInstance.$disconnect();
     prismaInstance = null;
-    console.log("✅ Prismaクライアント切断完了 (customerHandlers)");
   }
 }

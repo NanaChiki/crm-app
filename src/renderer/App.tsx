@@ -1,16 +1,16 @@
-import { useEffect, useRef } from "react";
-import { HashRouter } from "react-router-dom";
-import { Alert, CssBaseline, Snackbar } from "@mui/material";
-import { ThemeProvider } from "@mui/material/styles";
+import { Alert, CssBaseline, Snackbar } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
+import { useEffect, useRef } from 'react';
+import { HashRouter } from 'react-router-dom';
 
-import { MainLayout } from "./components/layout/MainLayout";
-import { AppProvider, useApp } from "./contexts/AppContext";
-import { BackupProvider } from "./contexts/BackupContext";
-import { CSVProvider } from "./contexts/CSVContext";
-import { CustomerProvider } from "./contexts/CustomerContext";
-import { ReminderProvider } from "./contexts/ReminderContext";
-import { AppRouter } from "./routes/AppRouter";
-import { theme } from "./styles/theme";
+import { MainLayout } from './components/layout/MainLayout';
+import { AppProvider, useApp } from './contexts/AppContext';
+import { BackupProvider } from './contexts/BackupContext';
+import { CSVProvider } from './contexts/CSVContext';
+import { CustomerProvider } from './contexts/CustomerContext';
+import { ReminderProvider } from './contexts/ReminderContext';
+import { AppRouter } from './routes/AppRouter';
+import { theme } from './styles/theme';
 
 /**
  * 🎯 App Component - アプリケーションのルートコンポーネント
@@ -43,7 +43,7 @@ import { theme } from "./styles/theme";
  */
 function AppContent() {
   const { snackbarMessage, hideSnackbar } = useApp();
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // スナックバーの表示時間（デフォルト5秒、カスタマイズ可能）
   const snackbarDuration = snackbarMessage?.duration ?? 5000;
@@ -107,30 +107,28 @@ function AppContent() {
           autoHideDuration={null}
           onClose={(event, reason) => {
             // clickawayでは閉じない（ユーザーが誤って外をクリックしても閉じない）
-            if (reason === "clickaway") {
+            if (reason === 'clickaway') {
               return;
             }
             hideSnackbar();
           }}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
           sx={{
             // 50代向け：下部に余白を確保（ボタンと重ならない）
             bottom: { xs: 80, sm: 24 },
-          }}
-        >
+          }}>
           <Alert
             onClose={hideSnackbar}
             severity={snackbarMessage.severity}
             variant="filled"
             sx={{
               // 50代向け：大きめのフォントと余白
-              fontSize: "16px",
-              minWidth: "300px",
+              fontSize: '16px',
+              minWidth: '300px',
               boxShadow: 3,
               // 改行を正しく表示するため
-              whiteSpace: "pre-line",
-            }}
-          >
+              whiteSpace: 'pre-line',
+            }}>
             {snackbarMessage.message}
           </Alert>
         </Snackbar>

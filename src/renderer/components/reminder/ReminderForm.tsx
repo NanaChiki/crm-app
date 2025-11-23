@@ -26,7 +26,7 @@ import {
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Custom Components
@@ -107,6 +107,42 @@ export const ReminderForm: React.FC<ReminderFormProps> = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  // reminderやdefault propsが変更された時にformDataを更新
+  useEffect(() => {
+    if (reminder) {
+      // 既存リマインダーの編集モード
+      setFormData({
+        customerId: reminder.customerId,
+        title: reminder.title,
+        message: reminder.message,
+        reminderDate: reminder.reminderDate
+          ? new Date(reminder.reminderDate)
+          : new Date(),
+        notes: reminder.notes || '',
+      });
+    } else if (defaultCustomerId || defaultTitle || defaultMessage || defaultDate) {
+      // 新規作成モード（default propsが設定されている場合）
+      setFormData({
+        customerId: defaultCustomerId || 0,
+        title: defaultTitle || '',
+        message: defaultMessage || '',
+        reminderDate: defaultDate || new Date(),
+        notes: '',
+      });
+    } else {
+      // 完全に新規作成（default propsもない場合）
+      setFormData({
+        customerId: 0,
+        title: '',
+        message: '',
+        reminderDate: new Date(),
+        notes: '',
+      });
+    }
+    // エラーもクリア
+    setErrors({});
+  }, [reminder, defaultCustomerId, defaultTitle, defaultMessage, defaultDate]);
 
   // ================================
   // バリデーション

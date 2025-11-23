@@ -1,9 +1,9 @@
 // This is your Prisma schema file
 
 generator client {
-    provider = "prisma-client-js"
+    provider        = "prisma-client-js"
     previewFeatures = ["driverAdapters"]
-    engineType = "library"
+    engineType      = "library"
 }
 
 datasource db {
@@ -37,6 +37,7 @@ model ServiceRecord {
     serviceType        String?  @map("service_type")
     serviceDescription String?  @map("service_description")
     amount             Decimal?
+    photoPath          String?  @map("photo_path")
     status             String   @default("completed")
     createdAt          DateTime @default(now()) @map("created_at")
     updatedAt          DateTime @updatedAt @map("updated_at")
@@ -50,22 +51,22 @@ model ServiceRecord {
 
 // フェーズ2: リマインダーモデル
 model Reminder {
-    reminderId      Int       @id @default(autoincrement()) @map("reminder_id")
-    customerId      Int       @map("customer_id")
-    serviceRecordId Int?      @map("service_record_id")
+    reminderId      Int  @id @default(autoincrement()) @map("reminder_id")
+    customerId      Int  @map("customer_id")
+    serviceRecordId Int? @map("service_record_id")
 
     // リマインダー内容
-    title        String   // 例: "外壁塗装メンテナンス推奨"
-    message      String   // リマインダーメッセージ本文
+    title        String // 例: "外壁塗装メンテナンス推奨"
+    message      String // リマインダーメッセージ本文
     reminderDate DateTime @map("reminder_date")
 
     // 送信状態管理
-    status String    @default("scheduled") // scheduled, drafting, sent, cancelled
+    status String    @default("scheduled") // scheduled, drafting, sent, cancelled, notification
     sentAt DateTime? @map("sent_at")
 
     // OutLook連携情報
-    outlookEventId   String?  @map("outlook_event_id")
-    outlookEmailSent Boolean  @default(false) @map("outlook_email_sent")
+    outlookEventId   String? @map("outlook_event_id")
+    outlookEmailSent Boolean @default(false) @map("outlook_email_sent")
 
     // メタデータ
     createdBy String   @default("system") @map("created_by") // system or manual
