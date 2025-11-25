@@ -167,7 +167,7 @@ function AppSettingsTab() {
             <Typography
               variant="body1"
               sx={{ mb: 1, fontSize: FONT_SIZES.body.desktop }}>
-              <strong>ビルド日:</strong> 2025年10月28日
+              <strong>ビルド日:</strong> 2025年11月25日
             </Typography>
 
             <Divider sx={{ my: 2 }} />

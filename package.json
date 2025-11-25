@@ -1,7 +1,7 @@
 {
   "name": "mainte-mate",
   "productName": "メンテメイト",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "建築業界向け顧客管理パートナー - メンテナンス時期を自動予測",
   "main": "dist/main/main.js",
   "author": {
