@@ -78,7 +78,7 @@
         }
       ],
       "icon": "build/icon.ico",
-      "artifactName": "${productName}-${version}-Setup.${ext}"
+      "artifactName": "MaintenanceMate-Setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
