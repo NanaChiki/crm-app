@@ -60,48 +60,35 @@ import {
 function setupDatabasePath(): void {
   const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
-  console.log('[DB Setup] isDev:', isDev, 'app.isPackaged:', app.isPackaged);
-
   if (isDev) {
     // 開発環境: プロジェクトルートのsrc/database/dev.dbを使用
     const dbPath = path.join(__dirname, '../../src/database/dev.db');
     process.env.DATABASE_URL = `file:${dbPath}`;
-    console.log('[DB Setup] Dev mode - DATABASE_URL:', process.env.DATABASE_URL);
   } else {
     // 本番環境: userDataディレクトリにデータベースを配置
     const userDataPath = app.getPath('userData');
     const dbPath = path.join(userDataPath, 'dev.db');
-    console.log('[DB Setup] userDataPath:', userDataPath);
-    console.log('[DB Setup] dbPath:', dbPath);
 
     // 初回起動時: データベースファイルをコピー
     if (!fsSync.existsSync(dbPath)) {
-      console.log('[DB Setup] DB not found. Copying from resources...');
       const sourceDbPath = path.join(
         process.resourcesPath,
         'database',
         'dev.db'
       );
-      console.log('[DB Setup] sourceDbPath:', sourceDbPath);
-      console.log('[DB Setup] Source exists:', fsSync.existsSync(sourceDbPath));
 
       if (fsSync.existsSync(sourceDbPath)) {
         // userDataPathディレクトリが存在しない場合は作成
         if (!fsSync.existsSync(userDataPath)) {
-          console.log('[DB Setup] Creating userDataPath...');
           fsSync.mkdirSync(userDataPath, { recursive: true });
         }
         fsSync.copyFileSync(sourceDbPath, dbPath);
-        console.log('[DB Setup] DB copied successfully');
       } else {
-        console.error('[DB Setup] Source DB not found at:', sourceDbPath);
+        console.error('❌ データベースファイルが見つかりません。アプリを再インストールしてください。');
       }
-    } else {
-      console.log('[DB Setup] DB already exists');
     }
 
     process.env.DATABASE_URL = `file:${dbPath}`;
-    console.log('[DB Setup] DATABASE_URL:', process.env.DATABASE_URL);
   }
 }
 
